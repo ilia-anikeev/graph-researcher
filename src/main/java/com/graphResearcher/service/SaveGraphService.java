@@ -1,4 +1,4 @@
-package ru.graphResearcher.service;
+package com.graphResearcher.service;
 
 import org.springframework.stereotype.Service;
 

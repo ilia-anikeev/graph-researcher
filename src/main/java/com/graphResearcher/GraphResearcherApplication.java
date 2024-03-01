@@ -1,4 +1,4 @@
-package ru.graphResearcher;
+package com.graphResearcher;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

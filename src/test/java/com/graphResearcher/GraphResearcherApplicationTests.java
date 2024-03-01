@@ -1,4 +1,4 @@
-package ru.graphResearcher;
+package com.graphResearcher;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
