@@ -1,8 +1,7 @@
-package ru.controllers;
+package ru.graphResearcher.controller;
 
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-public class BuildGraphController {
-
+public class GraphResearchController {
 }
