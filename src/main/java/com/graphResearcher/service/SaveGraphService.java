@@ -18,7 +18,6 @@ public class SaveGraphService {
             g.addVertex(graph.getVertexes().get(i));
         }
         for (int i = 0; i < graph.getEdges().size(); i++){
-            boolean t = g.containsVertex(graph.getEdges().get(i).get(0));
             g.addEdge(graph.getEdges().get(i).get(0), graph.getEdges().get(i).get(1));
         }
         return g;
