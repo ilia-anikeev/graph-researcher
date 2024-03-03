@@ -18,7 +18,9 @@ repositories {
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    implementation group: 'org.jgrapht', name: 'jgrapht-ext', version:'0.9.0'
 }
+
 
 tasks.named('test') {
     useJUnitPlatform()
