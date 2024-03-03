@@ -15,7 +15,6 @@ public class SaveGraphController {
     private final SaveGraphService saveGraphService;
 
     public SaveGraphController(){
-
         saveGraphService = new SaveGraphService();
     }
 
