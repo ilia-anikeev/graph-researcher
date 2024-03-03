@@ -27,7 +27,11 @@ public class VertexRequest {
         if (!(o instanceof VertexRequest vertexRequest)) {
             return false;
         }
-        return this.data.equals(vertexRequest.getData());
+        return Objects.equals(this.data,vertexRequest.getData());
     }
 
+    @Override
+    public int hashCode() {
+        return Objects.hash(data);
+    }
 }
