@@ -4,8 +4,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.Objects;
 
-//import java.util.Objects;
-
 public class VertexRequest {
 
     public VertexRequest() {
