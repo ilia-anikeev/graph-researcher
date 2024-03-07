@@ -1,44 +1,71 @@
 package com.graphResearcher.dao;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.Scanner;
+
 
 import com.graphResearcher.model.Vertex;
+import com.graphResearcher.model.Edge;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 public class DataBaseManager {
+    private static final Logger log = LoggerFactory.getLogger(DataBaseManager.class);
 
-    private String NAME;
-    private String PASSWORD;
-
-    private final String URL = "jdbc:postgresql://localhost:5432/graphResearcherDB";
+    private final Connection connection;
 
     public DataBaseManager() {
-        try (Scanner scan = new Scanner(new File("src/main/resources/application.properties"))) {
-            NAME = scan.nextLine();
-            PASSWORD = scan.nextLine();
-        } catch(FileNotFoundException e) {
-            System.err.println(e.getMessage());
+        try {
+            String NAME = "db.username";
+            String PASSWORD = "db.password";
+            String URL = "db.url";
+            connection = DriverManager.getConnection(PropertiesUtil.get(URL), PropertiesUtil.get(NAME), PropertiesUtil.get(PASSWORD));
+        } catch (SQLException e) {
+            log.error("DataBaseManager hasn't been created");
+            throw new RuntimeException(e);
         }
+        log.info("DataBaseManager has been created");
     }
 
-    public ArrayList<Vertex> getVertices(String graphName) {
+    public ArrayList<Vertex> getVertices(int userID, int graphID) {
         ArrayList<Vertex> vertices = new ArrayList<>();
-        try(Connection connection = DriverManager.getConnection(URL, NAME, PASSWORD)) {
-            String query = """
-                    SELECT number FROM test_graph_vertices
-                    """;
-            PreparedStatement preparedStatement = connection.prepareStatement(query);
+        String tableName = "id" + userID + "_" + graphID + "_vertices";
+
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement("SELECT index FROM " + tableName);
             ResultSet rs = preparedStatement.executeQuery();
             while (rs.next()) {
-                vertices.add(new Vertex(rs.getInt(1)));
+                vertices.add(new Vertex(rs.getInt("index")));
             }
         } catch(SQLException e) {
-            System.err.println(e.getMessage());
+            log.error("The vertices haven't been received");
+            throw new RuntimeException(e);
         }
+        log.info("The vertices have been received");
         return vertices;
     }
 
+    public ArrayList<Edge> getEdges(int userID, int graphID) {
+        ArrayList<Edge> edges = new ArrayList<>();
+        String tableName = "id" + userID + "_" + graphID + "_edges";
+
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement("SELECT source, target FROM " + tableName);
+
+            ResultSet rs = preparedStatement.executeQuery();
+            while (rs.next()) {
+                edges.add(new Edge(rs.getInt("source"), rs.getInt("target")));
+            }
+        } catch (SQLException e) {
+            log.error("The edges haven't been received");
+            throw new RuntimeException(e);
+        }
+        log.info("The edges have been received");
+        return edges;
+    }
+
+//    public Graph<Vertex, Edge> getGraph(int userID, int graphID) {
+        //TODO
+//    }
 }
