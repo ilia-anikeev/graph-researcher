@@ -16,8 +16,17 @@ repositories {
 }
 
 dependencies {
+    //spring-boot
     implementation 'org.springframework.boot:spring-boot-starter-web'
+
+    //sprint-boot-test
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+    //postgresql
+    implementation 'org.postgresql:postgresql'
+
+    //jgrapht
+    implementation group: 'org.jgrapht', name: 'jgrapht-ext', version:'0.9.0'
 }
 
 tasks.named('test') {
