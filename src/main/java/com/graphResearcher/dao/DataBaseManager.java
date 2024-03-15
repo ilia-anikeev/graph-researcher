@@ -2,6 +2,7 @@ package com.graphResearcher.dao;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.TreeMap;
 
 
 import com.graphResearcher.model.*;
@@ -78,8 +79,8 @@ public class DataBaseManager {
 
             createTableStatement.execute();
             for (Edge e: edges) {
-                insertEdgeStatement.setInt(1, e.source);
-                insertEdgeStatement.setInt(2, e.target);
+                insertEdgeStatement.setInt(1, e.source.index);
+                insertEdgeStatement.setInt(2, e.target.index);
                 insertEdgeStatement.setString(3, e.data);
                 insertEdgeStatement.executeUpdate();
             }
@@ -155,7 +156,8 @@ public class DataBaseManager {
     }
 
     public GraphModel getGraph(int userID, int graphID) {
-        return new GraphModel(getVertices(userID, graphID), getEdges(userID, graphID), getGraphInfo(userID, graphID));
+        var vertices = getVertices(userID, graphID);
+        return new GraphModel(vertices, getEdges(userID, graphID, vertices), getGraphInfo(userID, graphID));
     }
 
     private GraphInfo getGraphInfo(int userID, int graphID) {
@@ -190,14 +192,20 @@ public class DataBaseManager {
         return vertices;
     }
 
-    private ArrayList<Edge> getEdges(int userID, int graphID) {
+    private ArrayList<Edge> getEdges(int userID, int graphID, ArrayList<Vertex> vertices) {
+        TreeMap<Integer, Vertex> verticesMap = new TreeMap<>();
+        for (Vertex v: vertices) {
+            verticesMap.put(v.index, v);
+        }
+
         ArrayList<Edge> edges = new ArrayList<>();
         String tableName = "user" + userID + "_graph" + graphID + "_edges";
-
         try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT source, target, data FROM " + tableName)) {
             ResultSet rs = preparedStatement.executeQuery();
             while (rs.next()) {
-                edges.add(new Edge(rs.getInt("source"), rs.getInt("target"), rs.getString("data")));
+                Vertex s = verticesMap.get(rs.getInt("source"));
+                Vertex t = verticesMap.get(rs.getInt("target"));
+                edges.add(new Edge(s, t, rs.getString("data")));
             }
         } catch (SQLException e) {
             log.error("Edges haven't been received");
