@@ -14,12 +14,12 @@ public class Edge {
     public String data;
 
     @JsonProperty("weight")
-    public int weight;
+    public double weight = 1.0;
 
     public Edge() {
     }
 
-    public Edge(Vertex source, Vertex target, String data, int weight) {
+    public Edge(Vertex source, Vertex target, String data, double weight) {
         this.source = source;
         this.target = target;
         this.data = data;
