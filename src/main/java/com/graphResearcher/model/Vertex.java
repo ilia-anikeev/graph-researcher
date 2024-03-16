@@ -1,17 +1,28 @@
-package com.graphResearcher;
+package com.graphResearcher.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.Objects;
 
-public class VertexRequest {
+public class Vertex {
 
-    public VertexRequest() {
-    }
+    @JsonProperty("index")
+    public int index;
 
     @JsonProperty("data")
-    private String data;
+    public String data = "";
 
+    public Vertex() {
+    }
+
+    public Vertex(int index, String data) {
+        this.index = index;
+        this.data = data;
+    }
+
+    public int getIndex(){
+        return this.index;
+    }
 
     public String getData(){
         return this.data;
@@ -22,7 +33,7 @@ public class VertexRequest {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof VertexRequest vertexRequest)) {
+        if (!(o instanceof Vertex vertexRequest)) {
             return false;
         }
         return Objects.equals(this.data,vertexRequest.getData());
