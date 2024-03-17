@@ -1,7 +1,6 @@
 package com.graphResearcher.controller;
 
 import com.graphResearcher.model.GraphModel;
-//import com.graphResearcher.model.GraphRequest;
 import com.graphResearcher.service.SaveGraphService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,12 +10,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class SaveGraphController {
-
-    private final SaveGraphService saveGraphService;
-
-    public SaveGraphController() {
-        saveGraphService = new SaveGraphService();
-    }
 
     @GetMapping("/build")
     public ResponseEntity<String> buildGraph(@RequestBody GraphModel graph) {
