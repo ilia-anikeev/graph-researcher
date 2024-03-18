@@ -4,7 +4,23 @@ import com.graphResearcher.model.Edge;
 import com.graphResearcher.model.GraphModel;
 import com.graphResearcher.model.Vertex;
 import org.jgrapht.Graph;
-import org.jgrapht.graph.*;
+import org.jgrapht.graph.SimpleGraph;
+import org.jgrapht.graph.SimpleDirectedGraph;
+import org.jgrapht.graph.Multigraph;
+import org.jgrapht.graph.DefaultUndirectedGraph;
+import org.jgrapht.graph.SimpleWeightedGraph;
+import org.jgrapht.graph.DirectedMultigraph;
+import org.jgrapht.graph.SimpleDirectedWeightedGraph;
+import org.jgrapht.graph.DefaultDirectedGraph;
+import org.jgrapht.graph.Pseudograph;
+import org.jgrapht.graph.WeightedMultigraph;
+import org.jgrapht.graph.DefaultUndirectedWeightedGraph;
+import org.jgrapht.graph.DirectedPseudograph;
+import org.jgrapht.graph.DirectedWeightedMultigraph;
+import org.jgrapht.graph.DefaultDirectedWeightedGraph;
+import org.jgrapht.graph.WeightedPseudograph;
+import org.jgrapht.graph.DirectedWeightedPseudograph;
+import org.jgrapht.graph.DefaultWeightedEdge;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -20,7 +36,7 @@ public class SaveGraphService {
         if (graph.info.isDirected) {
             mask |= IS_DIRECTED;
         }
-        if (graph.info.isWeighted){
+        if (graph.info.isWeighted) {
             mask |= IS_WEIGHTED;
         }
         if (graph.info.hasMultipleEdges) {
@@ -51,12 +67,12 @@ public class SaveGraphService {
 
     public static Graph<Vertex, DefaultWeightedEdge> buildGraph(GraphModel graph) {
         Graph<Vertex, DefaultWeightedEdge> g = getEmptyGraph(graph);
-        for (Vertex v: graph.getVertices()){
+        for (Vertex v : graph.getVertices()) {
             g.addVertex(v);
         }
-        for (Edge e: graph.getEdges()){
+        for (Edge e : graph.getEdges()) {
             g.addEdge(e.getSourceVertex(), e.getTargetVertex());
-            if (graph.info.isWeighted){
+            if (graph.info.isWeighted) {
                 g.setEdgeWeight(e.getSourceVertex(), e.getTargetVertex(), e.weight);
             }
         }
