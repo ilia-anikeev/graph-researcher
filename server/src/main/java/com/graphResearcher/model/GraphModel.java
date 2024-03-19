@@ -1,7 +1,6 @@
 package com.graphResearcher.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.util.ArrayList;
 
 

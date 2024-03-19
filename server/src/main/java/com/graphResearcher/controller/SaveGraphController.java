@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class SaveGraphController {
-
     @GetMapping("/build")
     public ResponseEntity<String> buildGraph(@RequestBody GraphModel graph) {
         if (SaveGraphService.buildGraph(graph) != null) {
