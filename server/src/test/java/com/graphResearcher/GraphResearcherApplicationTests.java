@@ -109,5 +109,4 @@ class GraphResearcherApplicationTests {
         db.deleteGraph(333, 1);
         db.deleteUserGraphArchive(333);
     }
-
 }
