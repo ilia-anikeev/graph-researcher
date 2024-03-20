@@ -31,7 +31,7 @@ public class SaveGraphService {
     private static final int HAS_MULTIPLE_EDGES = 1 << 2;
     private static final int HAS_SELF_LOOPS = 1 << 3;
 
-    private static Graph<Vertex, DefaultWeightedEdge> getEmptyGraph(GraphModel graph) {
+    public static Graph<Vertex, DefaultWeightedEdge> getEmptyGraph(GraphModel graph) {
         int mask = EMPTY_MASK;
         if (graph.info.isDirected) {
             mask |= IS_DIRECTED;
