@@ -13,7 +13,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.graphResearcher.service.SaveGraphService.getEmptyGraph;
+import static com.graphResearcher.service.SaveGraphService.buildGraph;
+    
 
 @Service
 public class GraphResearchService {
@@ -23,7 +24,7 @@ public class GraphResearchService {
 
         GraphResearchInfo result= new GraphResearchInfo();
 
-        Graph<Vertex, DefaultWeightedEdge > graph = getEmptyGraph(graphModel);
+        Graph<Vertex, DefaultWeightedEdge > graph = buildGraph(graphModel);
         BiconnectivityInspector biconnectivityInspector = new BiconnectivityInspector<>(graph);
         result.connectedComponents= new ConnectivityInspector<Vertex,DefaultWeightedEdge>(graph).connectedSets();
         result.bridges=biconnectivityInspector.getBridges();
