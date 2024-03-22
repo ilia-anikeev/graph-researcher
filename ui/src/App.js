@@ -2,14 +2,13 @@ import React from "react";
 import VertexButton from "./components/VertexButton";
 
 function App() {
-  const [buttons, setVertex] = React.useState([]);
+  const [vertices, setVertex] = React.useState([]);
 
     let x = 1;
     function createVertex() {
-      setVertex(buttons.concat(
+      setVertex(vertices.concat(
         [{id:x}]
       ));
-      console.log(0);
       x = x + 1;
   }
 
@@ -18,8 +17,8 @@ function App() {
       <div className='title'>
         <p>GraphResearcher!!!</p>
       </div>
-      <button className='button' onClick={() => createVertex()}> click on me</button>
-      <VertexButton buttonsInput={buttons}/>
+      <button className='button' onClick={() => createVertex()}> click to create vertex</button>
+      <VertexButton vertices={vertices}/>
     </div>
   );
 }

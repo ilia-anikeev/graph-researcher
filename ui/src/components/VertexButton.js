@@ -7,18 +7,15 @@ import Vertex from "./Vertex";
 function VertexButton(props){
     return (
         <div>
-            {props.buttonsInput ? props.buttonsInput.map(button => {
-                    // return <button className='vertexButton' key={button.id}>
-                    //         click on me!!!
-                    //        </button>
-                    return <Vertex key={button.id}/>
-                }) : null}
+            {props.vertices.map(vertex => {
+                    return <Vertex key={vertex.id}/>
+                })}
         </div>
     )
 }
 
 VertexButton.propTypes = {
-    buttonsInput: PropTypes.array
+    vertices: PropTypes.array
 }
 
 export default VertexButton
