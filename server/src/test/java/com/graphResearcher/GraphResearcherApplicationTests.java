@@ -1,6 +1,6 @@
 package com.graphResearcher;
 
-import com.graphResearcher.dao.DataBaseManager;
+import com.graphResearcher.repository.DataBaseManager;
 import com.graphResearcher.model.*;
 import org.junit.jupiter.api.Test;
 //import org.springframework.boot.test.context.SpringBootTest;
@@ -25,7 +25,6 @@ class GraphResearcherApplicationTests {
         Edge e2 = new Edge(v2, v3, 1.0, "abaaa");
         Edge e3 = new Edge(v3, v1, 1.0, "abasdf");
         Edge e4 = new Edge(v1, v4, 1.0, "abou2");
-
 
 
         GraphResearchInfo researchInfo = new GraphResearchInfo();

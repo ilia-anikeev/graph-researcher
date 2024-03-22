@@ -1,4 +1,4 @@
-package com.graphResearcher.dao;
+package com.graphResearcher.repository;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.graphResearcher.model.*;
