@@ -26,7 +26,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class SaveGraphService {
     private static final int EMPTY_MASK = 0;
-    private static final int IS_DIRECTED = 1 << 0;
+    private static final int IS_DIRECTED = 1;
     private static final int IS_WEIGHTED = 1 << 1;
     private static final int HAS_MULTIPLE_EDGES = 1 << 2;
     private static final int HAS_SELF_LOOPS = 1 << 3;
@@ -71,9 +71,9 @@ public class SaveGraphService {
             g.addVertex(v);
         }
         for (Edge e : graph.getEdges()) {
-            g.addEdge(e.getSourceVertex(), e.getTargetVertex());
+            g.addEdge(e.getSource(), e.getTarget());
             if (graph.info.isWeighted) {
-                g.setEdgeWeight(e.getSourceVertex(), e.getTargetVertex(), e.weight);
+                g.setEdgeWeight(e.getSource(), e.getTarget(), e.getWeight());
             }
         }
         return g;

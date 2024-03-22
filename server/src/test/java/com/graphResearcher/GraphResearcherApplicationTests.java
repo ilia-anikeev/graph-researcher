@@ -3,12 +3,10 @@ package com.graphResearcher;
 import com.graphResearcher.dao.DataBaseManager;
 import com.graphResearcher.model.*;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
+//import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 //@SpringBootTest
@@ -33,30 +31,31 @@ class GraphResearcherApplicationTests {
         vertices.add(v3);
 
         ArrayList<Edge> edges = new ArrayList<>();
-        edges.add(new Edge(v1, v2, "aloha"));
-        edges.add(new Edge(v2, v3, "buenos noches"));
-        edges.add(new Edge(v3, v1, "guten morgen"));
+        edges.add(new Edge(v1, v2, 1.0, "aloha"));
+        edges.add(new Edge(v2, v3, 1.0, "buenos noches"));
+        edges.add(new Edge(v3, v1, 1.0, "guten morgen"));
 
-        GraphInfo info = new GraphInfo(false, false, GraphType.SIMPLE_GRAPH);
+        GraphInfo info = new GraphInfo(false, false, false, false);
 
         db.saveGraph(1, new GraphModel(vertices, edges, info));
 
         GraphModel g = db.getGraph(1, 1);
 
-        for (int i = 0; i < g.vertices.size(); ++i) {
-            assertEquals(vertices.get(i).index, g.vertices.get(i).index);
-            assertEquals(vertices.get(i).data, g.vertices.get(i).data);
+        for (int i = 0; i < g.getVertices().size(); ++i) {
+            assertEquals(vertices.get(i).getIndex(), g.getVertices().get(i).getIndex());
+            assertEquals(vertices.get(i).getData(), g.getVertices().get(i).getData());
         }
 
-        for (int i = 0; i < g.edges.size(); ++i) {
-            assertEquals(edges.get(i).source.index, g.edges.get(i).source.index);
-            assertEquals(edges.get(i).target.index, g.edges.get(i).target.index);
-            assertEquals(edges.get(i).data, g.edges.get(i).data);
+        for (int i = 0; i < g.getEdges().size(); ++i) {
+            assertEquals(edges.get(i).getSource().getIndex(), g.getEdges().get(i).getSource().getIndex());
+            assertEquals(edges.get(i).getTarget().getIndex(), g.getEdges().get(i).getTarget().getIndex());
+            assertEquals(edges.get(i).getData(), g.getEdges().get(i).getData());
         }
 
         assertEquals(info.isDirected, g.info.isDirected);
         assertEquals(info.isWeighted, g.info.isWeighted);
-        assertEquals(info.type, g.info.type);
+        assertEquals(info.hasSelfLoops, g.info.hasSelfLoops);
+        assertEquals(info.hasMultipleEdges, g.info.hasMultipleEdges);
 
         db.deleteGraph(1, 1);
         db.deleteUserGraphArchive(1);
@@ -79,32 +78,33 @@ class GraphResearcherApplicationTests {
         vertices.add(v4);
 
         ArrayList<Edge> edges = new ArrayList<>();
-        edges.add(new Edge(v1, v1, "petlya"));
-        edges.add(new Edge(v1, v2, "pupupu"));
-        edges.add(new Edge(v2, v3, "pupupu1"));
-        edges.add(new Edge(v4, v3, "pupupu2"));
-        edges.add(new Edge(v4, v3, "multipupupu2"));
+        edges.add(new Edge(v1, v1, 1.0, "petlya"));
+        edges.add(new Edge(v1, v2, 1.0, "pupupu"));
+        edges.add(new Edge(v2, v3, 1.0, "pupupu1"));
+        edges.add(new Edge(v4, v3, 1.0, "pupupu2"));
+        edges.add(new Edge(v4, v3, 1.0, "multipupupu2"));
 
-        GraphInfo info = new GraphInfo(true, true, GraphType.PSEUDO_GRAPH);
+        GraphInfo info = new GraphInfo(true, true, true, false);
 
         db.saveGraph(333, new GraphModel(vertices, edges, info));
 
         GraphModel g = db.getGraph(333, 1);
 
-        for (int i = 0; i < g.vertices.size(); ++i) {
-            assertEquals(vertices.get(i).index, g.vertices.get(i).index);
-            assertEquals(vertices.get(i).data, g.vertices.get(i).data);
+        for (int i = 0; i < g.getVertices().size(); ++i) {
+            assertEquals(vertices.get(i).getIndex(), g.getVertices().get(i).getIndex());
+            assertEquals(vertices.get(i).getData(), g.getVertices().get(i).getData());
         }
 
-        for (int i = 0; i < g.edges.size(); ++i) {
-            assertEquals(edges.get(i).source.index, g.edges.get(i).source.index);
-            assertEquals(edges.get(i).target.index, g.edges.get(i).target.index);
-            assertEquals(edges.get(i).data, g.edges.get(i).data);
+        for (int i = 0; i < g.getEdges().size(); ++i) {
+            assertEquals(edges.get(i).getSource().getIndex(), g.getEdges().get(i).getSource().getIndex());
+            assertEquals(edges.get(i).getTarget().getIndex(), g.getEdges().get(i).getTarget().getIndex());
+            assertEquals(edges.get(i).getData(), g.getEdges().get(i).getData());
         }
 
         assertEquals(info.isDirected, g.info.isDirected);
         assertEquals(info.isWeighted, g.info.isWeighted);
-        assertEquals(info.type, g.info.type);
+        assertEquals(info.hasSelfLoops, g.info.hasSelfLoops);
+        assertEquals(info.hasMultipleEdges, g.info.hasMultipleEdges);
 
         db.deleteGraph(333, 1);
         db.deleteUserGraphArchive(333);
