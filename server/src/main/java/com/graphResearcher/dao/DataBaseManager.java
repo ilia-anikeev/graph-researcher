@@ -1,11 +1,20 @@
 package com.graphResearcher.dao;
 
-import java.sql.*;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.graphResearcher.model.*;
+
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.ResultSet;
+import java.sql.Connection;
+import java.sql.DriverManager;
+
 import java.util.ArrayList;
 import java.util.TreeMap;
 
-
-import com.graphResearcher.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,7 +38,7 @@ public class DataBaseManager {
     }
 
     public void saveGraph(int userID, GraphModel graph) {
-        String tableName = "user" + userID + "_graph_archive";
+        String tableName = "user" + userID + "_graph_metadata";
         String sql = "INSERT INTO " + tableName + "(is_directed, is_weighted, has_self_loops, has_multiple_edges)" +
                 "VALUES(" + graph.info.isDirected + ", " + graph.info.isWeighted + ", "
                 + graph.info.hasSelfLoops + ", " + graph.info.hasMultipleEdges + ") " +
@@ -94,88 +103,64 @@ public class DataBaseManager {
         log.info("Edges have been saved");
     }
 
-    private void deleteVertices(int userID, int graphID) {
-        String tableName = "user" + userID + "_graph" + graphID + "_vertices";
-        String sql = "DROP TABLE " + tableName;
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            preparedStatement.execute();
+    public void saveResearchInfo(int userID, int graphID) {
+        //TODO: SELECT ....
+        String tableName = "user" + userID + "_graph_research_info";
+        String sql = "INSERT INTO " + tableName + "()";
+//        try {
+//            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+//            Re
+//        }
+    }
+
+    public GraphResearchInfo getResearchInfo(int userID, int graphID) {
+        String tableName = "user" + userID + "_graph_research_info";
+        String sql = "SELECT * FROM " + tableName + " WHERE graph_id = " + graphID;
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            ResultSet rs = preparedStatement.executeQuery();
+            rs.next();
+
+            ObjectMapper mapper = new ObjectMapper();
+
+            GraphResearchInfo researchInfo = new GraphResearchInfo();
+            researchInfo.connectivity = rs.getBoolean("connectivity");
+            researchInfo.bridges = ParsingUtil.jsonToListEdges(mapper.readTree(rs.getString("bridges")));
+
+            //TODO: parse other info and put in researchInfo var
+
+            log.info("Graph research info have been received");
+            return researchInfo;
         } catch (SQLException e) {
-            log.error("Vertices haven't been deleted");
+            log.error("Graph research info haven't been received");
+            throw new RuntimeException(e);
+        } catch (JsonProcessingException e) {
+            log.error("Json parse error");
             throw new RuntimeException(e);
         }
-        log.info("Vertices have been deleted");
     }
 
-    private void deleteEdges(int userID, int graphID) {
-        String tableName = "user" + userID + "_graph" + graphID + "_edges";
-        String sql = "DROP TABLE " + tableName;
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            preparedStatement.execute();
-        } catch (SQLException e) {
-            log.error("Edges haven't been deleted");
-            throw new RuntimeException(e);
-        }
-        log.info("Edges have been deleted");
-    }
-
-    public void deleteGraph(int userID, int graphID) {
-        String tableName = "user" + userID + "_graph_archive";
-        String sql = "DELETE FROM " + tableName + " WHERE graph_id=" + graphID;
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            preparedStatement.execute();
-        } catch (SQLException e) {
-            log.error("Graph haven't been deleted");
-            throw new RuntimeException(e);
-        }
-        log.info("Graph have been deleted");
-        deleteVertices(userID, graphID);
-        deleteEdges(userID, graphID);
-    }
-
-    public void createUserGraphArchive(int userID) {
-        String tableName = "user" + userID + "_graph_archive";
-        String sql = "CREATE TABLE " + tableName + "(graph_id SERIAL PRIMARY KEY, is_directed BOOLEAN, is_weighted BOOLEAN, has_self_loops BOOLEAN, has_multiple_edges BOOLEAN)";
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            preparedStatement.execute();
-        } catch (SQLException e) {
-            log.error("Archive haven't been created");
-            throw new RuntimeException(e);
-        }
-        log.info("Archive have been created");
-    }
-
-    public void deleteUserGraphArchive(int userID) {
-        String tableName = "user" + userID + "_graph_archive";
-        String sql = "DROP TABLE " + tableName;
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            preparedStatement.execute();
-        } catch (SQLException e) {
-            log.error("Archive haven't been deleted");
-            throw new RuntimeException(e);
-        }
-        log.info("Archive have been deleted");
-    }
-
-    public GraphModel getGraph(int userID, int graphID) {
-        var vertices = getVertices(userID, graphID);
-        var edges = getEdges(userID, graphID, vertices);
-        return new GraphModel(vertices, edges, getGraphInfo(userID, graphID));
-    }
-
-    private GraphInfo getGraphInfo(int userID, int graphID) {
-        String tableName = "user" + userID + "_graph_archive";
+    private GraphInfo getGraphMetadata(int userID, int graphID) {
+        String tableName = "user" + userID + "_graph_metadata";
         String sql = "SELECT is_directed, is_weighted, has_self_loops, has_multiple_edges FROM " + tableName + " WHERE graph_id=" + graphID;
         try {
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
             ResultSet rs = preparedStatement.executeQuery();
             rs.next();
-            log.info("GraphInfo have been received");
+            log.info("Graph metadata have been received");
             return new GraphInfo(rs.getBoolean("is_directed"), rs.getBoolean("is_weighted"), rs.getBoolean("has_self_loops"), rs.getBoolean("has_multiple_edges"));
         } catch (SQLException e) {
-            log.error("GraphInfo haven't been received");
+            log.error("Graph metadata haven't been received");
             throw new RuntimeException(e);
         }
     }
+
+    public GraphModel getGraph(int userID, int graphID) {
+        var vertices = getVertices(userID, graphID);
+        var edges = getEdges(userID, graphID, vertices);
+        return new GraphModel(vertices, edges, getGraphMetadata(userID, graphID));
+    }
+
 
     private ArrayList<Vertex> getVertices(int userID, int graphID) {
         ArrayList<Vertex> vertices = new ArrayList<>();
@@ -215,5 +200,119 @@ public class DataBaseManager {
         }
         log.info("Edges have been received");
         return edges;
+    }
+
+    public void createUser(int userID) {
+        createUserGraphMetadataTable(userID);
+        createUserGraphResearchInfoTable(userID);
+    }
+
+    private void createUserGraphMetadataTable(int userID) {
+        String tableName = "user" + userID + "_graph_metadata";
+        String sql = "CREATE TABLE " + tableName + "(graph_id SERIAL PRIMARY KEY, is_directed BOOLEAN, is_weighted BOOLEAN, has_self_loops BOOLEAN, has_multiple_edges BOOLEAN)";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.execute();
+        } catch (SQLException e) {
+            log.error("Metadata table haven't been created");
+            throw new RuntimeException(e);
+        }
+        log.info("Metadata table have been created");
+    }
+
+    private void createUserGraphResearchInfoTable(int userID) {
+        String tableName = "user" + userID + "_graph_research_info";
+        String sql = "CREATE TABLE " + tableName + "(id SERIAL PRIMARY KEY, " +
+                "graph_id INTEGER, connectivity BOOLEAN, bridges TEXT, " +
+                "articulation_points TEXT, connected_components TEXT, blocks TEXT)";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.execute();
+        } catch (SQLException e) {
+            log.error("Metadata table haven't been created");
+            throw new RuntimeException(e);
+        }
+        log.info("Metadata table have been created");
+    }
+
+    public void deleteUser(int userID) {
+        deleteUserGraphMetadataTable(userID);
+        deleteUserGraphResearchInfoTable(userID);
+    }
+
+    public void deleteUserGraphResearchInfoTable(int userID) {
+        String tableName = "user" + userID + "_graph_research_info";
+        String sql = "DROP TABLE " + tableName;
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.execute();
+        } catch (SQLException e) {
+            log.error("Research info table haven't been deleted");
+            throw new RuntimeException(e);
+        }
+        log.info("Research info table have been deleted");
+    }
+
+    public void deleteUserGraphMetadataTable(int userID) {
+        deleteAllUserGraphs(userID);
+        String tableName = "user" + userID + "_graph_metadata";
+        String sql = "DROP TABLE " + tableName;
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.execute();
+        } catch (SQLException e) {
+            log.error("Metadata table haven't been deleted");
+            throw new RuntimeException(e);
+        }
+        log.info("Metadata table have been deleted");
+    }
+
+    public void deleteAllUserGraphs(int userID) {
+        String tableName = "user" + userID + "_graph_metadata";
+        String sql = "SELECT graph_id FROM " + tableName;
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            ResultSet rs = preparedStatement.executeQuery();
+            while (rs.next()) {
+                int graphID = rs.getInt("graph_id");
+                deleteGraph(userID, graphID);
+            }
+        } catch (SQLException e) {
+            log.error("Research info table haven't been deleted");
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void deleteVertices(int userID, int graphID) {
+        String tableName = "user" + userID + "_graph" + graphID + "_vertices";
+        String sql = "DROP TABLE " + tableName;
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.execute();
+        } catch (SQLException e) {
+            log.error("Vertices haven't been deleted");
+            throw new RuntimeException(e);
+        }
+        log.info("Vertices have been deleted");
+    }
+
+    private void deleteEdges(int userID, int graphID) {
+        String tableName = "user" + userID + "_graph" + graphID + "_edges";
+        String sql = "DROP TABLE " + tableName;
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.execute();
+        } catch (SQLException e) {
+            log.error("Edges haven't been deleted");
+            throw new RuntimeException(e);
+        }
+        log.info("Edges have been deleted");
+    }
+
+    public void deleteGraph(int userID, int graphID) {
+        String tableName = "user" + userID + "_graph_metadata";
+        String sql = "DELETE FROM " + tableName + " WHERE graph_id=" + graphID;
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.execute();
+        } catch (SQLException e) {
+            log.error("Graph haven't been deleted");
+            throw new RuntimeException(e);
+        }
+        log.info("Graph have been deleted");
+        deleteVertices(userID, graphID);
+        deleteEdges(userID, graphID);
     }
 }

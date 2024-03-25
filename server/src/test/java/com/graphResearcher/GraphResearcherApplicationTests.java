@@ -1,11 +1,17 @@
 package com.graphResearcher;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.graphResearcher.dao.DataBaseManager;
+import com.graphResearcher.dao.ParsingUtil;
 import com.graphResearcher.model.*;
 import org.junit.jupiter.api.Test;
 //import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -14,13 +20,27 @@ class GraphResearcherApplicationTests {
 
     @Test
     void contextLoads() {
+        var v1 = new Vertex(1, "");
+        var e = new Edge(v1, v1, 1.0, "a");
+
+        ArrayList<Vertex> st = new ArrayList<>();
+        st.add(v1);
+        st.add(v1);
+        var x = ParsingUtil.verticesCollectionToJson(st);
+
+        var s = ParsingUtil.jsonToListVertices(x);
+        for (int i = 0; i < s.size(); ++i) {
+            assertEquals(s.get(i), st.get(i));
+        }
+        System.err.println(s);
     }
 
     @Test
     void testDAO1() {
         DataBaseManager db = new DataBaseManager();
 
-        db.createUserGraphArchive(1);
+        db.createUser(1);
+
 
         ArrayList<Vertex> vertices = new ArrayList<>();
         Vertex v1 = new Vertex(1, "hi");
@@ -57,15 +77,14 @@ class GraphResearcherApplicationTests {
         assertEquals(info.hasSelfLoops, g.info.hasSelfLoops);
         assertEquals(info.hasMultipleEdges, g.info.hasMultipleEdges);
 
-        db.deleteGraph(1, 1);
-        db.deleteUserGraphArchive(1);
+        db.deleteUser(1);
     }
 
     @Test
     void testDAO2() {
         DataBaseManager db = new DataBaseManager();
 
-        db.createUserGraphArchive(333);
+        db.createUser(333);
 
         ArrayList<Vertex> vertices = new ArrayList<>();
         Vertex v1 = new Vertex(1, "pu1");
@@ -106,7 +125,6 @@ class GraphResearcherApplicationTests {
         assertEquals(info.hasSelfLoops, g.info.hasSelfLoops);
         assertEquals(info.hasMultipleEdges, g.info.hasMultipleEdges);
 
-        db.deleteGraph(333, 1);
-        db.deleteUserGraphArchive(333);
+        db.deleteUser(333);
     }
 }
