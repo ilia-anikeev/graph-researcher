@@ -18,8 +18,10 @@ import com.graphResearcher.util.ParsingUtil;
 import com.graphResearcher.util.PropertiesUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Repository;
 
 
+@Repository
 public class DataBaseManager {
     private static final Logger log = LoggerFactory.getLogger(DataBaseManager.class);
 
@@ -60,17 +62,18 @@ public class DataBaseManager {
             throw new RuntimeException(e);
         }
     }
-    public void saveGraph(int userID, GraphModel graph) {
+
+    public int saveGraph(int userID, GraphModel graph) {
         String tableName = "user" + userID + "_graph_metadata";
         String sql = "INSERT INTO " + tableName + "(is_directed, is_weighted, has_self_loops, has_multiple_edges)" +
-                "VALUES(" + graph.info.isDirected + ", " + graph.info.isWeighted + ", "
-                + graph.info.hasSelfLoops + ", " + graph.info.hasMultipleEdges + ") " +
+                "VALUES(" + graph.metadata.isDirected + ", " + graph.metadata.isWeighted + ", "
+                + graph.metadata.hasSelfLoops + ", " + graph.metadata.hasMultipleEdges + ") " +
                 "RETURNING graph_id";
-
+        int graphID;
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             ResultSet rs = preparedStatement.executeQuery();
             rs.next();
-            int graphID = rs.getInt("graph_id");
+            graphID = rs.getInt("graph_id");
             saveVertices(userID, graphID, graph.getVertices());
             saveEdges(userID, graphID, graph.getEdges());
         } catch (SQLException e) {
@@ -78,6 +81,7 @@ public class DataBaseManager {
             throw new RuntimeException(e);
         }
         log.info("Graph has been saved");
+        return graphID;
     }
 
     private void saveVertices(int userID, int graphID, List<Vertex> vertices) {
@@ -224,7 +228,7 @@ public class DataBaseManager {
         log.info("Metadata table have been created");
     }
 
-    public void createUserGraphResearchInfoTable(int userID) {
+    private void createUserGraphResearchInfoTable(int userID) {
         String tableName = "user" + userID + "_graph_research_info";
         String sql = "CREATE TABLE " + tableName + "(id SERIAL PRIMARY KEY, " +
                 "graph_id INTEGER, connectivity BOOLEAN, bridges TEXT, " +
@@ -243,7 +247,7 @@ public class DataBaseManager {
         deleteUserGraphResearchInfoTable(userID);
     }
 
-    public void deleteUserGraphResearchInfoTable(int userID) {
+    private void deleteUserGraphResearchInfoTable(int userID) {
         String tableName = "user" + userID + "_graph_research_info";
         String sql = "DROP TABLE " + tableName;
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
@@ -255,7 +259,7 @@ public class DataBaseManager {
         log.info("Research info table have been deleted");
     }
 
-    public void deleteUserGraphMetadataTable(int userID) {
+    private void deleteUserGraphMetadataTable(int userID) {
         deleteAllUserGraphs(userID);
         String tableName = "user" + userID + "_graph_metadata";
         String sql = "DROP TABLE " + tableName;
@@ -268,7 +272,7 @@ public class DataBaseManager {
         log.info("Metadata table have been deleted");
     }
 
-    public void deleteAllUserGraphs(int userID) {
+    private void deleteAllUserGraphs(int userID) {
         String tableName = "user" + userID + "_graph_metadata";
         String sql = "SELECT graph_id FROM " + tableName;
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {

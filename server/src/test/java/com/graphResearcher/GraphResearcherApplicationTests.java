@@ -25,10 +25,6 @@ class GraphResearcherApplicationTests {
         Edge e2 = new Edge(v2, v3, 1.0, "abaaa");
         Edge e3 = new Edge(v3, v1, 1.0, "abasdf");
         Edge e4 = new Edge(v1, v4, 1.0, "abou2");
-        List<Edge> edges = List.of(e1, e2, e3, e4);
-
-        GraphMetadata info = new GraphMetadata(false, false, false, false);
-        GraphModel model = new GraphModel(vertices, edges, info);
 
 
 
@@ -37,7 +33,6 @@ class GraphResearcherApplicationTests {
         researchInfo.bridges = List.of(e4);
         researchInfo.articulationPoints = List.of(v1);
         researchInfo.connectedComponents = List.of(vertices);
-        researchInfo.blocks = List.of(model);
 
         DataBaseManager db = new DataBaseManager();
         db.createUser(1);
@@ -59,24 +54,6 @@ class GraphResearcherApplicationTests {
                 assertEquals(researchInfo.connectedComponents.get(i).get(j), researchInfoDB.connectedComponents.get(i).get(j));
             }
         }
-        assertEquals(researchInfo.blocks.getFirst().getEdges().size(), researchInfoDB.blocks.getFirst().getEdges().size());
-        for (int i = 0; i < researchInfoDB.blocks.size(); ++i) {
-            GraphModel g1 = researchInfo.blocks.get(i);
-            GraphModel g2 = researchInfoDB.blocks.get(i);
-
-            for (int j = 0; j < g1.getVertices().size(); ++j) {
-                assertEquals(g1.getVertices().get(j), g2.getVertices().get(j));
-            }
-
-            for (int j = 0; j < g1.getEdges().size(); ++j) {
-                assertEquals(g1.getEdges().get(j), g2.getEdges().get(j));
-            }
-
-            assertEquals(g1.getInfo().isDirected, g2.getInfo().isDirected);
-            assertEquals(g1.getInfo().isWeighted, g2.getInfo().isWeighted);
-            assertEquals(g1.getInfo().hasSelfLoops, g2.getInfo().hasSelfLoops);
-            assertEquals(g1.getInfo().hasMultipleEdges, g2.getInfo().hasMultipleEdges);
-        }
         db.deleteUser(1);
     }
 
@@ -87,7 +64,6 @@ class GraphResearcherApplicationTests {
         researchInfo.bridges = null;
         researchInfo.articulationPoints = null;
         researchInfo.connectedComponents = null;
-        researchInfo.blocks = null;
 
         DataBaseManager db = new DataBaseManager();
         db.createUser(1);
@@ -98,7 +74,6 @@ class GraphResearcherApplicationTests {
         assertEquals(researchInfo.bridges, researchInfoDB.bridges);
         assertEquals(researchInfo.articulationPoints, researchInfoDB.articulationPoints);
         assertEquals(researchInfo.connectedComponents, researchInfoDB.connectedComponents);
-        assertEquals(researchInfo.blocks, researchInfoDB.blocks);
         db.deleteUser(1);
     }
 
@@ -140,10 +115,10 @@ class GraphResearcherApplicationTests {
             assertEquals(edges.get(i).getData(), g.getEdges().get(i).getData());
         }
 
-        assertEquals(info.isDirected, g.info.isDirected);
-        assertEquals(info.isWeighted, g.info.isWeighted);
-        assertEquals(info.hasSelfLoops, g.info.hasSelfLoops);
-        assertEquals(info.hasMultipleEdges, g.info.hasMultipleEdges);
+        assertEquals(info.isDirected, g.metadata.isDirected);
+        assertEquals(info.isWeighted, g.metadata.isWeighted);
+        assertEquals(info.hasSelfLoops, g.metadata.hasSelfLoops);
+        assertEquals(info.hasMultipleEdges, g.metadata.hasMultipleEdges);
 
         db.deleteUser(1);
     }
@@ -188,10 +163,10 @@ class GraphResearcherApplicationTests {
             assertEquals(edges.get(i).getData(), g.getEdges().get(i).getData());
         }
 
-        assertEquals(info.isDirected, g.info.isDirected);
-        assertEquals(info.isWeighted, g.info.isWeighted);
-        assertEquals(info.hasSelfLoops, g.info.hasSelfLoops);
-        assertEquals(info.hasMultipleEdges, g.info.hasMultipleEdges);
+        assertEquals(info.isDirected, g.metadata.isDirected);
+        assertEquals(info.isWeighted, g.metadata.isWeighted);
+        assertEquals(info.hasSelfLoops, g.metadata.hasSelfLoops);
+        assertEquals(info.hasMultipleEdges, g.metadata.hasMultipleEdges);
 
         db.deleteUser(333);
     }

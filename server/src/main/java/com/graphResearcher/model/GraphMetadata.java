@@ -1,22 +1,13 @@
 package com.graphResearcher.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 public class GraphMetadata {
-
-    @JsonProperty("isDirected")
     public final boolean isDirected;
-
-    @JsonProperty("isWeighted")
     public final boolean isWeighted;
-
-    @JsonProperty("hasSelfLoops")
     public final boolean hasSelfLoops;
-
-    @JsonProperty("hasMultipleEdges")
     public final boolean hasMultipleEdges;
 
 
@@ -33,7 +24,6 @@ public class GraphMetadata {
         hasSelfLoops = json.get("hasSelfLoops").asBoolean();
         hasMultipleEdges = json.get("hasMultipleEdges").asBoolean();
     }
-
     public JsonNode toJson() {
         ObjectMapper objectMapper = new ObjectMapper();
         ObjectNode json = objectMapper.createObjectNode();

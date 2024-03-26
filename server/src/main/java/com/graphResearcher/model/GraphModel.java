@@ -1,6 +1,5 @@
 package com.graphResearcher.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -14,19 +13,16 @@ import java.util.List;
 @Getter
 public class GraphModel {
 
-    @JsonProperty("vertices")
-    private List<Vertex> vertices;
+    private final List<Vertex> vertices;
 
-    @JsonProperty("edges")
-    private List<Edge> edges;
+    private final List<Edge> edges;
 
-    @JsonProperty("info")
-    public final GraphMetadata info;
+    public final GraphMetadata metadata;
 
-    public GraphModel(List<Vertex> vertices, List<Edge> edges, GraphMetadata info) {
+    public GraphModel(List<Vertex> vertices, List<Edge> edges, GraphMetadata metadata) {
         this.vertices = vertices;
         this.edges = edges;
-        this.info = info;
+        this.metadata = metadata;
     }
 
     public GraphModel(JsonNode json) {
@@ -45,7 +41,7 @@ public class GraphModel {
 
         edges = edgesList;
 
-        info = new GraphMetadata(json.get("info"));
+        metadata = new GraphMetadata(json.get("info"));
     }
 
     public JsonNode toJson() {
@@ -54,7 +50,16 @@ public class GraphModel {
 
         json.set("vertices", ParsingUtil.verticesListToJsonArray(vertices));
         json.set("edges", ParsingUtil.edgesListToJsonArray(edges));
-        json.set("info", info.toJson());
+        json.set("info", metadata.toJson());
         return json;
     }
 }
+
+/*
+{
+    "vertices": [{"index": 1, "data": "aloha"}],
+    "edges": [],
+    "info": {}
+}
+
+ */

@@ -1,7 +1,5 @@
 package com.graphResearcher.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -9,23 +7,16 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.util.Objects;
-
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
 public class Edge {
-
-    @JsonProperty("source")
     private Vertex source;
 
-    @JsonProperty("target")
     private Vertex target;
 
-    @JsonProperty("weight")
     private double weight;
 
-    @JsonProperty("data")
     private String data;
 
     public Edge(JsonNode json) {

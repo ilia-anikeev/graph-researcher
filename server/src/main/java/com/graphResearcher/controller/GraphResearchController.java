@@ -1,50 +1,58 @@
 package com.graphResearcher.controller;
 
-import com.graphResearcher.dao.DataBaseManager;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.graphResearcher.model.*;
 import com.graphResearcher.service.GraphResearchService;
-import org.springframework.web.bind.annotation.GetMapping;
+import com.graphResearcher.service.SaveService;
+import jakarta.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
+import java.io.IOException;
+import java.util.stream.Collectors;
 
 @RestController
 public class GraphResearchController {
-    private final GraphResearchService service;
-    private final DataBaseManager db = new DataBaseManager();
+    private final GraphResearchService researchService;
+    private final SaveService saveService;
+    private static final Logger log = LoggerFactory.getLogger(GraphResearchController.class);
 
-    @GetMapping("/research")
-    public String research(String Json) {
-        // TODO: Parse Json to GraphModel(?)
-        Vertex v1 = new Vertex(1, "a");
-        Vertex v2 = new Vertex(2, "b");
-        Vertex v3 = new Vertex(3, "c");
-        Vertex v4 = new Vertex(4, "d");
-        List<Vertex> vertices = List.of(v1, v2, v3, v4);
+    @PostMapping("/research")
+    public ResponseEntity<String> research(HttpServletRequest request) {
+        try {
+            String jsonString = request.getReader().lines().collect(Collectors.joining());
 
-        Edge e1 = new Edge(v1, v2, 1.0, "aba");
-        Edge e2 = new Edge(v2, v3, 1.0, "abaaa");
-        Edge e3 = new Edge(v3, v1, 1.0, "abasdf");
-        Edge e4 = new Edge(v1, v4, 1.0, "abou2");
-        List<Edge> edges = List.of(e1, e2, e3, e4);
+            ObjectMapper mapper = new ObjectMapper();
 
-        GraphMetadata info = new GraphMetadata(false, false, false, false);
-        GraphModel graphModel = new GraphModel(vertices, edges, info);
+            JsonNode json = mapper.readTree(jsonString);
 
+            GraphModel graphModel = new GraphModel(json.get("graph"));
 
-        GraphResearchInfo researchResult = service.softResearch(graphModel);
+            int userID = json.get("userID").asInt();
+            int graphID = saveService.saveGraph(userID, graphModel);
 
-//        db.deleteUser(1);
-//        db.createUser(1);
-//        db.saveResearchInfo(1, 1, researchResult);
-        // TODO: Convert researchResult to Json(?)
+            GraphResearchInfo researchResult = researchService.softResearch(graphModel);
 
+            saveService.saveResearchResult(userID, graphID, researchResult);
+            log.info("Research was successfully completed");
+            return ResponseEntity.ok("Граф жёска исследован!\n" + researchResult.toJson());
+        } catch (JsonProcessingException e) {
+            log.error("Json parsing error in saveGraph");
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            log.error("Request parsing error in saveGraph");
+            throw new RuntimeException(e);
+        }
 
-//        return db.getResearchInfo(1, 1).toJson().toString();
-        return "";
     }
 
-    GraphResearchController(GraphResearchService service) {
-        this.service = service;
+    GraphResearchController(GraphResearchService researchService, SaveService saveService) {
+        this.researchService = researchService;
+        this.saveService = saveService;
     }
 }
