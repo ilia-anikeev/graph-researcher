@@ -30,9 +30,6 @@ public class ParseResearchInfo {
         if (info.connectedComponents != null) {
             notNullFields.add("connected_components");
         }
-        if (info.blocks != null) {
-            notNullFields.add("blocks");
-        }
         StringBuilder fields = new StringBuilder();
         for (int i = 0; i < notNullFields.size(); ++i) {
             if (i == 0) {
@@ -66,11 +63,6 @@ public class ParseResearchInfo {
         if (info.connectedComponents != null) {
             answer.append(", '");
             answer.append(ParsingUtil.vertices2DListToJson(info.connectedComponents));
-            answer.append("'");
-        }
-        if (info.blocks != null) {
-            answer.append(", '");
-            answer.append(ParsingUtil.graphsListToJson(info.blocks));
             answer.append("'");
         }
         return answer.toString();

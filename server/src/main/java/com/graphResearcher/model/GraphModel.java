@@ -21,9 +21,9 @@ public class GraphModel {
     private List<Edge> edges;
 
     @JsonProperty("info")
-    public final GraphInfo info;
+    public final GraphMetadata info;
 
-    public GraphModel(List<Vertex> vertices, List<Edge> edges, GraphInfo info) {
+    public GraphModel(List<Vertex> vertices, List<Edge> edges, GraphMetadata info) {
         this.vertices = vertices;
         this.edges = edges;
         this.info = info;
@@ -45,7 +45,7 @@ public class GraphModel {
 
         edges = edgesList;
 
-        info = new GraphInfo(json.get("info"));
+        info = new GraphMetadata(json.get("info"));
     }
 
     public JsonNode toJson() {

@@ -20,7 +20,7 @@ import org.jgrapht.graph.DirectedWeightedMultigraph;
 import org.jgrapht.graph.DefaultDirectedWeightedGraph;
 import org.jgrapht.graph.WeightedPseudograph;
 import org.jgrapht.graph.DirectedWeightedPseudograph;
-import org.jgrapht.graph.DefaultWeightedEdge;
+import com.graphResearcher.model.WeightedEdge;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -31,7 +31,7 @@ public class SaveGraphService {
     private static final int HAS_MULTIPLE_EDGES = 1 << 2;
     private static final int HAS_SELF_LOOPS = 1 << 3;
 
-    private static Graph<Vertex, DefaultWeightedEdge> getEmptyGraph(GraphModel graph) {
+    private static Graph<Vertex, WeightedEdge> getEmptyGraph(GraphModel graph) {
         int mask = EMPTY_MASK;
         if (graph.info.isDirected) {
             mask |= IS_DIRECTED;
@@ -46,27 +46,27 @@ public class SaveGraphService {
             mask |= HAS_SELF_LOOPS;
         }
         return switch (mask) {
-            case EMPTY_MASK -> new SimpleGraph<>(DefaultWeightedEdge.class);
-            case IS_DIRECTED -> new SimpleDirectedGraph<>(DefaultWeightedEdge.class);
-            case HAS_MULTIPLE_EDGES -> new Multigraph<>(DefaultWeightedEdge.class);
-            case HAS_SELF_LOOPS -> new DefaultUndirectedGraph<>(DefaultWeightedEdge.class);
-            case IS_WEIGHTED -> new SimpleWeightedGraph<>(DefaultWeightedEdge.class);
-            case IS_DIRECTED | HAS_MULTIPLE_EDGES -> new DirectedMultigraph<>(DefaultWeightedEdge.class);
-            case IS_DIRECTED | IS_WEIGHTED -> new SimpleDirectedWeightedGraph<>(DefaultWeightedEdge.class);
-            case IS_DIRECTED | HAS_SELF_LOOPS -> new DefaultDirectedGraph<>(DefaultWeightedEdge.class);
-            case HAS_MULTIPLE_EDGES | HAS_SELF_LOOPS -> new Pseudograph<>(DefaultWeightedEdge.class);
-            case HAS_MULTIPLE_EDGES | IS_WEIGHTED -> new WeightedMultigraph<>(DefaultWeightedEdge.class);
-            case HAS_SELF_LOOPS | IS_WEIGHTED -> new DefaultUndirectedWeightedGraph<>(DefaultWeightedEdge.class);
-            case IS_DIRECTED | HAS_MULTIPLE_EDGES | HAS_SELF_LOOPS -> new DirectedPseudograph<>(DefaultWeightedEdge.class);
-            case IS_DIRECTED | HAS_MULTIPLE_EDGES | IS_WEIGHTED -> new DirectedWeightedMultigraph<>(DefaultWeightedEdge.class);
-            case IS_DIRECTED | HAS_SELF_LOOPS | IS_WEIGHTED -> new DefaultDirectedWeightedGraph<>(DefaultWeightedEdge.class);
-            case HAS_MULTIPLE_EDGES | HAS_SELF_LOOPS | IS_WEIGHTED -> new WeightedPseudograph<>(DefaultWeightedEdge.class);
-            default -> new DirectedWeightedPseudograph<>(DefaultWeightedEdge.class);
+            case EMPTY_MASK -> new SimpleGraph<>(WeightedEdge.class);
+            case IS_DIRECTED -> new SimpleDirectedGraph<>(WeightedEdge.class);
+            case HAS_MULTIPLE_EDGES -> new Multigraph<>(WeightedEdge.class);
+            case HAS_SELF_LOOPS -> new DefaultUndirectedGraph<>(WeightedEdge.class);
+            case IS_WEIGHTED -> new SimpleWeightedGraph<>(WeightedEdge.class);
+            case IS_DIRECTED | HAS_MULTIPLE_EDGES -> new DirectedMultigraph<>(WeightedEdge.class);
+            case IS_DIRECTED | IS_WEIGHTED -> new SimpleDirectedWeightedGraph<>(WeightedEdge.class);
+            case IS_DIRECTED | HAS_SELF_LOOPS -> new DefaultDirectedGraph<>(WeightedEdge.class);
+            case HAS_MULTIPLE_EDGES | HAS_SELF_LOOPS -> new Pseudograph<>(WeightedEdge.class);
+            case HAS_MULTIPLE_EDGES | IS_WEIGHTED -> new WeightedMultigraph<>(WeightedEdge.class);
+            case HAS_SELF_LOOPS | IS_WEIGHTED -> new DefaultUndirectedWeightedGraph<>(WeightedEdge.class);
+            case IS_DIRECTED | HAS_MULTIPLE_EDGES | HAS_SELF_LOOPS -> new DirectedPseudograph<>(WeightedEdge.class);
+            case IS_DIRECTED | HAS_MULTIPLE_EDGES | IS_WEIGHTED -> new DirectedWeightedMultigraph<>(WeightedEdge.class);
+            case IS_DIRECTED | HAS_SELF_LOOPS | IS_WEIGHTED -> new DefaultDirectedWeightedGraph<>(WeightedEdge.class);
+            case HAS_MULTIPLE_EDGES | HAS_SELF_LOOPS | IS_WEIGHTED -> new WeightedPseudograph<>(WeightedEdge.class);
+            default -> new DirectedWeightedPseudograph<>(WeightedEdge.class);
         };
     }
 
-    public static Graph<Vertex, DefaultWeightedEdge> buildGraph(GraphModel graph) {
-        Graph<Vertex, DefaultWeightedEdge> g = getEmptyGraph(graph);
+    public static Graph<Vertex, WeightedEdge> buildGraph(GraphModel graph) {
+        Graph<Vertex, WeightedEdge> g = getEmptyGraph(graph);
         for (Vertex v : graph.getVertices()) {
             g.addVertex(v);
         }

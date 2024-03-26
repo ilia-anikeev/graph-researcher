@@ -146,7 +146,7 @@ public class DataBaseManager {
         }
     }
 
-    private GraphInfo getGraphMetadata(int userID, int graphID) {
+    private GraphMetadata getGraphMetadata(int userID, int graphID) {
         String tableName = "user" + userID + "_graph_metadata";
         String sql = "SELECT is_directed, is_weighted, has_self_loops, has_multiple_edges FROM " + tableName + " WHERE graph_id=" + graphID;
         try {
@@ -154,7 +154,7 @@ public class DataBaseManager {
             ResultSet rs = preparedStatement.executeQuery();
             rs.next();
             log.info("Graph metadata have been received");
-            return new GraphInfo(rs.getBoolean("is_directed"), rs.getBoolean("is_weighted"), rs.getBoolean("has_self_loops"), rs.getBoolean("has_multiple_edges"));
+            return new GraphMetadata(rs.getBoolean("is_directed"), rs.getBoolean("is_weighted"), rs.getBoolean("has_self_loops"), rs.getBoolean("has_multiple_edges"));
         } catch (SQLException e) {
             log.error("Graph metadata haven't been received");
             throw new RuntimeException(e);
@@ -228,7 +228,7 @@ public class DataBaseManager {
         String tableName = "user" + userID + "_graph_research_info";
         String sql = "CREATE TABLE " + tableName + "(id SERIAL PRIMARY KEY, " +
                 "graph_id INTEGER, connectivity BOOLEAN, bridges TEXT, " +
-                "articulation_points TEXT, connected_components TEXT, blocks TEXT)";
+                "articulation_points TEXT, connected_components TEXT)";
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.execute();
         } catch (SQLException e) {

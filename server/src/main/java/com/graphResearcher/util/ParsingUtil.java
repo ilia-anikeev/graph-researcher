@@ -131,11 +131,6 @@ public class ParsingUtil {
             info.connectedComponents = ParsingUtil.jsonTo2DListVertices(objectMapper.readTree(arg4));
         }
 
-        String arg5 = rs.getString("blocks");
-        if (arg5 != null) {
-            info.blocks = ParsingUtil.jsonToListGraphs(objectMapper.readTree(arg5));
-        }
-
         return info;
     }
 }

@@ -27,7 +27,7 @@ class GraphResearcherApplicationTests {
         Edge e4 = new Edge(v1, v4, 1.0, "abou2");
         List<Edge> edges = List.of(e1, e2, e3, e4);
 
-        GraphInfo info = new GraphInfo(false, false, false, false);
+        GraphMetadata info = new GraphMetadata(false, false, false, false);
         GraphModel model = new GraphModel(vertices, edges, info);
 
 
@@ -123,7 +123,7 @@ class GraphResearcherApplicationTests {
         edges.add(new Edge(v2, v3, 1.0, "buenos noches"));
         edges.add(new Edge(v3, v1, 1.0, "guten morgen"));
 
-        GraphInfo info = new GraphInfo(false, false, false, false);
+        GraphMetadata info = new GraphMetadata(false, false, false, false);
 
         db.saveGraph(1, new GraphModel(vertices, edges, info));
 
@@ -171,7 +171,7 @@ class GraphResearcherApplicationTests {
         edges.add(new Edge(v4, v3, 1.0, "pupupu2"));
         edges.add(new Edge(v4, v3, 1.0, "multipupupu2"));
 
-        GraphInfo info = new GraphInfo(true, true, true, false);
+        GraphMetadata info = new GraphMetadata(true, true, true, false);
 
         db.saveGraph(333, new GraphModel(vertices, edges, info));
 

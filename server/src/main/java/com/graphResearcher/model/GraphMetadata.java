@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-public class GraphInfo {
+public class GraphMetadata {
 
     @JsonProperty("isDirected")
     public final boolean isDirected;
@@ -20,14 +20,14 @@ public class GraphInfo {
     public final boolean hasMultipleEdges;
 
 
-    public GraphInfo(boolean isDirected, boolean isWeighted, boolean hasSelfLoops, boolean hasMultipleEdges) {
+    public GraphMetadata(boolean isDirected, boolean isWeighted, boolean hasSelfLoops, boolean hasMultipleEdges) {
         this.isDirected = isDirected;
         this.isWeighted = isWeighted;
         this.hasSelfLoops = hasSelfLoops;
         this.hasMultipleEdges = hasMultipleEdges;
     }
 
-    public GraphInfo(JsonNode json) {
+    public GraphMetadata(JsonNode json) {
         isDirected = json.get("isDirected").asBoolean();
         isWeighted = json.get("isWeighted").asBoolean();
         hasSelfLoops = json.get("hasSelfLoops").asBoolean();
