@@ -7,9 +7,9 @@ import java.util.List;
 import java.util.Set;
 
 public class GraphResearchInfo {
-    public boolean connectivity;
+    public Boolean connectivity;
     public List<Edge> bridges;
     public List<Vertex> articulationPoints;
     public List<List<Vertex>> connectedComponents;
-    public List<Graph<Vertex, Edge>> blocks;
+    public List<GraphModel> blocks;
 }

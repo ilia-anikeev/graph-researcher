@@ -1,4 +1,4 @@
-package com.graphResearcher.dao;
+package com.graphResearcher.util;
 
 import java.io.IOException;
 import java.util.Properties;

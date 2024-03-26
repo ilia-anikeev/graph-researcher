@@ -9,6 +9,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.Objects;
+
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
@@ -31,6 +33,17 @@ public class Edge {
         target = new Vertex(json.get("target"));
         weight = json.get("weight").asInt();
         data = json.get("data").asText();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof Edge edge)) {
+            return false;
+        }
+        return this.source.equals(edge.source) && this.target.equals(edge.target) && this.data.equals(edge.data);
     }
 
     public ObjectNode toJson() {

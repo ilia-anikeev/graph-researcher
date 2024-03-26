@@ -1,9 +1,6 @@
 package com.graphResearcher.dao;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.graphResearcher.model.*;
 
 import java.sql.PreparedStatement;
@@ -13,8 +10,12 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.TreeMap;
 
+import com.graphResearcher.util.ParseResearchInfo;
+import com.graphResearcher.util.ParsingUtil;
+import com.graphResearcher.util.PropertiesUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,6 +38,28 @@ public class DataBaseManager {
         log.info("DataBaseManager has been created");
     }
 
+
+    public void saveResearchInfo(int userID, int graphID, GraphResearchInfo info) {
+
+        String tableName = "user" + userID + "_graph_research_info";
+        ParseResearchInfo result = new ParseResearchInfo(info, graphID);
+
+        String sql1 = "DELETE FROM " + tableName + " WHERE graph_id = " + graphID;
+
+        String sql2 = "INSERT INTO " + tableName + "(" + result.fieldsName + ") VALUES(" + result.fields + ")";
+
+        try {
+            PreparedStatement preparedStatement1 = connection.prepareStatement(sql1);
+            preparedStatement1.execute();
+
+            PreparedStatement preparedStatement2 = connection.prepareStatement(sql2);
+            preparedStatement2.execute();
+
+        } catch (SQLException e) {
+            log.error("Graph research info haven't been saved");
+            throw new RuntimeException(e);
+        }
+    }
     public void saveGraph(int userID, GraphModel graph) {
         String tableName = "user" + userID + "_graph_metadata";
         String sql = "INSERT INTO " + tableName + "(is_directed, is_weighted, has_self_loops, has_multiple_edges)" +
@@ -57,7 +80,7 @@ public class DataBaseManager {
         log.info("Graph has been saved");
     }
 
-    private void saveVertices(int userID, int graphID, ArrayList<Vertex> vertices) {
+    private void saveVertices(int userID, int graphID, List<Vertex> vertices) {
         String tableName = "user" + userID + "_graph" + graphID + "_vertices";
         String createTableSql = "CREATE TABLE " + tableName + "(vertex_id SERIAL PRIMARY KEY, index INTEGER, data TEXT)";
         String insertVertexSql = "INSERT INTO " + tableName + "(index, data) VALUES(?, ?)";
@@ -79,7 +102,7 @@ public class DataBaseManager {
         log.info("Edges have been saved");
     }
 
-    private void saveEdges(int userID, int graphID, ArrayList<Edge> edges) {
+    private void saveEdges(int userID, int graphID, List<Edge> edges) {
         String tableName = "user" + userID + "_graph" + graphID + "_edges";
         String createTableSql = "CREATE TABLE " + tableName + "(edge_id SERIAL PRIMARY KEY, source INTEGER, target INTEGER, weight DOUBLE PRECISION, data TEXT)";
         String insertEdgeSql = "INSERT INTO " + tableName + "(source, target, weight, data) VALUES(?, ?, ?, ?)";
@@ -103,31 +126,14 @@ public class DataBaseManager {
         log.info("Edges have been saved");
     }
 
-    public void saveResearchInfo(int userID, int graphID) {
-        //TODO: SELECT ....
-        String tableName = "user" + userID + "_graph_research_info";
-        String sql = "INSERT INTO " + tableName + "()";
-//        try {
-//            PreparedStatement preparedStatement = connection.prepareStatement(sql);
-//            Re
-//        }
-    }
-
     public GraphResearchInfo getResearchInfo(int userID, int graphID) {
         String tableName = "user" + userID + "_graph_research_info";
         String sql = "SELECT * FROM " + tableName + " WHERE graph_id = " + graphID;
         try {
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
             ResultSet rs = preparedStatement.executeQuery();
-            rs.next();
 
-            ObjectMapper mapper = new ObjectMapper();
-
-            GraphResearchInfo researchInfo = new GraphResearchInfo();
-            researchInfo.connectivity = rs.getBoolean("connectivity");
-            researchInfo.bridges = ParsingUtil.jsonToListEdges(mapper.readTree(rs.getString("bridges")));
-
-            //TODO: parse other info and put in researchInfo var
+            GraphResearchInfo researchInfo = ParsingUtil.resultSetToGraphResearchInfo(rs);
 
             log.info("Graph research info have been received");
             return researchInfo;
@@ -156,14 +162,13 @@ public class DataBaseManager {
     }
 
     public GraphModel getGraph(int userID, int graphID) {
-        var vertices = getVertices(userID, graphID);
-        var edges = getEdges(userID, graphID, vertices);
+        List<Vertex> vertices = getVertices(userID, graphID);
+        List<Edge> edges = getEdges(userID, graphID, vertices);
         return new GraphModel(vertices, edges, getGraphMetadata(userID, graphID));
     }
 
-
-    private ArrayList<Vertex> getVertices(int userID, int graphID) {
-        ArrayList<Vertex> vertices = new ArrayList<>();
+    private List<Vertex> getVertices(int userID, int graphID) {
+        List<Vertex> vertices = new ArrayList<>();
         String tableName = "user" + userID + "_graph" + graphID + "_vertices";
 
         try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT index, data FROM " + tableName)) {
@@ -179,7 +184,7 @@ public class DataBaseManager {
         return vertices;
     }
 
-    private ArrayList<Edge> getEdges(int userID, int graphID, ArrayList<Vertex> vertices) {
+    private List<Edge> getEdges(int userID, int graphID, List<Vertex> vertices) {
         TreeMap<Integer, Vertex> verticesMap = new TreeMap<>();
         for (Vertex v: vertices) {
             verticesMap.put(v.getIndex(), v);
@@ -219,7 +224,7 @@ public class DataBaseManager {
         log.info("Metadata table have been created");
     }
 
-    private void createUserGraphResearchInfoTable(int userID) {
+    public void createUserGraphResearchInfoTable(int userID) {
         String tableName = "user" + userID + "_graph_research_info";
         String sql = "CREATE TABLE " + tableName + "(id SERIAL PRIMARY KEY, " +
                 "graph_id INTEGER, connectivity BOOLEAN, bridges TEXT, " +
