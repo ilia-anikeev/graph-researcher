@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.graphResearcher.service.SaveGraphService.buildGraph;
-    
+
 
 @Service
 public class GraphResearchService {

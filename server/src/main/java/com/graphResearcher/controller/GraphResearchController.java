@@ -12,10 +12,8 @@ public class GraphResearchController {
     @GetMapping("/research")
     public String research(String Json){
         String result="";
-        // TODO: Parse Json to GraphModel(?)
         GraphModel graphModel = null;
         GraphResearchInfo researchResult=new GraphResearchService().softResearch(graphModel);
-        // TODO: Convert researchResult to Json(?)
         return result;
     }
 }
