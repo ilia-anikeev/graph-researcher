@@ -5,6 +5,7 @@ import './Vertex.css'
 
 function Vertex(props){
     const noderef = React.useRef();
+
     return (
             <Draggable nodeRef={noderef}
                 axis="both"

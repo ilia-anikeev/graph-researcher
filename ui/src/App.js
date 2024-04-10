@@ -3,26 +3,22 @@ import VertexButton from "./components/VertexButton";
 import Vertex from "./components/Vertex";
 
 function App() {
-  let [buttons, setVertex] = React.useState([]);
-  let [count, updateCount] = React.useState(1);
-
-
+  const [vertices, setVertex] = React.useState([]);
+  const [count, updateCount] = React.useState(1);
 
   function createVertex() {
-    const v = count + 1
-    updateCount(v)
-    setVertex([...buttons,
+    const newCount = count + 1
+    updateCount(newCount)
+    setVertex([...vertices,
       {id: count, 
-       data: <Vertex key={count} id={count.toString()}  data={count}/>,
-       x: 0,
-       y: 0}]
-    );
+       vertex: <Vertex key={count} id={count}  data={count} vertices={vertices} func={updateButtonCoordinates}/>,
+       x: 0, y: 0}]
+    )
   }
 
-
   function updateButtonCoordinates (id, x, y){    
-    setVertex(buttons.map(button => {
-      return button.id === id ? { ...button, x, y } : button;}
+    setVertex(vertices.map(vertex => {
+      return vertex.id === id ? { ...vertex, x, y } : vertex}
       ))
   }
 
@@ -32,7 +28,10 @@ function App() {
         <p>GraphResearcher!!!</p>
       </div>
       <button className='button' onClick={() => createVertex()}> click on me</button>
-      <VertexButton buttonsInput={buttons} func={updateButtonCoordinates}/>
+      <VertexButton vertices={vertices} func={updateButtonCoordinates}/>
+      {vertices.forEach(element => {
+        console.log("id:", element.id, element.x, element.y)
+        })}
     </div>
   );
 }
