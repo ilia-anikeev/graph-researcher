@@ -36,19 +36,13 @@ function App() {
     const draw = (ids,idt)=>{
             const canvas = document.getElementById("canvas");
             const ctx = canvas.getContext("2d");
-            console.log("ilyagay");
-            ctx.lineWidth=10;
+            ctx.lineWidth=4;
             const v1=vertices.find(element => element.id===ids);
-            console.log(vertices);
-            console.log(ids);
-
-            console.log("gay");
             const v2=vertices.find(element => element.id===idt);
             ctx.beginPath();
             ctx.moveTo(v1.x,v1.y);
             ctx.lineTo(v2.x,v2.y);
             ctx.stroke();
-            console.log("huy");
 
     };
   function updateButtonCoordinates (id, x, y){    
@@ -91,7 +85,6 @@ function App() {
               </div>
 
       {vertices.forEach(element => {
-        console.log("id:", element.id, element.x, element.y)
         })}
 
     </div>
