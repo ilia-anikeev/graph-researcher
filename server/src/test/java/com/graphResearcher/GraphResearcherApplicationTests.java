@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 //import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -13,14 +14,76 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class GraphResearcherApplicationTests {
 
     @Test
-    void contextLoads() {
+    void saveGraphInfoTest1() {
+        Vertex v1 = new Vertex(1, "a");
+        Vertex v2 = new Vertex(2, "b");
+        Vertex v3 = new Vertex(3, "c");
+        Vertex v4 = new Vertex(4, "d");
+        List<Vertex> vertices = List.of(v1, v2, v3, v4);
+
+        Edge e1 = new Edge(v1, v2, 1.0, "aba");
+        Edge e2 = new Edge(v2, v3, 1.0, "abaaa");
+        Edge e3 = new Edge(v3, v1, 1.0, "abasdf");
+        Edge e4 = new Edge(v1, v4, 1.0, "abou2");
+
+
+
+        GraphResearchInfo researchInfo = new GraphResearchInfo();
+        researchInfo.connectivity = true;
+        researchInfo.bridges = List.of(e4);
+        researchInfo.articulationPoints = List.of(v1);
+        researchInfo.connectedComponents = List.of(vertices);
+
+        DataBaseManager db = new DataBaseManager();
+        db.createUser(1);
+        db.saveResearchInfo(1, 1, researchInfo);
+        GraphResearchInfo researchInfoDB = db.getResearchInfo(1, 1);
+
+        assertEquals(researchInfo.connectivity, researchInfoDB.connectivity);
+
+        for (int i = 0; i < researchInfoDB.bridges.size(); ++i) {
+            assertEquals(researchInfo.bridges.get(i), researchInfoDB.bridges.get(i));
+        }
+
+        for (int i = 0; i < researchInfoDB.articulationPoints.size(); ++i) {
+            assertEquals(researchInfo.articulationPoints.get(i), researchInfoDB.articulationPoints.get(i));
+        }
+
+        for (int i = 0; i < researchInfoDB.connectedComponents.size(); ++i) {
+            for (int j = 0; j < researchInfoDB.connectedComponents.get(i).size(); ++j) {
+                assertEquals(researchInfo.connectedComponents.get(i).get(j), researchInfoDB.connectedComponents.get(i).get(j));
+            }
+        }
+        db.deleteUser(1);
     }
 
     @Test
-    void testDAO1() {
+    void saveGraphInfoTest2() {
+        GraphResearchInfo researchInfo = new GraphResearchInfo();
+        researchInfo.connectivity = null;
+        researchInfo.bridges = null;
+        researchInfo.articulationPoints = null;
+        researchInfo.connectedComponents = null;
+
+        DataBaseManager db = new DataBaseManager();
+        db.createUser(1);
+        db.saveResearchInfo(1, 1, researchInfo);
+        GraphResearchInfo researchInfoDB = db.getResearchInfo(1, 1);
+
+        assertEquals(researchInfo.connectivity, researchInfoDB.connectivity);
+        assertEquals(researchInfo.bridges, researchInfoDB.bridges);
+        assertEquals(researchInfo.articulationPoints, researchInfoDB.articulationPoints);
+        assertEquals(researchInfo.connectedComponents, researchInfoDB.connectedComponents);
+        db.deleteUser(1);
+    }
+
+
+    @Test
+    void saveGraphTest1() {
         DataBaseManager db = new DataBaseManager();
 
-        db.createUserGraphArchive(1);
+        db.createUser(1);
+
 
         ArrayList<Vertex> vertices = new ArrayList<>();
         Vertex v1 = new Vertex(1, "hi");
@@ -35,7 +98,7 @@ class GraphResearcherApplicationTests {
         edges.add(new Edge(v2, v3, 1.0, "buenos noches"));
         edges.add(new Edge(v3, v1, 1.0, "guten morgen"));
 
-        GraphInfo info = new GraphInfo(false, false, false, false);
+        GraphMetadata info = new GraphMetadata(false, false, false, false);
 
         db.saveGraph(1, new GraphModel(vertices, edges, info));
 
@@ -52,20 +115,19 @@ class GraphResearcherApplicationTests {
             assertEquals(edges.get(i).getData(), g.getEdges().get(i).getData());
         }
 
-        assertEquals(info.isDirected, g.info.isDirected);
-        assertEquals(info.isWeighted, g.info.isWeighted);
-        assertEquals(info.hasSelfLoops, g.info.hasSelfLoops);
-        assertEquals(info.hasMultipleEdges, g.info.hasMultipleEdges);
+        assertEquals(info.isDirected, g.metadata.isDirected);
+        assertEquals(info.isWeighted, g.metadata.isWeighted);
+        assertEquals(info.hasSelfLoops, g.metadata.hasSelfLoops);
+        assertEquals(info.hasMultipleEdges, g.metadata.hasMultipleEdges);
 
-        db.deleteGraph(1, 1);
-        db.deleteUserGraphArchive(1);
+        db.deleteUser(1);
     }
 
     @Test
-    void testDAO2() {
+    void saveGraphTest2() {
         DataBaseManager db = new DataBaseManager();
 
-        db.createUserGraphArchive(333);
+        db.createUser(333);
 
         ArrayList<Vertex> vertices = new ArrayList<>();
         Vertex v1 = new Vertex(1, "pu1");
@@ -84,7 +146,7 @@ class GraphResearcherApplicationTests {
         edges.add(new Edge(v4, v3, 1.0, "pupupu2"));
         edges.add(new Edge(v4, v3, 1.0, "multipupupu2"));
 
-        GraphInfo info = new GraphInfo(true, true, true, false);
+        GraphMetadata info = new GraphMetadata(true, true, true, false);
 
         db.saveGraph(333, new GraphModel(vertices, edges, info));
 
@@ -101,12 +163,11 @@ class GraphResearcherApplicationTests {
             assertEquals(edges.get(i).getData(), g.getEdges().get(i).getData());
         }
 
-        assertEquals(info.isDirected, g.info.isDirected);
-        assertEquals(info.isWeighted, g.info.isWeighted);
-        assertEquals(info.hasSelfLoops, g.info.hasSelfLoops);
-        assertEquals(info.hasMultipleEdges, g.info.hasMultipleEdges);
+        assertEquals(info.isDirected, g.metadata.isDirected);
+        assertEquals(info.isWeighted, g.metadata.isWeighted);
+        assertEquals(info.hasSelfLoops, g.metadata.hasSelfLoops);
+        assertEquals(info.hasMultipleEdges, g.metadata.hasMultipleEdges);
 
-        db.deleteGraph(333, 1);
-        db.deleteUserGraphArchive(333);
+        db.deleteUser(333);
     }
 }
