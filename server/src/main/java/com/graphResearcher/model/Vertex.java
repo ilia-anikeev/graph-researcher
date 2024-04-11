@@ -1,6 +1,8 @@
 package com.graphResearcher.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,11 +14,9 @@ import java.util.Objects;
 @Getter
 public class Vertex {
 
-    @JsonProperty("index")
     private int index;
 
-    @JsonProperty("data")
-    private String data = "";
+    private String data;
 
     @Override
     public boolean equals(Object o) {
@@ -27,6 +27,21 @@ public class Vertex {
             return false;
         }
         return Objects.equals(this.data,vertexRequest.getData());
+    }
+
+    public Vertex(JsonNode json) {
+        index = json.get("index").asInt();
+        data = json.get("data").asText();
+    }
+
+    public JsonNode toJson() {
+        ObjectMapper objectMapper = new ObjectMapper();
+        ObjectNode json = objectMapper.createObjectNode();
+
+        json.put("index", index);
+        json.put("data", data);
+
+        return json;
     }
 
     @Override
