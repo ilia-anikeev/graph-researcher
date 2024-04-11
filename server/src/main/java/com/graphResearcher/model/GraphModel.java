@@ -1,31 +1,26 @@
 package com.graphResearcher.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Getter;
+
 import java.util.ArrayList;
 
 
+@Getter
 public class GraphModel {
 
     @JsonProperty("vertices")
-    public ArrayList<Vertex> vertices;
+    private ArrayList<Vertex> vertices;
 
     @JsonProperty("edges")
-    public ArrayList<Edge> edges;
+    private ArrayList<Edge> edges;
 
     @JsonProperty("info")
-    public GraphInfo info;
+    public final GraphInfo info;
 
     public GraphModel(ArrayList<Vertex> vertices, ArrayList<Edge> edges, GraphInfo info) {
         this.vertices = vertices;
         this.edges = edges;
         this.info = info;
-    }
-
-    public ArrayList<Vertex> getVertices(){
-        return this.vertices;
-    }
-
-    public ArrayList<Edge> getEdges(){
-        return this.edges;
     }
 }
