@@ -11,7 +11,7 @@ function App() {
     updateCount(newCount)
     setVertex([...vertices,
       {id: count, 
-       vertex: <Vertex key={count} id={count}  data={count} vertices={vertices} func={updateButtonCoordinates}/>,
+       vertex: <Vertex key={count} id={count}  data={count}/>,
        x: 0, y: 0}]
     )
   }
@@ -28,7 +28,7 @@ function App() {
         <p>GraphResearcher!!!</p>
       </div>
       <button className='button' onClick={() => createVertex()}> click on me</button>
-      <VertexButton vertices={vertices} func={updateButtonCoordinates}/>
+      <VertexButton vertices={vertices} updateButtonCoordinates={updateButtonCoordinates}/>
       {vertices.forEach(element => {
         console.log("id:", element.id, element.x, element.y)
         })}

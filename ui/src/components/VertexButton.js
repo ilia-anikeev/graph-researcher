@@ -7,7 +7,7 @@ function VertexButton(props) {
 
     const handleMouseMove = (id) => (event) => {
         const rect = event.target.getBoundingClientRect();
-        props.func(id, rect.x, rect.y)
+        props.updateButtonCoordinates(id, rect.x, rect.y)
     };
 
     return (
@@ -30,7 +30,7 @@ function VertexButton(props) {
 
 VertexButton.propTypes = {
     vertices: PropTypes.array,
-    func: PropTypes.func
+    updateButtonCoordinates: PropTypes.func
 }
 
 export default VertexButton;
