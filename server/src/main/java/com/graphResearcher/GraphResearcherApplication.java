@@ -14,6 +14,7 @@ import java.util.Date;
 @SpringBootApplication
 public class GraphResearcherApplication {
     public static void main(String[] args) {
+        new DataBaseManager().createUser(0);
         SpringApplication.run(GraphResearcherApplication.class, args);
     }
 }
