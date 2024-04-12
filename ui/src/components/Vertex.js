@@ -9,7 +9,7 @@ function Vertex(props){
     return (
             <Draggable nodeRef={noderef}
                 axis="both"
-                defaultPosition={{x: 0, y: 0}}
+                defaultPosition={{x: 200, y: 200}}
                 position={null}
                 grid={[1,1]}
                 scale={1}

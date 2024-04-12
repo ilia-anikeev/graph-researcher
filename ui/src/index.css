@@ -13,12 +13,23 @@ code {
 }
 
 .title{
-  padding-top: 1rem;
+  padding-top: 2rem;
+  padding-bottom: 2rem;
   margin: 0 auto;
   text-align: center;
-  font-size: 30px;
+  font-size: 40px;
+  background: rgba(0, 0, 0, 0.2);
 }
 
 .button{
-  color: blue;
+  color: black;
+  width: 100px;
+  height: 50px;
+}
+
+.menu{
+  padding-left: 2rem;
+  background: rgba(0, 0, 0, 0.2);
+  width: 140px;
+  height: 720px;
 }
