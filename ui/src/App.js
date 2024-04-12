@@ -12,7 +12,6 @@ function App() {
 
 
   function createEdge(ids,idt){
-    console.log("huy");
     const newCounter=edgeCounter+1
     setEdgeCounter(newCounter)
 
