@@ -1,6 +1,7 @@
 import React, { useLayoutEffect } from "react";
 import VertexButton from "./components/VertexButton";
 import Vertex from "./components/Vertex";
+import GraphMetadata from "./components/GraphResearchInfo"
 
 function App() {
   const [vertices, setVertex] = React.useState([]);
@@ -9,10 +10,7 @@ function App() {
   const [edgeCounter,setEdgeCounter]=React.useState(1);
 
 
-
-
   function createEdge(ids,idt){
-    console.log("huy");
     const newCounter=edgeCounter+1
     setEdgeCounter(newCounter)
 
@@ -21,8 +19,6 @@ function App() {
     id: edgeCounter
     }])
   }
-
-
 
   function createVertex() {
     const newCount = count + 1
@@ -43,7 +39,6 @@ function App() {
             ctx.moveTo(v1.x,v1.y);
             ctx.lineTo(v2.x,v2.y);
             ctx.stroke();
-
     };
   function updateButtonCoordinates (id, x, y){    
     setVertex(vertices.map(vertex => {
@@ -58,35 +53,31 @@ function App() {
       draw(element.source,element.target)
     })
   });
- const handleMouseDown = event => {};
-  const handleMouseUp = event => {};
-   //const handleMouseMove = event => {};
+  //const handleMouseDown = event => {};
+  //const handleMouseUp = event => {};
   return (
     <div> 
-      <div className='title'>
-        <p>GraphResearcher!!!</p>
+      <div >
+        <p className='title'>Graph Researcher</p>
       </div>
-
-      <button className='button' onClick={() => createVertex()}> click on me</button>
-      <div>
-      <VertexButton vertices={vertices} updateButtonCoordinates={updateButtonCoordinates} createEdge={createEdge}/>
-
-      
-        <canvas
+      <div className="menu">
+        <div style={{paddingTop: "3rem"}}><button className='button' onClick={() => createVertex()}> Create vertex</button>
+        <VertexButton vertices={vertices} updateButtonCoordinates={updateButtonCoordinates} createEdge={createEdge}/>
+        </div>
+        <div style={{paddingTop: "3rem"}}><GraphMetadata/></div>
+        <div>
+          <canvas
                 id="canvas"
-                width={window.innerWidth-4}
-                height={window.innerHeight-4}
-                onMouseDown={handleMouseDown}
-                onMouseUp={handleMouseUp}
-              
-              >
+                width={window.innerWidth}
+                height={window.innerHeight}
+                color='grey'
+               // onMouseDown={handleMouseDown}
+               // onMouseUp={handleMouseUp}
+               >
                 Canvas
-              </canvas>
-              </div>
-
-      {vertices.forEach(element => {
-        })}
-
+             </canvas>
+          </div>
+      </div>
     </div>
   );
 }
