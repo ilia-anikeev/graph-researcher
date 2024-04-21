@@ -12,12 +12,10 @@ function Vertex(props){
                 defaultPosition={{x: 200, y: 200}}
                 position={null}
                 grid={[1,1]}
-                scale={1}
-            >
+                scale={1}>
                 <div className='vertex' ref={noderef}>
                     <div className='text'>{props.data}</div>
                 </div>
-                
             </Draggable>
     )
 }
