@@ -1,10 +1,10 @@
 package com.graphResearcher;
 
-import com.graphResearcher.repository.DataBaseManager;
 import com.graphResearcher.model.*;
+import com.graphResearcher.repository.DataBaseManager;
 import org.junit.jupiter.api.Test;
-//import org.springframework.boot.test.context.SpringBootTest;
 
+import javax.xml.crypto.Data;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,22 +21,19 @@ class GraphResearcherApplicationTests {
         Vertex v4 = new Vertex(4, "d");
         List<Vertex> vertices = List.of(v1, v2, v3, v4);
 
-        Edge e1 = new Edge(v1, v2, 1.0, "aba");
-        Edge e2 = new Edge(v2, v3, 1.0, "abaaa");
-        Edge e3 = new Edge(v3, v1, 1.0, "abasdf");
-        Edge e4 = new Edge(v1, v4, 1.0, "abou2");
+        Edge e = new Edge(v1, v4, 1.0, "abou2");
 
 
         GraphResearchInfo researchInfo = new GraphResearchInfo();
         researchInfo.connectivity = true;
-        researchInfo.bridges = List.of(e4);
+        researchInfo.bridges = List.of(e);
         researchInfo.articulationPoints = List.of(v1);
         researchInfo.connectedComponents = List.of(vertices);
 
         DataBaseManager db = new DataBaseManager();
         db.createUser(1);
         db.saveResearchInfo(1, 1, researchInfo);
-        GraphResearchInfo researchInfoDB = db.getResearchInfo(1, 1);
+        GraphResearchInfo researchInfoDB = db.getResearchInfo(1);
 
         assertEquals(researchInfo.connectivity, researchInfoDB.connectivity);
 
@@ -67,7 +64,7 @@ class GraphResearcherApplicationTests {
         DataBaseManager db = new DataBaseManager();
         db.createUser(1);
         db.saveResearchInfo(1, 1, researchInfo);
-        GraphResearchInfo researchInfoDB = db.getResearchInfo(1, 1);
+        GraphResearchInfo researchInfoDB = db.getResearchInfo(1);
 
         assertEquals(researchInfo.connectivity, researchInfoDB.connectivity);
         assertEquals(researchInfo.bridges, researchInfoDB.bridges);
@@ -82,7 +79,6 @@ class GraphResearcherApplicationTests {
         DataBaseManager db = new DataBaseManager();
 
         db.createUser(1);
-
 
         ArrayList<Vertex> vertices = new ArrayList<>();
         Vertex v1 = new Vertex(1, "hi");
@@ -99,9 +95,9 @@ class GraphResearcherApplicationTests {
 
         GraphMetadata info = new GraphMetadata(false, false, false, false);
 
-        db.saveGraph(1, new GraphModel(vertices, edges, info));
+        int graphID = db.saveGraph(1, new GraphModel(vertices, edges, info));
 
-        GraphModel g = db.getGraph(1, 1);
+        GraphModel g = db.getGraph(graphID);
 
         for (int i = 0; i < g.getVertices().size(); ++i) {
             assertEquals(vertices.get(i).getIndex(), g.getVertices().get(i).getIndex());
@@ -147,9 +143,9 @@ class GraphResearcherApplicationTests {
 
         GraphMetadata info = new GraphMetadata(true, true, true, false);
 
-        db.saveGraph(333, new GraphModel(vertices, edges, info));
+        int graphID = db.saveGraph(333, new GraphModel(vertices, edges, info));
 
-        GraphModel g = db.getGraph(333, 1);
+        GraphModel g = db.getGraph(graphID);
 
         for (int i = 0; i < g.getVertices().size(); ++i) {
             assertEquals(vertices.get(i).getIndex(), g.getVertices().get(i).getIndex());
