@@ -16,6 +16,7 @@ import java.util.TreeMap;
 import com.graphResearcher.util.ParseResearchInfo;
 import com.graphResearcher.util.ParsingUtil;
 import com.graphResearcher.util.PropertiesUtil;
+import org.jgrapht.Graph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
@@ -107,12 +108,37 @@ public class DataBaseManager {
         }
     }
 
+    private void saveConnectedComponents(int userID, int graphID, List<List<Vertex>> listVertices2D) {
+        GraphModel graph = getGraph(graphID);
+        List<Integer> subgraphIDs = new ArrayList<>();
+        for (List<Vertex> component: listVertices2D) {
+            GraphModel subGraph = ParsingUtil.listVertexToSubgraph(component, graph);
+            subgraphIDs.add(saveGraph(userID, subGraph));
+        }
+
+        String tableName = "connected_components";
+
+        String sql = "INSERT INTO " + tableName + "(graph_id, subgraph_id) VALUES(?, ?)";
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            for (Integer subgraphID: subgraphIDs) {
+                preparedStatement.setInt(1, graphID);
+                preparedStatement.setInt(2, subgraphID);
+                preparedStatement.executeUpdate();
+            }
+        } catch (SQLException e) {
+            log.error("Edges haven't been saved", e);
+            throw new RuntimeException(e);
+        }
+    }
+
     public void saveResearchInfo(int userID, int graphID, GraphResearchInfo info) {
         String tableName = "graph_research_info";
         ParseResearchInfo result = new ParseResearchInfo(info, graphID);
 
         saveArticulationPoints(graphID, info.articulationPoints);
         saveBridges(graphID, info.bridges);
+        saveConnectedComponents(userID, graphID, info.connectedComponents);
 
         String sql1 = "DELETE FROM " + tableName + " WHERE graph_id = " + graphID;
 
@@ -141,6 +167,7 @@ public class DataBaseManager {
             GraphResearchInfo researchInfo = ParsingUtil.resultSetToGraphResearchInfo(rs);
             researchInfo.articulationPoints = getArticulationPoints(graphID);
             researchInfo.bridges = getBridges(graphID);
+            researchInfo.connectedComponents = getConnectedComponents(graphID);
 
             log.info("Graph " + graphID + " research info have been received");
             return researchInfo;
@@ -151,6 +178,22 @@ public class DataBaseManager {
             log.error("Json parse error", e);
             throw new RuntimeException(e);
         }
+    }
+
+    private List<List<Vertex>> getConnectedComponents(int graphID) {
+        List<GraphModel> components = new ArrayList<>();
+        String tableName = "connected_components";
+        String sql = "SELECT subgraph_id FROM " + tableName  + " WHERE graph_id = " + graphID;
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            ResultSet rs = preparedStatement.executeQuery();
+            while (rs.next()) {
+                components.add(getGraph(rs.getInt("subgraph_id")));
+            }
+        } catch(SQLException e) {
+            log.error("Vertices haven't been received", e);
+            throw new RuntimeException(e);
+        }
+        return components.stream().map(GraphModel::getVertices).toList();
     }
 
     private GraphMetadata getGraphMetadata(int graphID) {
@@ -279,6 +322,7 @@ public class DataBaseManager {
         deleteEdges(graphID);
         deleteArticulationPoints(graphID);
         deleteBridges(graphID);
+        deleteConnectedComponents(graphID);
     }
 
     private void deleteVertices(int graphID) {
@@ -321,6 +365,17 @@ public class DataBaseManager {
             preparedStatement.execute();
         } catch (SQLException e) {
             log.error("Bridges haven't been deleted");
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void deleteConnectedComponents(int graphID) {
+        String tableName = "connected_components";
+        String sql = "DELETE FROM " + tableName + " WHERE graph_id = " + graphID;
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.execute();
+        } catch (SQLException e) {
+            log.error("Connected components haven't been deleted");
             throw new RuntimeException(e);
         }
     }
@@ -384,7 +439,7 @@ public class DataBaseManager {
             preparedStatement.execute();
 
         } catch (SQLException e) {
-            log.error("init articulationPoints table error", e);
+            log.error("Init articulationPoints table error", e);
             throw new RuntimeException(e);
         }
     }
@@ -401,6 +456,18 @@ public class DataBaseManager {
         }
     }
 
+    private void initConnectedComponentsTable() {
+        String tableName = "connected_components";
+        String sql = "CREATE TABLE " + tableName + "(id SERIAL PRIMARY KEY, graph_id INT, subgraph_id INT)";
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.execute();
+        } catch (SQLException e) {
+            log.error("Init connected components table error", e);
+            throw new RuntimeException(e);
+        }
+    }
+
     public void initDB() {
         initEdgesTable();
         initVerticesTable();
@@ -409,6 +476,8 @@ public class DataBaseManager {
         initGraphResearchInfoTable();
         initArticulationPointsTable();
         initBridgesTable();
-        log.info("initialization was successful");
+        initConnectedComponentsTable();
+
+        log.info("Initialization was successful");
     }
 }

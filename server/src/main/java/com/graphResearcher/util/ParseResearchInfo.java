@@ -63,7 +63,7 @@ public class ParseResearchInfo {
         }
         if (info.connectedComponents != null) {
             answer.append(", '");
-            answer.append(ParsingUtil.vertices2DListToJson(info.connectedComponents));
+            answer.append(info.connectedComponents.size());
             answer.append("'");
         }
         return answer.toString();

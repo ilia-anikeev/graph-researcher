@@ -12,7 +12,10 @@ import org.jgrapht.graph.*;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class ParsingUtil {
     private static final ObjectMapper mapper = new ObjectMapper();
@@ -124,12 +127,24 @@ public class ParsingUtil {
 //        int arg3 = rs.getInt("articulation_points");
 //        info.articulationPoints = ParsingUtil.jsonToListVertices(objectMapper.readTree(arg3));
 
-        String arg4 = rs.getString("connected_components");
-        if (arg4 != null) {
-            info.connectedComponents = ParsingUtil.jsonTo2DListVertices(objectMapper.readTree(arg4));
-        }
+//        String arg4 = rs.getString("connected_components");
+//        if (arg4 != null) {
+//            info.connectedComponents = ParsingUtil.jsonTo2DListVertices(objectMapper.readTree(arg4));
+//        }
 
         return info;
+    }
+
+    public static GraphModel listVertexToSubgraph(List<Vertex> vertices, GraphModel graph) {
+        Set<Vertex> vertexSet = new HashSet<>(vertices);
+
+        List<Edge> edges = new ArrayList<>();
+        for (Edge e: graph.getEdges()) {
+            if (vertexSet.contains(e.getSource()) && vertexSet.contains(e.getTarget())) {
+                edges.add(e);
+            }
+        }
+        return new GraphModel(vertices, edges, graph.getMetadata());
     }
 
 

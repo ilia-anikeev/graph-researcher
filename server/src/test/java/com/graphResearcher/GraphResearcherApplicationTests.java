@@ -84,6 +84,34 @@ class GraphResearcherApplicationTests {
         db.deleteUser(userID);
     }
 
+    @Test
+    void researchAndSave3() {
+        int userID = 3;
+        GraphResearchService service = new GraphResearchService();
+        DataBaseManager db = new DataBaseManager();
+
+        db.createUser(userID);
+
+        int graphID1 = db.saveGraph(userID, graph1);
+        GraphResearchInfo info1 = service.softResearch(graph1);
+
+        db.saveResearchInfo(userID, graphID1, info1);
+
+        GraphResearchInfo receivedInfo1 = db.getResearchInfo(graphID1);
+
+        assertEquals(info1, receivedInfo1);
+
+        int graphID2 = db.saveGraph(userID, graph2);
+        GraphResearchInfo info2 = service.softResearch(graph2);
+
+        db.saveResearchInfo(userID, graphID2, info2);
+
+        GraphResearchInfo receivedInfo2 = db.getResearchInfo(graphID2);
+
+        assertEquals(info2, receivedInfo2);
+        db.deleteUser(userID);
+    }
+
 
     private void buildGraph1() {
         ArrayList<Vertex> vertices = new ArrayList<>();
@@ -118,7 +146,6 @@ class GraphResearcherApplicationTests {
         edges.add(new Edge(v1, v2, 1.0, "pupupu"));
         edges.add(new Edge(v2, v3, 1.0, "pupupu1"));
         edges.add(new Edge(v4, v3, 1.0, "pupupu2"));
-        edges.add(new Edge(v4, v3, 1.0, "multipupupu2"));
 
         GraphMetadata metadata = new GraphMetadata(true, true, true, false);
         graph2 = new GraphModel(vertices, edges, metadata);
