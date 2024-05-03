@@ -116,15 +116,13 @@ public class ParsingUtil {
         ObjectMapper objectMapper = new ObjectMapper();
 
 
-        String arg2 = rs.getString("bridges");
-        if (arg2 != null) {
-            info.bridges = ParsingUtil.jsonToListEdges(objectMapper.readTree(arg2));
-        }
+//        String arg2 = rs.getString("bridges");
+//        if (arg2 != null) {
+//            info.bridges = ParsingUtil.jsonToListEdges(objectMapper.readTree(arg2));
+//        }
 
-        String arg3 = rs.getString("articulation_points");
-        if (arg3 != null) {
-            info.articulationPoints = ParsingUtil.jsonToListVertices(objectMapper.readTree(arg3));
-        }
+//        int arg3 = rs.getInt("articulation_points");
+//        info.articulationPoints = ParsingUtil.jsonToListVertices(objectMapper.readTree(arg3));
 
         String arg4 = rs.getString("connected_components");
         if (arg4 != null) {
@@ -143,16 +141,16 @@ public class ParsingUtil {
 
     private static Graph<Vertex, WeightedEdge> getEmptyGraph(GraphModel graphModel) {
         int mask = EMPTY_MASK;
-        if (graphModel.metadata.isDirected) {
+        if (graphModel.getMetadata().isDirected) {
             mask |= IS_DIRECTED;
         }
-        if (graphModel.metadata.isWeighted) {
+        if (graphModel.getMetadata().isWeighted) {
             mask |= IS_WEIGHTED;
         }
-        if (graphModel.metadata.hasMultipleEdges) {
+        if (graphModel.getMetadata().hasMultipleEdges) {
             mask |= HAS_MULTIPLE_EDGES;
         }
-        if (graphModel.metadata.hasSelfLoops) {
+        if (graphModel.getMetadata().hasSelfLoops) {
             mask |= HAS_SELF_LOOPS;
         }
         return switch (mask) {
@@ -182,7 +180,7 @@ public class ParsingUtil {
         }
         for (Edge e : graphModel.getEdges()) {
             g.addEdge(e.getSource(), e.getTarget());
-            if (graphModel.metadata.isWeighted) {
+            if (graphModel.getMetadata().isWeighted) {
                 g.setEdgeWeight(e.getSource(), e.getTarget(), e.getWeight());
             }
         }

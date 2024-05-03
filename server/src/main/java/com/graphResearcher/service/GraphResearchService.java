@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 
 @Service
 public class GraphResearchService {
-    public GraphResearchInfo softResearch (GraphModel graphModel){
+    public GraphResearchInfo softResearch (GraphModel graphModel) {
 
         GraphResearchInfo result = new GraphResearchInfo();
 

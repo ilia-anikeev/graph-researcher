@@ -17,7 +17,7 @@ public class GraphModel {
 
     private final List<Edge> edges;
 
-    public final GraphMetadata metadata;
+    private final GraphMetadata metadata;
 
     public GraphModel(List<Vertex> vertices, List<Edge> edges, GraphMetadata metadata) {
         this.vertices = vertices;
@@ -52,6 +52,40 @@ public class GraphModel {
         json.set("edges", ParsingUtil.edgesListToJsonArray(edges));
         json.set("info", metadata.toJson());
         return json;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof GraphModel other)) {
+            return false;
+        }
+        if (!this.getMetadata().equals(other.getMetadata())) {
+            return false;
+        }
+        List<Edge> otherEdges = other.getEdges();
+
+        if (edges.size() != otherEdges.size()) {
+            return false;
+        }
+
+        for (int i = 0; i < edges.size(); ++i) {
+            if (!edges.get(i).equals(otherEdges.get(i))) {
+                return false;
+            }
+        }
+
+        List<Vertex> otherVertices = other.getVertices();
+
+        if (vertices.size() != otherVertices.size()) {
+            return false;
+        }
+
+        for (int i = 0; i < vertices.size(); ++i) {
+            if (!vertices.get(i).equals(otherVertices.get(i))) {
+                return false;
+            }
+        }
+        return true;
     }
 }
 

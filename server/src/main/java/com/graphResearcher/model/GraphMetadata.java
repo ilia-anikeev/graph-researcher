@@ -3,6 +3,7 @@ package com.graphResearcher.model;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.jgrapht.Graph;
 
 public class GraphMetadata {
     public final boolean isDirected;
@@ -24,6 +25,18 @@ public class GraphMetadata {
         hasSelfLoops = json.get("hasSelfLoops").asBoolean();
         hasMultipleEdges = json.get("hasMultipleEdges").asBoolean();
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof GraphMetadata metadata)) {
+            return false;
+        }
+        return this.hasMultipleEdges == metadata.hasMultipleEdges &&
+                this.hasSelfLoops == metadata.hasSelfLoops &&
+                this.isDirected == metadata.isDirected &&
+                this.isWeighted == metadata.isWeighted;
+    }
+
     public JsonNode toJson() {
         ObjectMapper objectMapper = new ObjectMapper();
         ObjectNode json = objectMapper.createObjectNode();

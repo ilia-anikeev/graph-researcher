@@ -1,6 +1,7 @@
 package com.graphResearcher.util;
 
 import com.graphResearcher.model.GraphResearchInfo;
+import com.graphResearcher.model.Vertex;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,12 +53,12 @@ public class ParseResearchInfo {
         }
         if (info.bridges != null) {
             answer.append(", '");
-            answer.append(ParsingUtil.edgesListToJson(info.bridges));
+            answer.append(info.bridges.size());
             answer.append("'");
         }
         if (info.articulationPoints != null) {
             answer.append(", '");
-            answer.append(ParsingUtil.verticesListToJson(info.articulationPoints));
+            answer.append(info.articulationPoints.size());
             answer.append("'");
         }
         if (info.connectedComponents != null) {

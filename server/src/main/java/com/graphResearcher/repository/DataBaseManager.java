@@ -32,39 +32,17 @@ public class DataBaseManager {
             String URL = "db.url";
             connection = DriverManager.getConnection(PropertiesUtil.get(URL), PropertiesUtil.get(NAME), PropertiesUtil.get(PASSWORD));
         } catch (SQLException e) {
-            log.error("DataBaseManager hasn't been created");
+            log.error("DataBaseManager hasn't been created", e);
             throw new RuntimeException(e);
         }
         log.info("DataBaseManager has been created");
     }
 
-    public void saveResearchInfo(int userID, int graphID, GraphResearchInfo info) {
-
-        String tableName = "graph_research_info";
-        ParseResearchInfo result = new ParseResearchInfo(info, graphID);
-
-        String sql1 = "DELETE FROM " + tableName + " WHERE graph_id = " + graphID;
-
-        String sql2 = "INSERT INTO " + tableName + "(" + "user_id, " + result.fieldsName + ") VALUES(" + userID + ", " + result.fields + ")";
-
-        try {
-            PreparedStatement preparedStatement1 = connection.prepareStatement(sql1);
-            preparedStatement1.execute();
-
-            PreparedStatement preparedStatement2 = connection.prepareStatement(sql2);
-            preparedStatement2.execute();
-
-        } catch (SQLException e) {
-            log.error("Graph research info haven't been saved");
-            throw new RuntimeException(e);
-        }
-    }
-
     public int saveGraph(int userID, GraphModel graph) {
         String tableName = "graph_metadata";
         String sql = "INSERT INTO " + tableName + "(user_id, is_directed, is_weighted, has_self_loops, has_multiple_edges)" +
-                "VALUES(" + userID + ", " + graph.metadata.isDirected + ", " + graph.metadata.isWeighted + ", "
-                + graph.metadata.hasSelfLoops + ", " + graph.metadata.hasMultipleEdges + ") " +
+                "VALUES(" + userID + ", " + graph.getMetadata().isDirected + ", " + graph.getMetadata().isWeighted + ", "
+                + graph.getMetadata().hasSelfLoops + ", " + graph.getMetadata().hasMultipleEdges + ") " +
                 "RETURNING graph_id";
         int graphID;
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
@@ -74,15 +52,22 @@ public class DataBaseManager {
             saveVertices(graphID, graph.getVertices());
             saveEdges(graphID, graph.getEdges());
         } catch (SQLException e) {
-            log.error("Graph hasn't been saved");
+            log.error("Graph hasn't been saved", e);
             throw new RuntimeException(e);
         }
-        log.info("Graph has been saved");
+        log.info("Graph " + graphID + " has been saved");
         return graphID;
     }
 
     private void saveVertices(int graphID, List<Vertex> vertices) {
-        String tableName = "vertices";
+        saveVertices(graphID, vertices, "vertices");
+    }
+
+    private void saveArticulationPoints(int graphID, List<Vertex> vertices) {
+        saveVertices(graphID, vertices, "articulation_points");
+    }
+
+    private void saveVertices(int graphID, List<Vertex> vertices, String tableName) {
         String sql = "INSERT INTO " + tableName + "(graph_id, index, data) VALUES(?, ?, ?)";
         try (PreparedStatement insertVertexStatement = connection.prepareStatement(sql)) {
             for (Vertex v: vertices) {
@@ -92,14 +77,20 @@ public class DataBaseManager {
                 insertVertexStatement.executeUpdate();
             }
         } catch (SQLException e) {
-            log.error("Vertices haven't been saved");
+            log.error("Vertices haven't been saved", e);
             throw new RuntimeException(e);
         }
-        log.info("Vertices have been saved");
     }
 
     private void saveEdges(int graphID, List<Edge> edges) {
-        String tableName = "edges";
+        saveEdges(graphID, edges, "edges");
+    }
+
+    private void saveBridges(int graphID, List<Edge> edges) {
+        saveEdges(graphID, edges, "bridges");
+    }
+
+    private void saveEdges(int graphID, List<Edge> edges, String tableName) {
         String insertEdgeSql = "INSERT INTO " + tableName + "(graph_id, source, target, weight, data) VALUES(?, ?, ?, ?, ?)";
         try (PreparedStatement insertEdgeStatement = connection.prepareStatement(insertEdgeSql)) {
             for (Edge e: edges) {
@@ -111,10 +102,33 @@ public class DataBaseManager {
                 insertEdgeStatement.executeUpdate();
             }
         } catch (SQLException e) {
-            log.error("Edges haven't been saved");
+            log.error("Edges haven't been saved", e);
             throw new RuntimeException(e);
         }
-        log.info("Edges have been saved");
+    }
+
+    public void saveResearchInfo(int userID, int graphID, GraphResearchInfo info) {
+        String tableName = "graph_research_info";
+        ParseResearchInfo result = new ParseResearchInfo(info, graphID);
+
+        saveArticulationPoints(graphID, info.articulationPoints);
+        saveBridges(graphID, info.bridges);
+
+        String sql1 = "DELETE FROM " + tableName + " WHERE graph_id = " + graphID;
+
+        String sql2 = "INSERT INTO " + tableName + "(" + "user_id, " + result.fieldsName + ") VALUES(" + userID + ", " + result.fields + ")";
+
+        try {
+            PreparedStatement preparedStatement1 = connection.prepareStatement(sql1);
+            preparedStatement1.execute();
+
+            PreparedStatement preparedStatement2 = connection.prepareStatement(sql2);
+            preparedStatement2.execute();
+        } catch (SQLException e) {
+            log.error("Graph research info haven't been saved", e);
+            throw new RuntimeException(e);
+        }
+        log.info("Graph " + graphID + " research info have been saved");
     }
 
     public GraphResearchInfo getResearchInfo(int graphID) {
@@ -125,14 +139,16 @@ public class DataBaseManager {
             ResultSet rs = preparedStatement.executeQuery();
 
             GraphResearchInfo researchInfo = ParsingUtil.resultSetToGraphResearchInfo(rs);
+            researchInfo.articulationPoints = getArticulationPoints(graphID);
+            researchInfo.bridges = getBridges(graphID);
 
-            log.info("Graph research info have been received");
+            log.info("Graph " + graphID + " research info have been received");
             return researchInfo;
         } catch (SQLException e) {
-            log.error("Graph research info haven't been received");
+            log.error("Graph " + graphID + " research info haven't been received", e);
             throw new RuntimeException(e);
         } catch (JsonProcessingException e) {
-            log.error("Json parse error");
+            log.error("Json parse error", e);
             throw new RuntimeException(e);
         }
     }
@@ -144,23 +160,27 @@ public class DataBaseManager {
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
             ResultSet rs = preparedStatement.executeQuery();
             rs.next();
-            log.info("Graph metadata have been received");
             return new GraphMetadata(rs.getBoolean("is_directed"), rs.getBoolean("is_weighted"), rs.getBoolean("has_self_loops"), rs.getBoolean("has_multiple_edges"));
         } catch (SQLException e) {
-            log.error("Graph metadata haven't been received");
+            log.error("Graph " + graphID + " metadata haven't been received", e);
             throw new RuntimeException(e);
         }
     }
 
     public GraphModel getGraph(int graphID) {
-        List<Vertex> vertices = getVertices(graphID);
-        List<Edge> edges = getEdges(graphID, vertices);
-        return new GraphModel(vertices, edges, getGraphMetadata(graphID));
+        return new GraphModel(getVertices(graphID), getEdges(graphID), getGraphMetadata(graphID));
     }
 
     private List<Vertex> getVertices(int graphID) {
+        return getVertices(graphID, "vertices");
+    }
+
+    private List<Vertex> getArticulationPoints(int graphID) {
+        return getVertices(graphID, "articulation_points");
+    }
+
+    private List<Vertex> getVertices(int graphID, String tableName) {
         List<Vertex> vertices = new ArrayList<>();
-        String tableName = "vertices";
         String sql = "SELECT index, data FROM " + tableName  + " WHERE graph_id = " + graphID;
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             ResultSet rs = preparedStatement.executeQuery();
@@ -168,21 +188,28 @@ public class DataBaseManager {
                 vertices.add(new Vertex(rs.getInt("index"), rs.getString("data")));
             }
         } catch(SQLException e) {
-            log.error("Vertices haven't been received");
+            log.error("Vertices haven't been received", e);
             throw new RuntimeException(e);
         }
-        log.info("Vertices have been received");
         return vertices;
     }
 
-    private List<Edge> getEdges(int graphID, List<Vertex> vertices) {
+    private List<Edge> getEdges(int graphID) {
+        return getEdges(graphID, "edges");
+    }
+
+    private List<Edge> getBridges(int graphID) {
+        return getEdges(graphID, "bridges");
+    }
+
+    private List<Edge> getEdges(int graphID, String tableName) {
+        List<Vertex> vertices = getVertices(graphID);
+
         TreeMap<Integer, Vertex> verticesMap = new TreeMap<>();
         for (Vertex v: vertices) {
             verticesMap.put(v.getIndex(), v);
         }
-
         ArrayList<Edge> edges = new ArrayList<>();
-        String tableName = "edges";
         String sql = "SELECT source, target, weight, data FROM " + tableName + " WHERE graph_id = " + graphID;
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             ResultSet rs = preparedStatement.executeQuery();
@@ -192,10 +219,9 @@ public class DataBaseManager {
                 edges.add(new Edge(s, t, rs.getInt("weight"), rs.getString("data")));
             }
         } catch (SQLException e) {
-            log.error("Edges haven't been received");
+            log.error("Edges haven't been received", e);
             throw new RuntimeException(e);
         }
-        log.info("Edges have been received");
         return edges;
     }
 
@@ -236,7 +262,7 @@ public class DataBaseManager {
             log.error("User researches haven't been deleted", e);
             throw new RuntimeException(e);
         }
-        log.info("All user graphs have been deleted");
+        log.info("All user " + userID + " graphs have been deleted");
     }
 
     public void deleteGraph(int graphID) {
@@ -245,12 +271,14 @@ public class DataBaseManager {
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.execute();
         } catch (SQLException e) {
-            log.error("Graph haven't been deleted");
+            log.error("Graph " + graphID + " haven't been deleted", e);
             throw new RuntimeException(e);
         }
-        log.info("Graph have been deleted");
+        log.info("Graph " + graphID + " have been deleted");
         deleteVertices(graphID);
         deleteEdges(graphID);
+        deleteArticulationPoints(graphID);
+        deleteBridges(graphID);
     }
 
     private void deleteVertices(int graphID) {
@@ -259,10 +287,20 @@ public class DataBaseManager {
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.execute();
         } catch (SQLException e) {
-            log.error("Vertices haven't been deleted");
+            log.error("Vertices haven't been deleted", e);
             throw new RuntimeException(e);
         }
-        log.info("Vertices have been deleted");
+    }
+
+    private void deleteArticulationPoints(int graphID) {
+        String tableName = "articulation_points";
+        String sql = "DELETE FROM " + tableName + " WHERE graph_id = " + graphID;
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.execute();
+        } catch (SQLException e) {
+            log.error("Articulation points haven't been deleted", e);
+            throw new RuntimeException(e);
+        }
     }
 
     private void deleteEdges(int graphID) {
@@ -271,10 +309,20 @@ public class DataBaseManager {
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.execute();
         } catch (SQLException e) {
-            log.error("Edges haven't been deleted");
+            log.error("Edges haven't been deleted", e);
             throw new RuntimeException(e);
         }
-        log.info("Edges have been deleted");
+    }
+
+    private void deleteBridges(int graphID) {
+        String tableName = "bridges";
+        String sql = "DELETE FROM " + tableName + " WHERE graph_id = " + graphID;
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.execute();
+        } catch (SQLException e) {
+            log.error("Bridges haven't been deleted");
+            throw new RuntimeException(e);
+        }
     }
 
     private void initVerticesTable() {
@@ -283,11 +331,11 @@ public class DataBaseManager {
         String sql = "CREATE TABLE " + tableName + "(id SERIAL PRIMARY KEY, graph_id INT, index INT, data TEXT)";
 
         try {
-            PreparedStatement preparedStatement1 = connection.prepareStatement(sql);
-            preparedStatement1.execute();
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.execute();
 
         } catch (SQLException e) {
-            log.error("init error");
+            log.error("Init vertices table error", e);
             throw new RuntimeException(e);
         }
     }
@@ -296,10 +344,10 @@ public class DataBaseManager {
         String tableName = "edges";
         String sql = "CREATE TABLE " + tableName + "(id SERIAL PRIMARY KEY, graph_id INT, source INT, target INT, weight DOUBLE PRECISION, data TEXT)";
         try {
-            PreparedStatement preparedStatement1 = connection.prepareStatement(sql);
-            preparedStatement1.execute();
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.execute();
         } catch (SQLException e) {
-            log.error("init error");
+            log.error("Init edges table error", e);
             throw new RuntimeException(e);
         }
     }
@@ -310,29 +358,57 @@ public class DataBaseManager {
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.execute();
         } catch (SQLException e) {
-            log.error("Metadata table haven't been created");
+            log.error("Init metadata table error", e);
             throw new RuntimeException(e);
         }
-        log.info("Metadata table have been created");
     }
 
     private void initGraphResearchInfoTable() {
         String tableName = "graph_research_info";
         String sql = "CREATE TABLE " + tableName + "(id SERIAL PRIMARY KEY, " +
-                "graph_id INT, user_id INT, connectivity BOOLEAN, bridges TEXT, " +
-                "articulation_points TEXT, connected_components TEXT)";
+                "graph_id INT, user_id INT, connectivity BOOLEAN, bridges INT, " +
+                "articulation_points INT, connected_components TEXT)";
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.execute();
         } catch (SQLException e) {
-            log.error("GraphResearchInfo table haven't been created");
+            log.error("Init graphResearchInfo table error", e);
             throw new RuntimeException(e);
         }
-        log.info("GraphResearchInfo table have been created");
     }
+
+    private void initArticulationPointsTable() {
+        String tableName = "articulation_points";
+        String sql = "CREATE TABLE " + tableName + "(id SERIAL PRIMARY KEY, graph_id INT, index INT, data TEXT)";
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.execute();
+
+        } catch (SQLException e) {
+            log.error("init articulationPoints table error", e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void initBridgesTable() {
+        String tableName = "bridges";
+        String sql = "CREATE TABLE " + tableName + "(id SERIAL PRIMARY KEY, graph_id INT, source INT, target INT, weight DOUBLE PRECISION, data TEXT)";
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.execute();
+        } catch (SQLException e) {
+            log.error("Init bridges table error", e);
+            throw new RuntimeException(e);
+        }
+    }
+
     public void initDB() {
         initEdgesTable();
         initVerticesTable();
         initMetadataTable();
+
         initGraphResearchInfoTable();
+        initArticulationPointsTable();
+        initBridgesTable();
+        log.info("initialization was successful");
     }
 }
