@@ -46,6 +46,6 @@ public class Vertex {
 
     @Override
     public int hashCode() {
-        return index + Objects.hash(data);
+        return index;
     }
 }

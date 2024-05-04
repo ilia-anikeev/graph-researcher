@@ -17,17 +17,15 @@ import java.util.stream.Collectors;
 
 @RestController
 public class GraphResearchController {
+    private static final Logger log = LoggerFactory.getLogger(GraphResearchController.class);
     private final GraphResearchService researchService;
     private final SaveService saveService;
-    private static final Logger log = LoggerFactory.getLogger(GraphResearchController.class);
 
     @PostMapping("/research")
     public ResponseEntity<String> research(HttpServletRequest request) {
         try {
             String jsonString = request.getReader().lines().collect(Collectors.joining());
-
             ObjectMapper mapper = new ObjectMapper();
-
             JsonNode json = mapper.readTree(jsonString);
 
             GraphModel graphModel = new GraphModel(json.get("graph"));
@@ -35,20 +33,19 @@ public class GraphResearchController {
             int userID = json.get("userID").asInt();
             int graphID = saveService.saveGraph(userID, graphModel);
 
-            GraphResearchInfo researchResult = researchService.softResearch(graphModel);
+            GraphResearchInfo researchResult = researchService.research(graphModel);
 
             saveService.saveResearchResult(userID, graphID, researchResult);
 
             log.info("Research was successfully completed");
-            return ResponseEntity.ok("Граф жёска исследован!\n" + researchResult.toJson());
+            return ResponseEntity.ok(researchResult.toJson().toString());
         } catch (JsonProcessingException e) {
-            log.error("Json parsing error in saveGraph ", e);
+            log.error("Json parsing error", e);
             throw new RuntimeException(e);
         } catch (IOException e) {
-            log.error("Request parsing error in saveGraph ", e);
+            log.error("Request parsing error", e);
             throw new RuntimeException(e);
         }
-
     }
 
     GraphResearchController(GraphResearchService researchService, SaveService saveService) {

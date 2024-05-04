@@ -13,7 +13,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class GraphResearcherApplicationTests {
     private GraphModel graph1;
     private GraphModel graph2;
-
     GraphResearcherApplicationTests() {
         buildGraph1();
         buildGraph2();
@@ -53,7 +52,7 @@ class GraphResearcherApplicationTests {
         db.createUser(userID);
 
         int graphID = db.saveGraph(userID, graph1);
-        GraphResearchInfo info = service.softResearch(graph1);
+        GraphResearchInfo info = service.research(graph1);
 
         db.saveResearchInfo(userID, graphID, info);
 
@@ -73,7 +72,7 @@ class GraphResearcherApplicationTests {
         db.createUser(userID);
 
         int graphID = db.saveGraph(userID, graph2);
-        GraphResearchInfo info = service.softResearch(graph2);
+        GraphResearchInfo info = service.research(graph2);
 
         db.saveResearchInfo(userID, graphID, info);
 
@@ -93,7 +92,7 @@ class GraphResearcherApplicationTests {
         db.createUser(userID);
 
         int graphID1 = db.saveGraph(userID, graph1);
-        GraphResearchInfo info1 = service.softResearch(graph1);
+        GraphResearchInfo info1 = service.research(graph1);
 
         db.saveResearchInfo(userID, graphID1, info1);
 
@@ -102,7 +101,7 @@ class GraphResearcherApplicationTests {
         assertEquals(info1, receivedInfo1);
 
         int graphID2 = db.saveGraph(userID, graph2);
-        GraphResearchInfo info2 = service.softResearch(graph2);
+        GraphResearchInfo info2 = service.research(graph2);
 
         db.saveResearchInfo(userID, graphID2, info2);
 

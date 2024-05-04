@@ -36,7 +36,7 @@ public class SaveController {
             log.info("Graph has been saved");
             return new ResponseEntity<>("Graph has been saved with ID" + graphID, HttpStatus.OK);
         } catch (JsonProcessingException e) {
-            log.error("Json parsing error in saveGraph", e);
+            log.error("Json parsing error", e);
             throw new RuntimeException(e);
         }
     }
