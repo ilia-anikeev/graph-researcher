@@ -109,9 +109,9 @@ public class ParsingUtil {
         rs.next();
         GraphResearchInfo info = new GraphResearchInfo();
 
-        info.connectivity = rs.getBoolean("connectivity");
+        info.isConnected = rs.getBoolean("connectivity");
         if (rs.wasNull()) {
-            info.connectivity = null;
+            info.isConnected = null;
         }
         ObjectMapper objectMapper = new ObjectMapper();
 

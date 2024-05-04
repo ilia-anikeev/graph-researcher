@@ -35,7 +35,7 @@ public class GraphResearchController {
             int userID = json.get("userID").asInt();
             int graphID = saveService.saveGraph(userID, graphModel);
 
-            GraphResearchInfo researchResult = researchService.softResearch(graphModel);
+            GraphResearchInfo researchResult = researchService.research(graphModel);
 
             saveService.saveResearchResult(userID, graphID, researchResult);
 
