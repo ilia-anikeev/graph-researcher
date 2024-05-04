@@ -28,7 +28,7 @@ class GraphResearcherApplicationTests {
 
 
         GraphResearchInfo researchInfo = new GraphResearchInfo();
-        researchInfo.connectivity = true;
+        researchInfo.isConnected = true;
         researchInfo.bridges = List.of(e4);
         researchInfo.articulationPoints = List.of(v1);
         researchInfo.connectedComponents = List.of(vertices);
@@ -38,7 +38,7 @@ class GraphResearcherApplicationTests {
         db.saveResearchInfo(1, 1, researchInfo);
         GraphResearchInfo researchInfoDB = db.getResearchInfo(1, 1);
 
-        assertEquals(researchInfo.connectivity, researchInfoDB.connectivity);
+        assertEquals(researchInfo.isConnected, researchInfoDB.isConnected);
 
         for (int i = 0; i < researchInfoDB.bridges.size(); ++i) {
             assertEquals(researchInfo.bridges.get(i), researchInfoDB.bridges.get(i));
@@ -59,7 +59,7 @@ class GraphResearcherApplicationTests {
     @Test
     void saveGraphInfoTest2() {
         GraphResearchInfo researchInfo = new GraphResearchInfo();
-        researchInfo.connectivity = null;
+        researchInfo.isConnected = null;
         researchInfo.bridges = null;
         researchInfo.articulationPoints = null;
         researchInfo.connectedComponents = null;
@@ -69,7 +69,7 @@ class GraphResearcherApplicationTests {
         db.saveResearchInfo(1, 1, researchInfo);
         GraphResearchInfo researchInfoDB = db.getResearchInfo(1, 1);
 
-        assertEquals(researchInfo.connectivity, researchInfoDB.connectivity);
+        assertEquals(researchInfo.isConnected, researchInfoDB.isConnected);
         assertEquals(researchInfo.bridges, researchInfoDB.bridges);
         assertEquals(researchInfo.articulationPoints, researchInfoDB.articulationPoints);
         assertEquals(researchInfo.connectedComponents, researchInfoDB.connectedComponents);

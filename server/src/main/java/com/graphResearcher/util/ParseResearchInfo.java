@@ -18,7 +18,7 @@ public class ParseResearchInfo {
     public String getFieldsName(GraphResearchInfo info) {
         List<String> notNullFields = new ArrayList<>();
         notNullFields.add("graph_id");
-        if (info.connectivity != null) {
+        if (info.isConnected != null) {
             notNullFields.add("connectivity");
         }
         if (info.bridges != null) {
@@ -45,9 +45,9 @@ public class ParseResearchInfo {
 
         answer.append(graphID);
 
-        if (info.connectivity != null) {
+        if (info.isConnected != null) {
             answer.append(", '");
-            answer.append(info.connectivity);
+            answer.append(info.isConnected);
             answer.append("'");
         }
         if (info.bridges != null) {
