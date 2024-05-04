@@ -112,11 +112,24 @@ public class ParsingUtil {
         rs.next();
         GraphResearchInfo info = new GraphResearchInfo();
 
-        info.isConnected = rs.getBoolean("connectivity");
+        info.isConnected = rs.getBoolean("isConnected");
         if (rs.wasNull()) {
             info.isConnected = null;
         }
+        info.isBiconnected = rs.getBoolean("isBiconnected");
+        if (rs.wasNull()) {
+            info.isBiconnected = null;
+        }
+        info.isPlanar = rs.getBoolean("isPlanar");
+        if (rs.wasNull()) {
+            info.isPlanar = null;
+        }
+        info.isChordal = rs.getBoolean("isChordal");
+        if (rs.wasNull()) {
+            info.isChordal = null;
+        }
         ObjectMapper objectMapper = new ObjectMapper();
+
 
 
 //        String arg2 = rs.getString("bridges");

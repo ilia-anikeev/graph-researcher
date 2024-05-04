@@ -140,6 +140,7 @@ public class DataBaseManager {
         saveBridges(graphID, info.bridges);
         saveConnectedComponents(userID, graphID, info.connectedComponents);
 
+
         String sql1 = "DELETE FROM " + tableName + " WHERE graph_id = " + graphID;
 
         String sql2 = "INSERT INTO " + tableName + "(" + "user_id, " + result.fieldsName + ") VALUES(" + userID + ", " + result.fields + ")";
@@ -421,8 +422,9 @@ public class DataBaseManager {
     private void initGraphResearchInfoTable() {
         String tableName = "graph_research_info";
         String sql = "CREATE TABLE " + tableName + "(id SERIAL PRIMARY KEY, " +
-                "graph_id INT, user_id INT, connectivity BOOLEAN, bridges INT, " +
-                "articulation_points INT, connected_components TEXT)";
+                "graph_id INT, user_id INT, isConnected BOOLEAN, isBiconnected BOOLEAN, " +
+                "articulation_points INT, bridges INT, connected_components INT, " +
+                "isPlanar BOOLEAN, isChordal BOOLEAN)";
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.execute();
         } catch (SQLException e) {

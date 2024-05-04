@@ -20,16 +20,25 @@ public class ParseResearchInfo {
         List<String> notNullFields = new ArrayList<>();
         notNullFields.add("graph_id");
         if (info.isConnected != null) {
-            notNullFields.add("connectivity");
+            notNullFields.add("isConnected");
         }
-        if (info.bridges != null) {
-            notNullFields.add("bridges");
+        if (info.isBiconnected != null) {
+            notNullFields.add("isBiconnected");
         }
         if (info.articulationPoints != null) {
             notNullFields.add("articulation_points");
         }
+        if (info.bridges != null) {
+            notNullFields.add("bridges");
+        }
         if (info.connectedComponents != null) {
             notNullFields.add("connected_components");
+        }
+        if (info.isChordal != null) {
+            notNullFields.add("isPlanar");
+        }
+        if (info.isChordal != null) {
+            notNullFields.add("isChordal");
         }
         StringBuilder fields = new StringBuilder();
         for (int i = 0; i < notNullFields.size(); ++i) {
@@ -51,9 +60,9 @@ public class ParseResearchInfo {
             answer.append(info.isConnected);
             answer.append("'");
         }
-        if (info.bridges != null) {
+        if (info.isBiconnected != null) {
             answer.append(", '");
-            answer.append(info.bridges.size());
+            answer.append(info.isBiconnected);
             answer.append("'");
         }
         if (info.articulationPoints != null) {
@@ -61,9 +70,24 @@ public class ParseResearchInfo {
             answer.append(info.articulationPoints.size());
             answer.append("'");
         }
+        if (info.bridges != null) {
+            answer.append(", '");
+            answer.append(info.bridges.size());
+            answer.append("'");
+        }
         if (info.connectedComponents != null) {
             answer.append(", '");
             answer.append(info.connectedComponents.size());
+            answer.append("'");
+        }
+        if (info.isPlanar != null) {
+            answer.append(", '");
+            answer.append(info.isPlanar);
+            answer.append("'");
+        }
+        if (info.isChordal != null) {
+            answer.append(", '");
+            answer.append(info.isChordal);
             answer.append("'");
         }
         return answer.toString();

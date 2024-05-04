@@ -15,19 +15,19 @@ public class GraphResearchInfo {
     public List<Vertex> articulationPoints;
     public List<Edge> bridges;
     public List<List<Vertex>> connectedComponents;
-    public List<Graph<Vertex, WeightedEdge>> blocks;
+    public List<Graph<Vertex, WeightedEdge>> blocks; //TODO
 
     public Boolean isPlanar;
-    public Map<Vertex, List<Edge>> embedding;
-    public Graph<Vertex, WeightedEdge> kuratovskySubgraph;
+    public Map<Vertex, List<Edge>> embedding; //TODO
+    public Graph<Vertex, WeightedEdge> kuratovskySubgraph; //TODO
 
     public Boolean isChordal;
-    public List<Vertex> perfectEliminationOrder;
-    public Integer chromaticNumber;
-    public Map<Vertex, Integer> coloring;
-    public List<Vertex> maxClique;
-    public List<Vertex> independentSet;
-    public List<List<Vertex>> minimalVertexSeparator;
+    public List<Vertex> perfectEliminationOrder; //TODO
+    public Integer chromaticNumber; //TODO
+    public Map<Vertex, Integer> coloring; //TODO
+    public List<Vertex> maxClique; //TODO
+    public List<Vertex> independentSet; //TODO
+    public List<List<Vertex>> minimalVertexSeparator; //TODO
 
 
     public JsonNode toJson() {
@@ -49,6 +49,9 @@ public class GraphResearchInfo {
             return false;
         }
         if (isConnected != other.isConnected) {
+            return false;
+        }
+        if (isBiconnected != other.isBiconnected) {
             return false;
         }
         if (bridges.size() != other.bridges.size()) {
@@ -80,6 +83,12 @@ public class GraphResearchInfo {
                     return false;
                 }
             }
+        }
+        if (isPlanar != other.isPlanar) {
+            return false;
+        }
+        if (isChordal != other.isChordal) {
+            return false;
         }
         return true;
     }

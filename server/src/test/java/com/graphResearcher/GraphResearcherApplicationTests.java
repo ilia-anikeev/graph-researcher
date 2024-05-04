@@ -88,7 +88,7 @@ class GraphResearcherApplicationTests {
         int userID = 3;
         GraphResearchService service = new GraphResearchService();
         DataBaseManager db = new DataBaseManager();
-
+//        db.initDB();
         db.createUser(userID);
 
         int graphID1 = db.saveGraph(userID, graph1);

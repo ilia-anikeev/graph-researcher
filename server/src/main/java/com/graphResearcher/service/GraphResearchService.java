@@ -42,10 +42,11 @@ public class GraphResearchService {
 
         info.isBiconnected = biconnectivityInspector.isBiconnected();
 
+        info.articulationPoints= new ArrayList<>(biconnectivityInspector.getCutpoints());
+
         info.bridges = biconnectivityInspector.getBridges().stream()
                 .map(WeightedEdge::toEdge)
                 .collect(Collectors.toList());
-        info.articulationPoints= new ArrayList<>(biconnectivityInspector.getCutpoints());
 
         info.connectedComponents= connectivityInspector.connectedSets().stream()
                 .map(ArrayList::new)
