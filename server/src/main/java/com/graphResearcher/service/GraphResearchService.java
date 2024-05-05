@@ -18,6 +18,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static com.graphResearcher.util.ParsingUtil.graphToGraphModel;
+
 
 @Service
 public class GraphResearchService {
@@ -25,7 +27,7 @@ public class GraphResearchService {
         Graph<Vertex, WeightedEdge> graph = ParsingUtil.graphModelToGraph(graphModel);
         GraphResearchInfo info = new GraphResearchInfo();
 
-        connectivityResearch(info, graph);
+        connectivityResearch(info, graph, graphModel);
 
         if (graph.getType().isUndirected()) {
             planarityResearch(info, graph);
@@ -34,7 +36,7 @@ public class GraphResearchService {
         return info;
     }
 
-    private void connectivityResearch(GraphResearchInfo info, Graph<Vertex, WeightedEdge> graph) {
+    private void connectivityResearch(GraphResearchInfo info, Graph<Vertex, WeightedEdge> graph, GraphModel graphModel) {
         BiconnectivityInspector<Vertex, WeightedEdge> biconnectivityInspector = new BiconnectivityInspector<>(graph);
         ConnectivityInspector<Vertex, WeightedEdge> connectivityInspector = new ConnectivityInspector<>(graph);
 
@@ -50,9 +52,11 @@ public class GraphResearchService {
 
         info.connectedComponents= connectivityInspector.connectedSets().stream()
                 .map(ArrayList::new)
-                .collect(Collectors.toList());
+                .map((ArrayList<Vertex> vertices) -> ParsingUtil.listVertexToSubgraph(vertices, graphModel)).toList();
 
-        info.blocks = biconnectivityInspector.getBlocks().stream().toList();
+        info.blocks = biconnectivityInspector.getBlocks().stream()
+                .map(b -> graphToGraphModel(graph, graphModel.getMetadata())).toList();
+
     }
 
     private void planarityResearch(GraphResearchInfo info, Graph<Vertex, WeightedEdge> graph ) {

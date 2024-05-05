@@ -107,16 +107,19 @@ public class DataBaseManager {
             throw new RuntimeException(e);
         }
     }
+    private void saveBlocks(int userID, int graphID, List<GraphModel> listGraphModels) {
+        saveSubGraphs(userID, graphID, listGraphModels, "blocks");
+    }
 
-    private void saveConnectedComponents(int userID, int graphID, List<List<Vertex>> listVertices2D) {
-        GraphModel graph = getGraph(graphID);
+    private void saveConnectedComponents(int userID, int graphID, List<GraphModel> listGraphModels) {
+        saveSubGraphs(userID, graphID, listGraphModels, "connected_components");
+    }
+
+    private void saveSubGraphs(int userID, int graphID, List<GraphModel> listGraphModels, String tableName) {
         List<Integer> subgraphIDs = new ArrayList<>();
-        for (List<Vertex> component: listVertices2D) {
-            GraphModel subGraph = ParsingUtil.listVertexToSubgraph(component, graph);
+        for (GraphModel subGraph: listGraphModels) {
             subgraphIDs.add(saveGraph(userID, subGraph));
         }
-
-        String tableName = "connected_components";
 
         String sql = "INSERT INTO " + tableName + "(graph_id, subgraph_id) VALUES(?, ?)";
 
@@ -127,7 +130,7 @@ public class DataBaseManager {
                 preparedStatement.executeUpdate();
             }
         } catch (SQLException e) {
-            log.error("Edges haven't been saved", e);
+            log.error("SubGraphs haven't been saved", e);
             throw new RuntimeException(e);
         }
     }
@@ -139,6 +142,7 @@ public class DataBaseManager {
         saveArticulationPoints(graphID, info.articulationPoints);
         saveBridges(graphID, info.bridges);
         saveConnectedComponents(userID, graphID, info.connectedComponents);
+        saveBlocks(userID, graphID, info.blocks);
 
 
         String sql1 = "DELETE FROM " + tableName + " WHERE graph_id = " + graphID;
@@ -169,6 +173,7 @@ public class DataBaseManager {
             researchInfo.articulationPoints = getArticulationPoints(graphID);
             researchInfo.bridges = getBridges(graphID);
             researchInfo.connectedComponents = getConnectedComponents(graphID);
+            researchInfo.blocks = getBlocks(graphID);
 
             log.info("Graph " + graphID + " research info have been received");
             return researchInfo;
@@ -181,21 +186,29 @@ public class DataBaseManager {
         }
     }
 
-    private List<List<Vertex>> getConnectedComponents(int graphID) {
-        List<GraphModel> components = new ArrayList<>();
-        String tableName = "connected_components";
+    private List<GraphModel> getConnectedComponents(int graphID) {
+        return getSubGraphs(graphID, "connected_components");
+    }
+
+    private List<GraphModel> getBlocks(int graphID) {
+        return getSubGraphs(graphID, "blocks");
+    }
+
+    private List<GraphModel> getSubGraphs(int graphID, String tableName) {
+        List<GraphModel> subGraphs = new ArrayList<>();
         String sql = "SELECT subgraph_id FROM " + tableName  + " WHERE graph_id = " + graphID;
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             ResultSet rs = preparedStatement.executeQuery();
             while (rs.next()) {
-                components.add(getGraph(rs.getInt("subgraph_id")));
+                subGraphs.add(getGraph(rs.getInt("subgraph_id")));
             }
         } catch(SQLException e) {
-            log.error("Vertices haven't been received", e);
+            log.error("Blocks haven't been received", e);
             throw new RuntimeException(e);
         }
-        return components.stream().map(GraphModel::getVertices).toList();
+        return subGraphs;
     }
+
 
     private GraphMetadata getGraphMetadata(int graphID) {
         String tableName = "graph_metadata";
@@ -324,6 +337,7 @@ public class DataBaseManager {
         deleteArticulationPoints(graphID);
         deleteBridges(graphID);
         deleteConnectedComponents(graphID);
+        deleteBlocks(graphID);
     }
 
     private void deleteVertices(int graphID) {
@@ -381,6 +395,17 @@ public class DataBaseManager {
         }
     }
 
+    private void deleteBlocks(int graphID) {
+        String tableName = "blocks";
+        String sql = "DELETE FROM " + tableName + " WHERE graph_id = " + graphID;
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.execute();
+        } catch (SQLException e) {
+            log.error("Blocks haven't been deleted");
+            throw new RuntimeException(e);
+        }
+    }
+
     private void initVerticesTable() {
         String tableName = "vertices";
 
@@ -424,7 +449,7 @@ public class DataBaseManager {
         String sql = "CREATE TABLE " + tableName + "(id SERIAL PRIMARY KEY, " +
                 "graph_id INT, user_id INT, isConnected BOOLEAN, isBiconnected BOOLEAN, " +
                 "articulation_points INT, bridges INT, connected_components INT, " +
-                "isPlanar BOOLEAN, isChordal BOOLEAN)";
+                "blocks INT, isPlanar BOOLEAN, isChordal BOOLEAN)";
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.execute();
         } catch (SQLException e) {
@@ -470,6 +495,18 @@ public class DataBaseManager {
         }
     }
 
+    private void initBlocksTable() {
+        String tableName = "blocks";
+        String sql = "CREATE TABLE " + tableName + "(id SERIAL PRIMARY KEY, graph_id INT, subgraph_id INT)";
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.execute();
+        } catch (SQLException e) {
+            log.error("Init blocks table error", e);
+            throw new RuntimeException(e);
+        }
+    }
+
     public void initDB() {
         initEdgesTable();
         initVerticesTable();
@@ -479,6 +516,7 @@ public class DataBaseManager {
         initArticulationPointsTable();
         initBridgesTable();
         initConnectedComponentsTable();
+        initBlocksTable();
 
         log.info("Initialization was successful");
     }

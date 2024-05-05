@@ -34,7 +34,10 @@ public class ParseResearchInfo {
         if (info.connectedComponents != null) {
             notNullFields.add("connected_components");
         }
-        if (info.isChordal != null) {
+        if (info.blocks != null) {
+            notNullFields.add("blocks");
+        }
+        if (info.isPlanar != null) {
             notNullFields.add("isPlanar");
         }
         if (info.isChordal != null) {
@@ -78,6 +81,11 @@ public class ParseResearchInfo {
         if (info.connectedComponents != null) {
             answer.append(", '");
             answer.append(info.connectedComponents.size());
+            answer.append("'");
+        }
+        if (info.blocks != null) {
+            answer.append(", '");
+            answer.append(info.blocks.size());
             answer.append("'");
         }
         if (info.isPlanar != null) {

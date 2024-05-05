@@ -108,10 +108,13 @@ public class ParsingUtil {
         return vertices2D;
     }
 
+    public static GraphModel graphToGraphModel(Graph<Vertex, WeightedEdge> graph, GraphMetadata metadata) {
+        return new GraphModel(new ArrayList<>(graph.vertexSet()), graph.edgeSet().stream().map(WeightedEdge::toEdge).toList(), metadata);
+    }
+
     public static GraphResearchInfo resultSetToGraphResearchInfo(ResultSet rs) throws SQLException, JsonProcessingException {
         rs.next();
         GraphResearchInfo info = new GraphResearchInfo();
-
         info.isConnected = rs.getBoolean("isConnected");
         if (rs.wasNull()) {
             info.isConnected = null;

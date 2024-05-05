@@ -14,8 +14,8 @@ public class GraphResearchInfo {
     public Boolean isBiconnected;
     public List<Vertex> articulationPoints;
     public List<Edge> bridges;
-    public List<List<Vertex>> connectedComponents;
-    public List<Graph<Vertex, WeightedEdge>> blocks; //TODO
+    public List<GraphModel> connectedComponents;
+    public List<GraphModel> blocks;
 
     public Boolean isPlanar;
     public Map<Vertex, List<Edge>> embedding; //TODO
@@ -29,7 +29,6 @@ public class GraphResearchInfo {
     public List<Vertex> independentSet; //TODO
     public List<List<Vertex>> minimalVertexSeparator; //TODO
 
-
     public JsonNode toJson() {
         ObjectMapper objectMapper = new ObjectMapper();
         ObjectNode json = objectMapper.createObjectNode();
@@ -38,7 +37,7 @@ public class GraphResearchInfo {
         json.put("isBiconnected", isBiconnected);
         json.set("articulationPoints", ParsingUtil.verticesListToJson(articulationPoints));
         json.set("bridges", ParsingUtil.edgesListToJson(bridges));
-        json.set("connectedComponents", ParsingUtil.vertices2DListToJson(connectedComponents));
+//        json.set("connectedComponents", ParsingUtil.vertices2DListToJson(connectedComponents));
         json.put("isPlanar", isPlanar);
         return json;
     }
@@ -75,13 +74,8 @@ public class GraphResearchInfo {
             return false;
         }
         for (int i = 0; i < connectedComponents.size(); ++i) {
-            if (connectedComponents.get(i).size() != other.connectedComponents.get(i).size()) {
+            if (!connectedComponents.get(i).equals(other.connectedComponents.get(i))) {
                 return false;
-            }
-            for (int j = 0; j < connectedComponents.get(i).size(); ++j) {
-                if (!connectedComponents.get(i).get(j).equals(other.connectedComponents.get(i).get(j))) {
-                    return false;
-                }
             }
         }
         if (isPlanar != other.isPlanar) {
