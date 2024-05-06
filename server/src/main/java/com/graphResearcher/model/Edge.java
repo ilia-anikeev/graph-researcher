@@ -23,18 +23,16 @@ public class Edge {
         source = new Vertex(json.get("source"));
         target = new Vertex(json.get("target"));
         weight = json.get("weight").asInt();
-        data = json.get("data").asText();
+        if (json.get("data") != null)
+            data = json.get("data").asText();
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (!(o instanceof Edge edge)) {
+        if (!(o instanceof Edge other)) {
             return false;
         }
-        return this.source.equals(edge.source) && this.target.equals(edge.target) && this.data.equals(edge.data);
+        return this.source.equals(other.source) && this.target.equals(other.target);
     }
 
     public ObjectNode toJson() {
@@ -44,7 +42,7 @@ public class Edge {
         json.set("source", source.toJson());
         json.set("target", target.toJson());
         json.put("weight", weight);
-        json.put("data", data);
+        if (data != null) json.put("data", data);
         return json;
     }
 }

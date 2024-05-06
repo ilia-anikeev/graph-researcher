@@ -15,38 +15,16 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public class ParsingUtil {
     private static final ObjectMapper mapper = new ObjectMapper();
 
-    public static ObjectNode graphsListToJson(List<GraphModel> list) {
-        ArrayNode arrayNode = list.stream().map(GraphModel::toJson).collect(
+    public static ArrayNode graphsListToJsonArray(List<GraphModel> list) {
+        return list.stream().map(GraphModel::toJson).collect(
                 mapper::createArrayNode,
                 ArrayNode::add,
                 ArrayNode::addAll
         );
-        ObjectNode node = mapper.createObjectNode();
-        node.set("graphs", arrayNode);
-        return node;
-    }
-
-    public static ObjectNode vertices2DListToJson(List<List<Vertex>> list) {
-        ArrayNode arrayNode = list.stream().map(ParsingUtil::verticesListToJson).collect(
-                mapper::createArrayNode,
-                ArrayNode::add,
-                ArrayNode::addAll
-        );
-        ObjectNode node = mapper.createObjectNode();
-        node.set("vertices2D", arrayNode);
-        return node;
-    }
-
-    public static ObjectNode edgesListToJson(List<Edge> list) {
-        ArrayNode arrayNode = edgesListToJsonArray(list);
-        ObjectNode node = mapper.createObjectNode();
-        node.set("edges", arrayNode);
-        return node;
     }
 
     public static ArrayNode edgesListToJsonArray(List<Edge> list) {
@@ -57,55 +35,12 @@ public class ParsingUtil {
         );
     }
 
-    public static ObjectNode verticesListToJson(List<Vertex> list) {
-        ArrayNode arrayNode = verticesListToJsonArray(list);
-        ObjectNode node = mapper.createObjectNode();
-        node.set("vertices", arrayNode);
-        return node;
-    }
-
     public static ArrayNode verticesListToJsonArray(List<Vertex> list) {
         return list.stream().map(Vertex::toJson).collect(
                 mapper::createArrayNode,
                 ArrayNode::add,
                 ArrayNode::addAll
         );
-    }
-
-    public static List<Edge> jsonToListEdges(JsonNode json) {
-        ArrayNode jsonArray = (ArrayNode)json.get("edges");
-        ArrayList<Edge> edges = new ArrayList<>();
-        for (var e: jsonArray) {
-            edges.add(new Edge(e));
-        }
-        return edges;
-    }
-
-    public static List<Vertex> jsonToListVertices(JsonNode json) {
-        ArrayNode jsonArray = (ArrayNode)json.get("vertices");
-        ArrayList<Vertex> vertices = new ArrayList<>();
-        for (var v: jsonArray) {
-            vertices.add(new Vertex(v));
-        }
-        return vertices;
-    }
-
-    public static List<GraphModel> jsonToListGraphs(JsonNode json) {
-        ArrayNode jsonArray = (ArrayNode)json.get("graphs");
-        List<GraphModel> graphs = new ArrayList<>();
-        for (var v: jsonArray) {
-            graphs.add(new GraphModel(v));
-        }
-        return graphs;
-    }
-
-    public static List<List<Vertex>> jsonTo2DListVertices(JsonNode json) {
-        ArrayNode jsonArray = (ArrayNode)json.get("vertices2D");
-        List<List<Vertex>> vertices2D = new ArrayList<>();
-        for (var v: jsonArray) {
-            vertices2D.add(jsonToListVertices(v));
-        }
-        return vertices2D;
     }
 
     public static GraphModel graphToGraphModel(Graph<Vertex, WeightedEdge> graph, GraphMetadata metadata) {
@@ -115,38 +50,26 @@ public class ParsingUtil {
     public static GraphResearchInfo resultSetToGraphResearchInfo(ResultSet rs) throws SQLException, JsonProcessingException {
         rs.next();
         GraphResearchInfo info = new GraphResearchInfo();
-        info.isConnected = rs.getBoolean("isConnected");
+        info.isConnected = rs.getBoolean("is_connected");
         if (rs.wasNull()) {
             info.isConnected = null;
         }
-        info.isBiconnected = rs.getBoolean("isBiconnected");
+        info.isBiconnected = rs.getBoolean("is_biconnected");
         if (rs.wasNull()) {
             info.isBiconnected = null;
         }
-        info.isPlanar = rs.getBoolean("isPlanar");
+        info.isPlanar = rs.getBoolean("is_planar");
         if (rs.wasNull()) {
             info.isPlanar = null;
         }
-        info.isChordal = rs.getBoolean("isChordal");
+        info.isChordal = rs.getBoolean("is_chordal");
         if (rs.wasNull()) {
             info.isChordal = null;
         }
-        ObjectMapper objectMapper = new ObjectMapper();
-
-
-
-//        String arg2 = rs.getString("bridges");
-//        if (arg2 != null) {
-//            info.bridges = ParsingUtil.jsonToListEdges(objectMapper.readTree(arg2));
-//        }
-
-//        int arg3 = rs.getInt("articulation_points");
-//        info.articulationPoints = ParsingUtil.jsonToListVertices(objectMapper.readTree(arg3));
-
-//        String arg4 = rs.getString("connected_components");
-//        if (arg4 != null) {
-//            info.connectedComponents = ParsingUtil.jsonTo2DListVertices(objectMapper.readTree(arg4));
-//        }
+        info.chromaticNumber = rs.getInt("chromatic_number");
+        if (rs.wasNull()) {
+            info.chromaticNumber = null;
+        }
 
         return info;
     }
@@ -163,14 +86,12 @@ public class ParsingUtil {
         return new GraphModel(vertices, edges, graph.getMetadata());
     }
 
-
-    private static final int EMPTY_MASK = 0;
-    private static final int IS_DIRECTED = 1;
-    private static final int IS_WEIGHTED = 1 << 1;
-    private static final int HAS_MULTIPLE_EDGES = 1 << 2;
-    private static final int HAS_SELF_LOOPS = 1 << 3;
-
     private static Graph<Vertex, WeightedEdge> getEmptyGraph(GraphModel graphModel) {
+        final int EMPTY_MASK = 0;
+        final int IS_DIRECTED = 1;
+        final int IS_WEIGHTED = 1 << 1;
+        final int HAS_MULTIPLE_EDGES = 1 << 2;
+        final int HAS_SELF_LOOPS = 1 << 3;
         int mask = EMPTY_MASK;
         if (graphModel.getMetadata().isDirected) {
             mask |= IS_DIRECTED;

@@ -21,6 +21,7 @@ class GraphResearcherApplicationTests {
     void saveGraphTest1() {
         int userID = 1;
         DataBaseManager db = new DataBaseManager();
+        db.reloadDB();
         db.createUser(userID);
 
         int graphID = db.saveGraph(userID, graph1);
@@ -34,6 +35,7 @@ class GraphResearcherApplicationTests {
     void saveGraphTest2() {
         int userID = 2;
         DataBaseManager db = new DataBaseManager();
+        db.reloadDB();
         db.createUser(userID);
 
         int graphID = db.saveGraph(userID, graph2);
@@ -48,7 +50,7 @@ class GraphResearcherApplicationTests {
         int userID = 1;
         GraphResearchService service = new GraphResearchService();
         DataBaseManager db = new DataBaseManager();
-        db.deleteUser(userID);
+        db.reloadDB();
         db.createUser(userID);
 
         int graphID = db.saveGraph(userID, graph1);
@@ -68,7 +70,7 @@ class GraphResearcherApplicationTests {
         int userID = 2;
         GraphResearchService service = new GraphResearchService();
         DataBaseManager db = new DataBaseManager();
-
+        db.reloadDB();
         db.createUser(userID);
 
         int graphID = db.saveGraph(userID, graph2);
@@ -88,7 +90,7 @@ class GraphResearcherApplicationTests {
         int userID = 3;
         GraphResearchService service = new GraphResearchService();
         DataBaseManager db = new DataBaseManager();
-//        db.initDB();
+        db.reloadDB();
         db.createUser(userID);
 
         int graphID1 = db.saveGraph(userID, graph1);

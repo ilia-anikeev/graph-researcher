@@ -30,9 +30,20 @@ public class GraphResearchService {
         connectivityResearch(info, graph, graphModel);
 
         if (graph.getType().isUndirected()) {
-            planarityResearch(info, graph);
-            chordalityResearch(info, graph);
+            planarityResearch(info, graph, graphModel);
+            chordalityResearch(info, graph, graphModel);
+        } else {
+            // flowResearch
         }
+
+        //bipartitionResearch
+
+        //cycleResearch
+
+        //spanningResearch
+
+        //VertexCover
+
         return info;
     }
 
@@ -55,11 +66,11 @@ public class GraphResearchService {
                 .map((ArrayList<Vertex> vertices) -> ParsingUtil.listVertexToSubgraph(vertices, graphModel)).toList();
 
         info.blocks = biconnectivityInspector.getBlocks().stream()
-                .map(b -> graphToGraphModel(graph, graphModel.getMetadata())).toList();
+                .map(block -> graphToGraphModel(block, graphModel.getMetadata())).toList();
 
     }
 
-    private void planarityResearch(GraphResearchInfo info, Graph<Vertex, WeightedEdge> graph ) {
+    private void planarityResearch(GraphResearchInfo info, Graph<Vertex, WeightedEdge> graph, GraphModel graphModel) {
         BoyerMyrvoldPlanarityInspector<Vertex, WeightedEdge> planarityInspector = new BoyerMyrvoldPlanarityInspector<>(graph);
         info.isPlanar = planarityInspector.isPlanar();
 
@@ -70,11 +81,11 @@ public class GraphResearchService {
             }
             info.embedding = embedding;
         } else {
-            info.kuratovskySubgraph = planarityInspector.getKuratowskiSubdivision();
+            info.kuratowskiSubgraph = ParsingUtil.graphToGraphModel(planarityInspector.getKuratowskiSubdivision(), graphModel.getMetadata());
         }
     }
 
-    private void chordalityResearch(GraphResearchInfo info, Graph<Vertex, WeightedEdge> graph) {
+    private void chordalityResearch(GraphResearchInfo info, Graph<Vertex, WeightedEdge> graph, GraphModel graphModel) {
         ChordalityInspector<Vertex, WeightedEdge> chordalityInspector = new ChordalityInspector<>(graph);
         info.isChordal = chordalityInspector.isChordal();
         if (info.isChordal) {
@@ -86,8 +97,7 @@ public class GraphResearchService {
             info.coloring = coloring.getColors();
 
             ChordalGraphMaxCliqueFinder<Vertex, WeightedEdge> maxCliqueFinder = new ChordalGraphMaxCliqueFinder<>(graph);
-            info.maxClique = maxCliqueFinder.getClique().stream().toList();
-
+            info.maxClique = ParsingUtil.listVertexToSubgraph(maxCliqueFinder.getClique().stream().toList(), graphModel);
             ChordalGraphIndependentSetFinder<Vertex, WeightedEdge> independentSetFinder = new ChordalGraphIndependentSetFinder<>(graph);
             info.independentSet = independentSetFinder.getIndependentSet().stream().toList();
 

@@ -1,7 +1,6 @@
 package com.graphResearcher.util;
 
 import com.graphResearcher.model.GraphResearchInfo;
-import com.graphResearcher.model.Vertex;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,18 +11,18 @@ public class ParseResearchInfo {
     public String fields;
 
     public ParseResearchInfo(GraphResearchInfo info, int graphID) {
-        fieldsName = getFieldsName(info);
-        fields = getFields(info, graphID);
+        this.fieldsName = getFieldsName(info);
+        this.fields = getFields(info, graphID);
     }
 
     public String getFieldsName(GraphResearchInfo info) {
         List<String> notNullFields = new ArrayList<>();
         notNullFields.add("graph_id");
         if (info.isConnected != null) {
-            notNullFields.add("isConnected");
+            notNullFields.add("is_connected");
         }
         if (info.isBiconnected != null) {
-            notNullFields.add("isBiconnected");
+            notNullFields.add("is_biconnected");
         }
         if (info.articulationPoints != null) {
             notNullFields.add("articulation_points");
@@ -38,10 +37,13 @@ public class ParseResearchInfo {
             notNullFields.add("blocks");
         }
         if (info.isPlanar != null) {
-            notNullFields.add("isPlanar");
+            notNullFields.add("is_planar");
         }
         if (info.isChordal != null) {
-            notNullFields.add("isChordal");
+            notNullFields.add("is_chordal");
+        }
+        if (info.chromaticNumber != null) {
+            notNullFields.add("chromatic_number");
         }
         StringBuilder fields = new StringBuilder();
         for (int i = 0; i < notNullFields.size(); ++i) {
@@ -96,6 +98,11 @@ public class ParseResearchInfo {
         if (info.isChordal != null) {
             answer.append(", '");
             answer.append(info.isChordal);
+            answer.append("'");
+        }
+        if (info.chromaticNumber != null) {
+            answer.append(", '");
+            answer.append(info.chromaticNumber);
             answer.append("'");
         }
         return answer.toString();

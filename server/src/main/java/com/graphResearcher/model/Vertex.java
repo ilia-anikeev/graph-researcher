@@ -20,18 +20,17 @@ public class Vertex {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (!(o instanceof Vertex vertexRequest)) {
+        if (!(o instanceof Vertex other)) {
             return false;
         }
-        return Objects.equals(this.data,vertexRequest.getData());
+        return index == other.index;
     }
 
     public Vertex(JsonNode json) {
         index = json.get("index").asInt();
-        data = json.get("data").asText();
+        if (json.get("data") != null) {
+            data = json.get("data").asText();
+        }
     }
 
     public JsonNode toJson() {
@@ -39,7 +38,8 @@ public class Vertex {
         ObjectNode json = objectMapper.createObjectNode();
 
         json.put("index", index);
-        json.put("data", data);
+        if (data != null)
+            json.put("data", data);
 
         return json;
     }
