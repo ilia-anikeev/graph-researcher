@@ -2,12 +2,12 @@ package com.graphResearcher.model;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.graphResearcher.util.ParsingUtil;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class GraphResearchInfo {
     public Boolean isConnected;
@@ -24,7 +24,7 @@ public class GraphResearchInfo {
     public Boolean isChordal;
     public List<Vertex> perfectEliminationOrder;
     public Integer chromaticNumber;
-    public Map<Vertex, Integer> coloring; //TODO
+    public Map<Vertex, Integer> coloring;
     public GraphModel maxClique; //TODO
     public List<Vertex> independentSet; //TODO
     public List<List<Vertex>> minimalVertexSeparator; //TODO
@@ -100,28 +100,46 @@ public class GraphResearchInfo {
         if (isPlanar != other.isPlanar) {
             return false;
         }
-        if (kuratowskiSubgraph != null && !kuratowskiSubgraph.equals(other.kuratowskiSubgraph)) {
-            return false;
+        if (isPlanar != null && !isPlanar) {
+            if (!kuratowskiSubgraph.equals(other.kuratowskiSubgraph)) {
+                return false;
+            }
         }
         if (isChordal != other.isChordal) {
             return false;
         }
-        if (perfectEliminationOrder != null && other.perfectEliminationOrder == null ||
-            perfectEliminationOrder == null && other.perfectEliminationOrder != null) {
-            return false;
-        }
-        if (perfectEliminationOrder != null) {
-            if (perfectEliminationOrder.size() != other.perfectEliminationOrder.size()) {
+        if (isChordal != null && isChordal) {
+            if (perfectEliminationOrder != null && other.perfectEliminationOrder == null ||
+                    perfectEliminationOrder == null && other.perfectEliminationOrder != null) {
                 return false;
             }
-            for (int i = 0; i < perfectEliminationOrder.size(); ++i) {
-                if (!perfectEliminationOrder.get(i).equals(other.perfectEliminationOrder.get(i))) {
+            if (perfectEliminationOrder != null) {
+                if (perfectEliminationOrder.size() != other.perfectEliminationOrder.size()) {
+                    return false;
+                }
+                for (int i = 0; i < perfectEliminationOrder.size(); ++i) {
+                    if (!perfectEliminationOrder.get(i).equals(other.perfectEliminationOrder.get(i))) {
+                        return false;
+                    }
+                }
+            }
+            if (!Objects.equals(chromaticNumber, other.chromaticNumber)) {
+                return false;
+            }
+            if (coloring.size() != other.coloring.size()) {
+                return false;
+            }
+            for (Map.Entry<Vertex, Integer> entry : coloring.entrySet()) {
+                if (!other.coloring.containsKey(entry.getKey())) {
+                    return false;
+                }
+                if (!entry.getValue().equals(other.coloring.get(entry.getKey()))) {
                     return false;
                 }
             }
-        }
-        if (chromaticNumber != other.chromaticNumber) {
-            return false;
+            if (!maxClique.equals(other.maxClique)) {
+                return false;
+            }
         }
         return true;
     }

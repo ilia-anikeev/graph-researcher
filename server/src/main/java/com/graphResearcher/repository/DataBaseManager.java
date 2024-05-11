@@ -9,10 +9,7 @@ import java.sql.ResultSet;
 import java.sql.Connection;
 import java.sql.DriverManager;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 import com.graphResearcher.util.ParseResearchInfo;
 import com.graphResearcher.util.ParsingUtil;
@@ -136,16 +133,7 @@ public class DataBaseManager {
         saveSubgraphs(userID, graphID, listGraphModels, "blocks");
     }
     private void saveKuratowskiSubgraph(int userID, int graphID, GraphModel graphModel) {
-        int subgraph_id = saveGraph(userID, graphModel);
-        String sql = "INSERT INTO kuratowski_subgraph(graph_id, subgraph_id) VALUES(?, ?)";
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-                preparedStatement.setInt(1, graphID);
-                preparedStatement.setInt(2, subgraph_id);
-                preparedStatement.executeUpdate();
-        } catch (SQLException e) {
-            log.error("ID {}: Kuratowski subgraph haven't been saved", graphID, e);
-            throw new RuntimeException(e);
-        }
+        saveSubgraph(userID, graphID, graphModel, "kuratowski_subgraph");
     }
 
     private void savePerfectEliminationOrder(int graphID, List<Vertex> perfectEliminationOrder) {
@@ -164,6 +152,39 @@ public class DataBaseManager {
         }
     }
 
+    private void saveMaxClique(int userID, int graphID, GraphModel graphModel) {
+        saveSubgraph(userID, graphID, graphModel, "max_clique");
+    }
+
+    private void saveSubgraph(int userID, int graphID, GraphModel graphModel, String tableName) {
+        int subgraph_id = saveGraph(userID, graphModel);
+        String sql = "INSERT INTO " + tableName + "(graph_id, subgraph_id) VALUES(?, ?)";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setInt(1, graphID);
+            preparedStatement.setInt(2, subgraph_id);
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            log.error("ID {}: subgraph haven't been saved", graphID, e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void saveColoring(int graphID, Map<Vertex, Integer> coloring) {
+        String sql = "INSERT INTO coloring(graph_id, color, index, data) VALUES(?, ?, ?, ?)";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            for (Map.Entry<Vertex, Integer> entry: coloring.entrySet()) {
+                preparedStatement.setInt(1, graphID);
+                preparedStatement.setInt(2, entry.getValue());
+                preparedStatement.setInt(3, entry.getKey().getIndex());
+                preparedStatement.setString(4, entry.getKey().getData());
+                preparedStatement.executeUpdate();
+            }
+        } catch (SQLException e) {
+            log.error("ID {}: vertices haven't been saved", graphID, e);
+            throw new RuntimeException(e);
+        }
+    }
+
     public void saveResearchInfo(int userID, int graphID, GraphResearchInfo info) {
         saveArticulationPoints(graphID, info.articulationPoints);
         saveBridges(graphID, info.bridges);
@@ -172,8 +193,11 @@ public class DataBaseManager {
         if (info.isPlanar != null && !info.isPlanar) {
             saveKuratowskiSubgraph(userID, graphID, info.kuratowskiSubgraph);
         }
-        if (info.isChordal != null && info.isChordal)
+        if (info.isChordal != null && info.isChordal) {
             savePerfectEliminationOrder(graphID, info.perfectEliminationOrder);
+            saveColoring(graphID, info.coloring);
+            saveMaxClique(userID, graphID, info.maxClique);
+        }
 
         ParseResearchInfo result = new ParseResearchInfo(info, graphID);
 
@@ -209,6 +233,8 @@ public class DataBaseManager {
             }
             if (researchInfo.isChordal != null && researchInfo.isChordal) {
                 researchInfo.perfectEliminationOrder = getPerfectEliminationOrder(graphID);
+                researchInfo.coloring = getColoring(graphID);
+                researchInfo.maxClique = getMaxClique(graphID);
             }
 
             log.info("ID {}: research info have been received", graphID);
@@ -295,7 +321,7 @@ public class DataBaseManager {
 
     private List<Edge> getEdges(int graphID, String tableName) {
         List<Vertex> vertices = getVertices(graphID);
-        Map<Integer, Vertex> verticesMap = new TreeMap<>();
+        Map<Integer, Vertex> verticesMap = new HashMap<>();
         for (Vertex v: vertices) {
             verticesMap.put(v.getIndex(), v);
         }
@@ -334,16 +360,40 @@ public class DataBaseManager {
     }
 
     private GraphModel getKuratowskiSubgraph(int graphID) {
-        String sql = "SELECT subgraph_id FROM kuratowski_subgraph WHERE graph_id = " + graphID;
+        return getSubgraph(graphID, "kuratowski_subgraph");
+    }
+
+    private Map<Vertex, Integer> getColoring(int graphID) {
+        Map<Vertex, Integer> coloring = new HashMap<>();
+        String sql = "SELECT color, index, data FROM coloring WHERE graph_id = " + graphID;
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            ResultSet rs = preparedStatement.executeQuery();
+            while (rs.next()) {
+                coloring.put(new Vertex(rs.getInt("index"), rs.getString("data")), rs.getInt("color"));
+            }
+        } catch(SQLException e) {
+            log.error("ID {}: vertices haven't been received", graphID, e);
+            throw new RuntimeException(e);
+        }
+        return coloring;
+    }
+
+    private GraphModel getMaxClique(int graphID) {
+        return getSubgraph(graphID, "max_clique");
+    }
+
+    private GraphModel getSubgraph(int graphID, String tableName) {
+        String sql = "SELECT subgraph_id FROM " + tableName + " WHERE graph_id = " + graphID;
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             ResultSet rs = preparedStatement.executeQuery();
             rs.next();
             return getGraph(rs.getInt("subgraph_id"));
         } catch(SQLException e) {
-            log.error("ID {}: vertices haven't been received", graphID, e);
+            log.error("ID {}: subgraph haven't been received", graphID, e);
             throw new RuntimeException(e);
         }
     }
+
 
     public void createUser(int userID) {
         //TODO
@@ -400,6 +450,8 @@ public class DataBaseManager {
         deleteBlocks(graphID);
         deletePerfectEliminationOrder(graphID);
         deleteKuratowskiSubgraph(graphID);
+        deleteColoring(graphID);
+        deleteMaxClique(graphID);
         log.info("ID {}: graph have been deleted", graphID);
     }
 
@@ -462,11 +514,23 @@ public class DataBaseManager {
     }
 
     private void deleteKuratowskiSubgraph(int graphID) {
-        String sql = "DELETE FROM kuratowski_subgraph WHERE graph_id = " + graphID;
+        deleteSubgraph(graphID, "kuratowski_subgraph");
+    }
+
+    private void deleteColoring(int graphID) {
+        deleteVertices(graphID, "coloring");
+    }
+
+    private void deleteMaxClique(int graphID) {
+        deleteSubgraph(graphID, "max_clique");
+    }
+
+    private void deleteSubgraph(int graphID, String tableName) {
+        String sql = "DELETE FROM " + tableName + " WHERE graph_id = " + graphID;
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql)){
             preparedStatement.execute();
         } catch (SQLException e) {
-            log.error("ID {}: Kuratowski subgraph hasn't been deleted", graphID, e);
+            log.error("ID {}: subgraph hasn't been deleted", graphID, e);
             throw new RuntimeException(e);
         }
     }
@@ -582,6 +646,30 @@ public class DataBaseManager {
             throw new RuntimeException(e);
         }
     }
+
+    private void initColoringTable() {
+        String sql = "CREATE TABLE coloring(id SERIAL PRIMARY KEY, graph_id INT, color INT, index INT, data TEXT)";
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.execute();
+        } catch (SQLException e) {
+            log.error("Init coloring table error", e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void initMaxCliqueTable() {
+        String sql = "CREATE TABLE max_clique(id SERIAL PRIMARY KEY, graph_id INT, subgraph_id INT)";
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.execute();
+        } catch (SQLException e) {
+            log.error("Init max clique table error", e);
+            throw new RuntimeException(e);
+        }
+    }
+
+
     
     public void initDB() {
         initEdgesTable();
@@ -595,6 +683,8 @@ public class DataBaseManager {
         initBlocksTable();
         initPerfectEliminationOrderTable();
         initKuratowskiSubgraphTable();
+        initColoringTable();
+        initMaxCliqueTable();
         log.info("Initialization was successful");
     }
     
@@ -639,8 +729,16 @@ public class DataBaseManager {
             sql = "DROP TABLE kuratowski_subgraph";
             preparedStatement = connection.prepareStatement(sql);
             preparedStatement.execute();
+
+            sql = "DROP TABLE coloring";
+            preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.execute();
+
+            sql = "DROP TABLE max_clique";
+            preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.execute();
         } catch (SQLException e) {
-            log.error("Init perfectEliminationOrder table error", e);
+            log.error("Delete db error", e);
             throw new RuntimeException(e);
         }
     }
