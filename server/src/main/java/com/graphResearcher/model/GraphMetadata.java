@@ -11,7 +11,6 @@ public class GraphMetadata {
     public final boolean hasSelfLoops;
     public final boolean hasMultipleEdges;
 
-
     public GraphMetadata(boolean isDirected, boolean isWeighted, boolean hasSelfLoops, boolean hasMultipleEdges) {
         this.isDirected = isDirected;
         this.isWeighted = isWeighted;

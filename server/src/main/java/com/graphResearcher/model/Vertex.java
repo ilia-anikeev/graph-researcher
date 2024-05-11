@@ -18,6 +18,13 @@ public class Vertex {
 
     private String data;
 
+    public Vertex(JsonNode json) {
+        index = json.get("index").asInt();
+        if (json.get("data") != null) {
+            data = json.get("data").asText();
+        }
+    }
+
     @Override
     public boolean equals(Object o) {
         if (!(o instanceof Vertex other)) {
@@ -26,11 +33,9 @@ public class Vertex {
         return index == other.index;
     }
 
-    public Vertex(JsonNode json) {
-        index = json.get("index").asInt();
-        if (json.get("data") != null) {
-            data = json.get("data").asText();
-        }
+    @Override
+    public int hashCode() {
+        return index;
     }
 
     public JsonNode toJson() {
@@ -42,10 +47,5 @@ public class Vertex {
             json.put("data", data);
 
         return json;
-    }
-
-    @Override
-    public int hashCode() {
-        return index;
     }
 }

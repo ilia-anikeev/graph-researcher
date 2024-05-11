@@ -27,7 +27,7 @@ class GraphResearcherApplicationTests {
 
         int graphID = db.saveGraph(userID, graph1);
         GraphModel receivedGraph = db.getGraph(graphID);
-        assertEquals(graph1, receivedGraph);
+        TestUtil.equals(graph1, receivedGraph);
 
         db.deleteUser(userID);
     }
@@ -41,7 +41,7 @@ class GraphResearcherApplicationTests {
 
         int graphID = db.saveGraph(userID, graph2);
         GraphModel receivedGraph = db.getGraph(graphID);
-        assertEquals(graph2, receivedGraph);
+        TestUtil.equals(graph2, receivedGraph);
 
         db.deleteUser(userID);
     }

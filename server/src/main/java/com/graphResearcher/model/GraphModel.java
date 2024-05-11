@@ -53,38 +53,4 @@ public class GraphModel {
         json.set("info", metadata.toJson());
         return json;
     }
-
-    @Override
-    public boolean equals(Object o) {
-        if (!(o instanceof GraphModel other)) {
-            return false;
-        }
-        if (!this.getMetadata().equals(other.getMetadata())) {
-            return false;
-        }
-        List<Edge> otherEdges = other.getEdges();
-
-        if (edges.size() != otherEdges.size()) {
-            return false;
-        }
-
-        for (int i = 0; i < edges.size(); ++i) {
-            if (!edges.get(i).equals(otherEdges.get(i))) {
-                return false;
-            }
-        }
-
-        List<Vertex> otherVertices = other.getVertices();
-
-        if (vertices.size() != otherVertices.size()) {
-            return false;
-        }
-
-        for (int i = 0; i < vertices.size(); ++i) {
-            if (!vertices.get(i).equals(otherVertices.get(i))) {
-                return false;
-            }
-        }
-        return true;
-    }
 }

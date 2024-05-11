@@ -1,6 +1,6 @@
 package com.graphResearcher;
 
-import com.graphResearcher.model.Edge;
+import com.graphResearcher.model.GraphModel;
 import com.graphResearcher.model.GraphResearchInfo;
 import com.graphResearcher.model.Vertex;
 
@@ -42,7 +42,7 @@ public class TestUtil {
                 assertTrue(rhs.coloring.containsKey(entry.getKey()));
                 assertEquals(entry.getValue(), rhs.coloring.get(entry.getKey()));
             }
-            assertEquals(lhs.maxClique, rhs.maxClique);
+            TestUtil.equals(lhs.maxClique, rhs.maxClique);
             TestUtil.equals(lhs.independentSet, rhs.independentSet);
             TestUtil.equals(lhs.minimalVertexSeparator, rhs.minimalVertexSeparator);
         }
@@ -51,7 +51,19 @@ public class TestUtil {
     public static void equals(List<?> lhs, List<?> rhs) {
         assertEquals(lhs.size(), rhs.size());
         for (int i = 0; i < lhs.size(); ++i) {
-            assertEquals(lhs.get(i), rhs.get(i));
+            if (lhs.get(i) instanceof GraphModel && rhs.get(i) instanceof GraphModel) {
+                TestUtil.equals((GraphModel)lhs.get(i), (GraphModel)rhs.get(i));
+            } else {
+                assertEquals(lhs.get(i), rhs.get(i));
+            }
         }
+    }
+
+    public static void equals(GraphModel lhs, GraphModel rhs) {
+        assertEquals(lhs.getMetadata(), rhs.getMetadata());
+
+        TestUtil.equals(lhs.getEdges(), rhs.getEdges());
+
+        TestUtil.equals(lhs.getVertices(), rhs.getVertices());
     }
 }
