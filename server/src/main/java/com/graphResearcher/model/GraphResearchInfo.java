@@ -27,7 +27,7 @@ public class GraphResearchInfo {
     public Map<Vertex, Integer> coloring;
     public GraphModel maxClique;
     public List<Vertex> independentSet;
-    public List<List<Vertex>> minimalVertexSeparator; //TODO
+    public List<List<Vertex>> minimalVertexSeparator;
 
 
     public JsonNode toJson() {
@@ -57,115 +57,4 @@ public class GraphResearchInfo {
         return json;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (!(o instanceof GraphResearchInfo other)) {
-            return false;
-        }
-        if (isConnected != other.isConnected) {
-            return false;
-        }
-        if (isBiconnected != other.isBiconnected) {
-            return false;
-        }
-        if (bridges.size() != other.bridges.size()) {
-            return false;
-        }
-        for (int i = 0; i < bridges.size(); ++i) {
-            if (!bridges.get(i).equals(other.bridges.get(i))) {
-                return false;
-            }
-        }
-
-        if (articulationPoints.size() != other.articulationPoints.size()) {
-            return false;
-        }
-        for (int i = 0; i < articulationPoints.size(); ++i) {
-            if (!articulationPoints.get(i).equals(other.articulationPoints.get(i))) {
-                return false;
-            }
-        }
-        if (connectedComponents.size() != other.connectedComponents.size()) {
-            return false;
-        }
-        for (int i = 0; i < connectedComponents.size(); ++i) {
-            if (!connectedComponents.get(i).equals(other.connectedComponents.get(i))) {
-                return false;
-            }
-        }
-        if (blocks.size() != other.blocks.size()) {
-            return false;
-        }
-        for (int i = 0; i < blocks.size(); ++i) {
-            if (!blocks.get(i).equals(other.blocks.get(i))) {
-                return false;
-            }
-        }
-        if (isPlanar != other.isPlanar) {
-            return false;
-        }
-        if (isPlanar != null && !isPlanar) {
-            if (!kuratowskiSubgraph.equals(other.kuratowskiSubgraph)) {
-                return false;
-            }
-        }
-        if (isChordal != other.isChordal) {
-            return false;
-        }
-        if (isChordal != null && isChordal) {
-            if (perfectEliminationOrder != null && other.perfectEliminationOrder == null ||
-                    perfectEliminationOrder == null && other.perfectEliminationOrder != null) {
-                return false;
-            }
-            if (perfectEliminationOrder != null) {
-                if (perfectEliminationOrder.size() != other.perfectEliminationOrder.size()) {
-                    return false;
-                }
-                for (int i = 0; i < perfectEliminationOrder.size(); ++i) {
-                    if (!perfectEliminationOrder.get(i).equals(other.perfectEliminationOrder.get(i))) {
-                        return false;
-                    }
-                }
-            }
-            if (!chromaticNumber.equals(other.chromaticNumber)) {
-                return false;
-            }
-            if (coloring.size() != other.coloring.size()) {
-                return false;
-            }
-            for (Map.Entry<Vertex, Integer> entry : coloring.entrySet()) {
-                if (!other.coloring.containsKey(entry.getKey())) {
-                    return false;
-                }
-                if (!entry.getValue().equals(other.coloring.get(entry.getKey()))) {
-                    return false;
-                }
-            }
-            if (!maxClique.equals(other.maxClique)) {
-                return false;
-            }
-            if (independentSet.size() != other.independentSet.size()) {
-                return false;
-            }
-            for (int i = 0; i < independentSet.size(); ++i) {
-                if (!independentSet.get(i).equals(other.independentSet.get(i))) {
-                    return false;
-                }
-            }
-            if (minimalVertexSeparator.size() != other.minimalVertexSeparator.size()) {
-                return false;
-            }
-            for (int i = 0; i < minimalVertexSeparator.size(); ++i) {
-                if (minimalVertexSeparator.get(i).size() != other.minimalVertexSeparator.get(i).size()) {
-                    return false;
-                }
-                for (int j = 0; j < minimalVertexSeparator.get(i).size(); ++j) {
-                    if (minimalVertexSeparator.get(i).get(j).equals(other.minimalVertexSeparator.get(i).get(j))) {
-                        return false;
-                    }
-                }
-            }
-        }
-        return true;
-    }
 }

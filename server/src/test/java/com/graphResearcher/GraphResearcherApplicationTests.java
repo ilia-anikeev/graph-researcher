@@ -61,7 +61,7 @@ class GraphResearcherApplicationTests {
 
         GraphResearchInfo receivedInfo = db.getResearchInfo(graphID);
 
-        assertEquals(info, receivedInfo);
+        TestUtil.equals(info, receivedInfo);
 
         db.deleteUser(userID);
     }
@@ -81,7 +81,7 @@ class GraphResearcherApplicationTests {
 
         GraphResearchInfo receivedInfo = db.getResearchInfo(graphID);
 
-        assertEquals(info, receivedInfo);
+        TestUtil.equals(info, receivedInfo);
 
         db.deleteUser(userID);
     }
@@ -101,7 +101,7 @@ class GraphResearcherApplicationTests {
 
         GraphResearchInfo receivedInfo1 = db.getResearchInfo(graphID1);
 
-        assertEquals(info1, receivedInfo1);
+        TestUtil.equals(info1, receivedInfo1);
 
         int graphID2 = db.saveGraph(userID, graph2);
         GraphResearchInfo info2 = service.research(graph2);
@@ -110,7 +110,7 @@ class GraphResearcherApplicationTests {
 
         GraphResearchInfo receivedInfo2 = db.getResearchInfo(graphID2);
 
-        assertEquals(info2, receivedInfo2);
+        TestUtil.equals(info2, receivedInfo2);
         db.deleteUser(userID);
     }
 

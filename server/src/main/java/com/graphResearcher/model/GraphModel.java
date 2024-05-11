@@ -88,12 +88,3 @@ public class GraphModel {
         return true;
     }
 }
-
-/*
-{
-    "vertices": [{"index": 1, "data": "aloha"}],
-    "edges": [],
-    "info": {}
-}
-
- */
