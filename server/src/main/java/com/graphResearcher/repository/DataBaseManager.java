@@ -185,6 +185,29 @@ public class DataBaseManager {
         }
     }
 
+    private void saveIndependentSet(int graphID, List<Vertex> independentSet) {
+        saveVertices(graphID, independentSet, "independent_set");
+    }
+
+    private void saveMinimalVertexSeparator(int graphID, List<List<Vertex>> minimalVertexSeparator) {
+        for (int i = 0; i < minimalVertexSeparator.size(); ++i) {
+            String sql = "INSERT INTO minimal_vertex_separator(graph_id, group_number, index, data) VALUES(?, ?, ?, ?)";
+            List<Vertex> vertexSeparator = minimalVertexSeparator.get(i);
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                for (Vertex v: vertexSeparator) {
+                    preparedStatement.setInt(1, graphID);
+                    preparedStatement.setInt(2, i);
+                    preparedStatement.setInt(3, v.getIndex());
+                    preparedStatement.setString(4, v.getData());
+                    preparedStatement.executeUpdate();
+                }
+            } catch (SQLException e) {
+                log.error("ID {}: vertices haven't been saved", graphID, e);
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
     public void saveResearchInfo(int userID, int graphID, GraphResearchInfo info) {
         saveArticulationPoints(graphID, info.articulationPoints);
         saveBridges(graphID, info.bridges);
@@ -197,6 +220,8 @@ public class DataBaseManager {
             savePerfectEliminationOrder(graphID, info.perfectEliminationOrder);
             saveColoring(graphID, info.coloring);
             saveMaxClique(userID, graphID, info.maxClique);
+            saveIndependentSet(graphID, info.independentSet);
+            saveMinimalVertexSeparator(graphID, info.minimalVertexSeparator);
         }
 
         ParseResearchInfo result = new ParseResearchInfo(info, graphID);
@@ -235,6 +260,8 @@ public class DataBaseManager {
                 researchInfo.perfectEliminationOrder = getPerfectEliminationOrder(graphID);
                 researchInfo.coloring = getColoring(graphID);
                 researchInfo.maxClique = getMaxClique(graphID);
+                researchInfo.independentSet = getIndependentSet(graphID);
+                researchInfo.minimalVertexSeparator = getMinimalVertexSeparator(graphID);
             }
 
             log.info("ID {}: research info have been received", graphID);
@@ -394,6 +421,33 @@ public class DataBaseManager {
         }
     }
 
+    private List<Vertex> getIndependentSet(int graphID) {
+        return getVertices(graphID, "independent_set");
+    }
+
+    private List<List<Vertex>> getMinimalVertexSeparator(int graphID) {
+        Map<Integer, List<Vertex>> minimalVertexSeparatorMap = new HashMap<>();
+
+        String sql = "SELECT group_number, index, data FROM minimal_vertex_separator WHERE graph_id = " + graphID;
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            ResultSet rs = preparedStatement.executeQuery();
+            while (rs.next()) {
+                if (minimalVertexSeparatorMap.containsKey(rs.getInt("group_number"))) {
+                    minimalVertexSeparatorMap.get(rs.getInt("group_number")).add(new Vertex(rs.getInt("index"), rs.getString("data")));
+                } else {
+                    minimalVertexSeparatorMap.put(rs.getInt("group_number"), new ArrayList<>(List.of(new Vertex(rs.getInt("index"), rs.getString("data")))));
+                }
+            }
+        } catch(SQLException e) {
+            log.error("ID {}: vertices haven't been received", graphID, e);
+            throw new RuntimeException(e);
+        }
+        List<List<Vertex>> minimalVertexSeparator = new ArrayList<>();
+        for (int i = 0; i < minimalVertexSeparatorMap.size(); ++i) {
+            minimalVertexSeparator.add(minimalVertexSeparatorMap.get(i));
+        }
+        return minimalVertexSeparator;
+    }
 
     public void createUser(int userID) {
         //TODO
@@ -452,6 +506,8 @@ public class DataBaseManager {
         deleteKuratowskiSubgraph(graphID);
         deleteColoring(graphID);
         deleteMaxClique(graphID);
+        deleteIndependentSet(graphID);
+        deleteMinimalVertexSeparator(graphID);
         log.info("ID {}: graph have been deleted", graphID);
     }
 
@@ -533,6 +589,14 @@ public class DataBaseManager {
             log.error("ID {}: subgraph hasn't been deleted", graphID, e);
             throw new RuntimeException(e);
         }
+    }
+
+    private void deleteIndependentSet(int graphID) {
+        deleteVertices(graphID, "independent_set");
+    }
+
+    private void deleteMinimalVertexSeparator(int graphID) {
+        deleteVertices(graphID, "minimal_vertex_separator");
     }
 
     private void initVerticesTable() {
@@ -669,7 +733,27 @@ public class DataBaseManager {
         }
     }
 
+    private void initIndependentSetTable() {
+        String sql = "CREATE TABLE independent_set(id SERIAL PRIMARY KEY, graph_id INT, index INT, data TEXT)";
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.execute();
+        } catch (SQLException e) {
+            log.error("Init independent_set table error", e);
+            throw new RuntimeException(e);
+        }
+    }
 
+    private void initMinimalVertexSeparatorTable() {
+        String sql = "CREATE TABLE minimal_vertex_separator(id SERIAL PRIMARY KEY, graph_id INT, group_number INT, index INT, data TEXT)";
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.execute();
+        } catch (SQLException e) {
+            log.error("Init minimal_vertex_separator table error", e);
+            throw new RuntimeException(e);
+        }
+    }
     
     public void initDB() {
         initEdgesTable();
@@ -685,6 +769,8 @@ public class DataBaseManager {
         initKuratowskiSubgraphTable();
         initColoringTable();
         initMaxCliqueTable();
+        initIndependentSetTable();
+        initMinimalVertexSeparatorTable();
         log.info("Initialization was successful");
     }
     
@@ -735,6 +821,14 @@ public class DataBaseManager {
             preparedStatement.execute();
 
             sql = "DROP TABLE max_clique";
+            preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.execute();
+
+            sql = "DROP TABLE independent_set";
+            preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.execute();
+
+            sql = "DROP TABLE minimal_vertex_separator";
             preparedStatement = connection.prepareStatement(sql);
             preparedStatement.execute();
         } catch (SQLException e) {

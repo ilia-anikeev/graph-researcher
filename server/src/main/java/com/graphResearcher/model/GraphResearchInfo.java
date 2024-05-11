@@ -25,8 +25,8 @@ public class GraphResearchInfo {
     public List<Vertex> perfectEliminationOrder;
     public Integer chromaticNumber;
     public Map<Vertex, Integer> coloring;
-    public GraphModel maxClique; //TODO
-    public List<Vertex> independentSet; //TODO
+    public GraphModel maxClique;
+    public List<Vertex> independentSet;
     public List<List<Vertex>> minimalVertexSeparator; //TODO
 
 
@@ -42,13 +42,17 @@ public class GraphResearchInfo {
         json.set("blocks", ParsingUtil.graphsListToJsonArray(blocks));
         if (isPlanar != null) json.put("isPlanar", isPlanar);
         if (isPlanar != null && !isPlanar) {
-            json.set("kuratovskySubGraph", kuratowskiSubgraph.toJson());
+            json.set("kuratovskySubgraph", kuratowskiSubgraph.toJson());
         }
 
         if (isChordal != null) json.put("isChordal", isChordal);
         if (isChordal != null && isChordal) {
             json.set("perfectEliminationOrder", ParsingUtil.verticesListToJsonArray(perfectEliminationOrder));
             json.put("chromaticNumber", chromaticNumber);
+            // json.set("coloring", /* */); //TODO
+            json.set("maxClique", maxClique.toJson());
+            json.set("independentSet", ParsingUtil.verticesListToJsonArray(independentSet));
+//            json.set("minimal_vertex_separator", ParsingUtil.) //TODO
         }
         return json;
     }
@@ -123,7 +127,7 @@ public class GraphResearchInfo {
                     }
                 }
             }
-            if (!Objects.equals(chromaticNumber, other.chromaticNumber)) {
+            if (!chromaticNumber.equals(other.chromaticNumber)) {
                 return false;
             }
             if (coloring.size() != other.coloring.size()) {
@@ -139,6 +143,27 @@ public class GraphResearchInfo {
             }
             if (!maxClique.equals(other.maxClique)) {
                 return false;
+            }
+            if (independentSet.size() != other.independentSet.size()) {
+                return false;
+            }
+            for (int i = 0; i < independentSet.size(); ++i) {
+                if (!independentSet.get(i).equals(other.independentSet.get(i))) {
+                    return false;
+                }
+            }
+            if (minimalVertexSeparator.size() != other.minimalVertexSeparator.size()) {
+                return false;
+            }
+            for (int i = 0; i < minimalVertexSeparator.size(); ++i) {
+                if (minimalVertexSeparator.get(i).size() != other.minimalVertexSeparator.get(i).size()) {
+                    return false;
+                }
+                for (int j = 0; j < minimalVertexSeparator.get(i).size(); ++j) {
+                    if (minimalVertexSeparator.get(i).get(j).equals(other.minimalVertexSeparator.get(i).get(j))) {
+                        return false;
+                    }
+                }
             }
         }
         return true;
