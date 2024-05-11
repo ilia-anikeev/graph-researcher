@@ -1,5 +1,5 @@
 import React from "react";
-import "./GraphResearchInfo.css";
+import "./GraphMetadata.css";
 import PropTypes from 'prop-types';
 import "../index.css"
 

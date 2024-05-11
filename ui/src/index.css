@@ -11,34 +11,3 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
-
-.title{
-  padding-top: 2rem;
-  position: static;
-  padding-bottom: 2rem;
-  margin: 0 auto;
-  text-align: center;
-  font-size: 40px;
-  background: rgba(0, 0, 0, 0.2);
-}
-
-.canvas{
-  background: pink;
-  position: static
-}
-
-.button{
-  position: static;
-  color: black;
-  width: 100px;
-  height: 50px;
-}
-
-.menu{
-  padding-top: 3rem;
-  position: absolute;
-  padding-left: 2rem;
-  background: rgba(0, 0, 0, 0.2);
-  width: 140px;
-  height: 690px;
-}
