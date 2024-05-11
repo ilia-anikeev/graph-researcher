@@ -10,8 +10,10 @@ function App() {
   const [edgeCounter,setEdgeCounter]=React.useState(1);
   const [edgeRemove,setEdgeRemove]=React.useState(false);
   const [edgeCreate,setEdgeCreate]=React.useState(false);
+  const [vertexRemove,setVertexRemove]=React.useState(false);
 
   function createVertex() {
+    setVertexRemove(false);
     setEdgeRemove(false);
     setEdgeCreate(false);
     const newCount = count + 1
@@ -30,6 +32,7 @@ function App() {
   }
 
   function createEdge(ids,idt){
+    setVertexRemove(false);
     setEdgeRemove(false);
     const newCounter=edgeCounter+1
     setEdgeCounter(newCounter)
@@ -44,13 +47,28 @@ function App() {
   function isEdgeCreate(){
     setEdgeRemove(false);
     setEdgeCreate(true);
+    setVertexRemove(false);
   }
 
   function removeEdge(){
     setEdgeCreate(false);
     setEdgeRemove(true);
+    setVertexRemove(false);
   }
 
+  function removeVertex(){
+    setVertexRemove(true);
+    setEdgeCreate(false);
+    setEdgeRemove(false);
+  }
+
+  function deleteVertex(id){
+    console.log(id)
+    setVertex(vertices.filter(vertex => (vertex.id !== id)))
+    setEdges(edges.filter(edge => ((edge.source !== id) & (edge.target !== id))))
+    console.log("vertices", vertices)
+    console.log("edges", edges)
+  }
 
   function deleteEdge(ids,idt){
     const newCounter=edgeCounter-1
@@ -60,12 +78,15 @@ function App() {
     console.log(edges)
   }
 
-  const draw = (ids,idt)=>{
+  const draw = (ids, idt)=>{
     const canvas = document.getElementById("canvas");
     const ctx = canvas.getContext("2d");
     ctx.lineWidth=4;
-    const v1=vertices.find(element => element.id===ids);
-    const v2=vertices.find(element => element.id===idt);
+    const v1 = vertices.find(element => element.id===ids);
+    const v2 = vertices.find(element => element.id===idt);
+    // const v = document.getElementsByClassName('vertex');
+    // const a = v.find(element => element.id===ids)
+
     ctx.beginPath();
     ctx.moveTo(v1.x,v1.y);
     ctx.lineTo(v2.x,v2.y);
@@ -93,13 +114,18 @@ function App() {
                           createEdge={createEdge} 
                           edgeRemove={edgeRemove} 
                           edgeCreate={edgeCreate} 
-                          deleteEdge={deleteEdge}/>
+                          deleteEdge={deleteEdge}
+                          vertexRemove={vertexRemove}
+                          deleteVertex={deleteVertex}/>
         </div>
         <div style={{paddingTop: "3rem"}}>
           <button className='button' onClick={() => isEdgeCreate()}> Create edge</button>
         </div>
         <div style={{paddingTop: "3rem"}}>
-          <button className='button' onClick={() => removeEdge()}> Remove edge</button>
+          <button className='button' onClick={() => removeVertex()}> Remove vertex</button>
+        </div>
+        <div style={{paddingTop: "3rem"}}>
+        <button className='button' onClick={() => removeEdge()}> Remove edge</button>
         </div>
         <div style={{paddingTop: "3rem"}}>
           <GraphMetadata setEdgeCreate={setEdgeCreate}/>

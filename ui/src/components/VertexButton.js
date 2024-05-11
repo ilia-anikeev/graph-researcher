@@ -10,9 +10,13 @@ function VertexButton(props) {
 
     const handleMouseMove = (id, vertex) => (event) => {
         const rect = event.target.getBoundingClientRect();
-        props.updateButtonCoordinates(id, rect.x+25, rect.y-100);
+        const v = document.getElementsByClassName('vertex');
+        const a = Array.prototype.find.call(v, ver => ((rect.y <= ver.getBoundingClientRect().bottom) && (rect.y >= ver.getBoundingClientRect().top) & (rect.x <= ver.getBoundingClientRect().right) && (rect.x >= ver.getBoundingClientRect().left)))
+        props.updateButtonCoordinates(id, a.getBoundingClientRect().left + (a.getBoundingClientRect().right - a.getBoundingClientRect().left) / 2, a.getBoundingClientRect().top + (a.getBoundingClientRect().top - a.getBoundingClientRect().bottom) / 2 - 50);
+        console.log(a.getBoundingClientRect().left + (a.getBoundingClientRect().right - a.getBoundingClientRect().left) / 2, a.getBoundingClientRect().top + (a.getBoundingClientRect().top - a.getBoundingClientRect().bottom) / 2 - 100)
         createEdge(id);    
         deleteEdge(id);
+        deleteVertex(id)
     };
 
     function createEdge(id){
@@ -49,6 +53,12 @@ function VertexButton(props) {
         }
     }
     
+    function deleteVertex(id){
+        if (props.vertexRemove === true){
+            props.deleteVertex(id);
+        }
+    }
+
     return (
         <div>
             {props.vertices ? props.vertices.map(vertex => {
@@ -71,6 +81,8 @@ VertexButton.propTypes = {
     updateButtonCoordinates: PropTypes.func,
     deleteEdge: PropTypes.func,
     edgeRemove: PropTypes.bool,
+    vertexRemove: PropTypes.bool,
+    deleteVetrex: PropTypes.func,
     edgeCreate: PropTypes.bool,
     source: PropTypes.number,
     createEdge: PropTypes.func
