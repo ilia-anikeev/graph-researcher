@@ -61,12 +61,10 @@ public class GraphResearchService {
                 .map(WeightedEdge::toEdge)
                 .collect(Collectors.toList());
 
-        info.connectedComponents= connectivityInspector.connectedSets().stream()
-                .map(ArrayList::new)
-                .map((ArrayList<Vertex> vertices) -> ParsingUtil.listVertexToSubgraph(vertices, graphModel)).toList();
+        info.connectedComponents = connectivityInspector.connectedSets().stream().map(v -> (List<Vertex>)new ArrayList<>(v)).toList();
 
         info.blocks = biconnectivityInspector.getBlocks().stream()
-                .map(block -> graphToGraphModel(block, graphModel.getMetadata())).toList();
+                .map(block -> (List<Vertex>)new ArrayList<>(block.vertexSet())).toList();
 
     }
 
@@ -94,7 +92,8 @@ public class GraphResearchService {
             ChordalGraphColoring<Vertex, WeightedEdge> coloringResearcher = new ChordalGraphColoring<>(graph);
             VertexColoringAlgorithm.Coloring<Vertex> coloring = coloringResearcher.getColoring();
             info.chromaticNumber = coloring.getNumberColors();
-            info.coloring = coloring.getColors();
+            info.coloring = coloring.getColorClasses().stream().map(st -> (List<Vertex>)new ArrayList<>(st)).toList();
+
 
             ChordalGraphMaxCliqueFinder<Vertex, WeightedEdge> maxCliqueFinder = new ChordalGraphMaxCliqueFinder<>(graph);
             info.maxClique = ParsingUtil.listVertexToSubgraph(maxCliqueFinder.getClique().stream().toList(), graphModel);

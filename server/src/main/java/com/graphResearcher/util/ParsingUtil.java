@@ -11,16 +11,13 @@ import org.jgrapht.graph.*;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class ParsingUtil {
     private static final ObjectMapper mapper = new ObjectMapper();
 
-    public static ArrayNode graphsListToJsonArray(List<GraphModel> list) {
-        return list.stream().map(GraphModel::toJson).collect(
+    public static ArrayNode listListVerticesToJsonArray(List<List<Vertex>> list) {
+        return list.stream().map(ParsingUtil::verticesListToJsonArray).collect(
                 mapper::createArrayNode,
                 ArrayNode::add,
                 ArrayNode::addAll
@@ -78,7 +75,7 @@ public class ParsingUtil {
         Set<Vertex> vertexSet = new HashSet<>(vertices);
 
         List<Edge> edges = new ArrayList<>();
-        for (Edge e: graph.getEdges()) {
+        for (Edge e : graph.getEdges()) {
             if (vertexSet.contains(e.getSource()) && vertexSet.contains(e.getTarget())) {
                 edges.add(e);
             }

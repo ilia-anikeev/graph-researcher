@@ -105,33 +105,33 @@ public class DataBaseManager {
         saveEdges(graphID, edges, "bridges");
     }
 
-    private void saveConnectedComponents(int userID, int graphID, List<GraphModel> listGraphModels) {
-        saveSubgraphs(userID, graphID, listGraphModels, "connected_components");
+    private void saveConnectedComponents(int graphID, List<List<Vertex>> components) {
+        saveComponents(graphID, components, "connected_components");
     }
 
-    private void saveSubgraphs(int userID, int graphID, List<GraphModel> listGraphModels, String tableName) {
-        List<Integer> subgraphIDs = new ArrayList<>();
-        for (GraphModel subgraph: listGraphModels) {
-            subgraphIDs.add(saveGraph(userID, subgraph));
-        }
+    private void saveBlocks(int graphID, List<List<Vertex>> blocks) {
+        saveComponents(graphID, blocks, "blocks");
+    }
 
-        String sql = "INSERT INTO " + tableName + "(graph_id, subgraph_id) VALUES(?, ?)";
+    private void saveComponents(int graphID, List<List<Vertex>> components, String tableName) {
+        String sql = "INSERT INTO " + tableName + "(graph_id, component_number, index, data) VALUES(?, ?, ?, ?)";
 
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            for (Integer subgraphID: subgraphIDs) {
-                preparedStatement.setInt(1, graphID);
-                preparedStatement.setInt(2, subgraphID);
-                preparedStatement.executeUpdate();
+            for (int i = 0; i < components.size(); ++i) {
+                for (Vertex v: components.get(i)) {
+                    preparedStatement.setInt(1, graphID);
+                    preparedStatement.setInt(2, i);
+                    preparedStatement.setInt(3, v.getIndex());
+                    preparedStatement.setString(4, v.getData());
+                    preparedStatement.executeUpdate();
+                }
             }
         } catch (SQLException e) {
-            log.error("ID {}: subgraphs haven't been saved", graphID, e);
+            log.error("ID {}: components haven't been saved", graphID, e);
             throw new RuntimeException(e);
         }
     }
 
-    private void saveBlocks(int userID, int graphID, List<GraphModel> listGraphModels) {
-        saveSubgraphs(userID, graphID, listGraphModels, "blocks");
-    }
     private void saveKuratowskiSubgraph(int userID, int graphID, GraphModel graphModel) {
         saveSubgraph(userID, graphID, graphModel, "kuratowski_subgraph");
     }
@@ -169,20 +169,8 @@ public class DataBaseManager {
         }
     }
 
-    private void saveColoring(int graphID, Map<Vertex, Integer> coloring) {
-        String sql = "INSERT INTO coloring(graph_id, color, index, data) VALUES(?, ?, ?, ?)";
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            for (Map.Entry<Vertex, Integer> entry: coloring.entrySet()) {
-                preparedStatement.setInt(1, graphID);
-                preparedStatement.setInt(2, entry.getValue());
-                preparedStatement.setInt(3, entry.getKey().getIndex());
-                preparedStatement.setString(4, entry.getKey().getData());
-                preparedStatement.executeUpdate();
-            }
-        } catch (SQLException e) {
-            log.error("ID {}: vertices haven't been saved", graphID, e);
-            throw new RuntimeException(e);
-        }
+    private void saveColoring(int graphID, List<List<Vertex>> coloring) {
+        saveComponents(graphID, coloring, "coloring");
     }
 
     private void saveIndependentSet(int graphID, List<Vertex> independentSet) {
@@ -190,29 +178,14 @@ public class DataBaseManager {
     }
 
     private void saveMinimalVertexSeparator(int graphID, List<List<Vertex>> minimalVertexSeparator) {
-        for (int i = 0; i < minimalVertexSeparator.size(); ++i) {
-            String sql = "INSERT INTO minimal_vertex_separator(graph_id, group_number, index, data) VALUES(?, ?, ?, ?)";
-            List<Vertex> vertexSeparator = minimalVertexSeparator.get(i);
-            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-                for (Vertex v: vertexSeparator) {
-                    preparedStatement.setInt(1, graphID);
-                    preparedStatement.setInt(2, i);
-                    preparedStatement.setInt(3, v.getIndex());
-                    preparedStatement.setString(4, v.getData());
-                    preparedStatement.executeUpdate();
-                }
-            } catch (SQLException e) {
-                log.error("ID {}: vertices haven't been saved", graphID, e);
-                throw new RuntimeException(e);
-            }
-        }
+        saveComponents(graphID, minimalVertexSeparator, "minimal_vertex_separator");
     }
 
     public void saveResearchInfo(int userID, int graphID, GraphResearchInfo info) {
         saveArticulationPoints(graphID, info.articulationPoints);
         saveBridges(graphID, info.bridges);
-        saveConnectedComponents(userID, graphID, info.connectedComponents);
-        saveBlocks(userID, graphID, info.blocks);
+        saveConnectedComponents(graphID, info.connectedComponents);
+        saveBlocks(graphID, info.blocks);
         if (info.isPlanar != null && !info.isPlanar) {
             saveKuratowskiSubgraph(userID, graphID, info.kuratowskiSubgraph);
         }
@@ -275,29 +248,33 @@ public class DataBaseManager {
         }
     }
 
-    private List<GraphModel> getConnectedComponents(int graphID) {
-        return getSubgraphs(graphID, "connected_components");
+    private List<List<Vertex>> getConnectedComponents(int graphID) {
+        return getComponents(graphID, "connected_components");
     }
 
-    private List<GraphModel> getBlocks(int graphID) {
-        return getSubgraphs(graphID, "blocks");
-    }
-
-    private List<GraphModel> getSubgraphs(int graphID, String tableName) {
-        List<GraphModel> subgraphs = new ArrayList<>();
-        String sql = "SELECT subgraph_id FROM " + tableName  + " WHERE graph_id = " + graphID;
+    private List<List<Vertex>> getComponents(int graphID, String tableName) {
+        Map<Integer, List<Vertex>> componentsMap = new HashMap<>();
+        String sql = "SELECT component_number, index, data FROM " + tableName + " WHERE graph_id = " + graphID;
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             ResultSet rs = preparedStatement.executeQuery();
             while (rs.next()) {
-                subgraphs.add(getGraph(rs.getInt("subgraph_id")));
+                if (componentsMap.containsKey(rs.getInt("component_number"))) {
+                    componentsMap.get(rs.getInt("component_number")).add(new Vertex(rs.getInt("index"), rs.getString("data")));
+                } else {
+                    componentsMap.put(rs.getInt("component_number"), new ArrayList<>(List.of(new Vertex(rs.getInt("index"), rs.getString("data")))));
+                }
             }
         } catch(SQLException e) {
-            log.error("ID {}: subgraphs haven't been received", graphID, e);
+            log.error("ID {}: components haven't been received", graphID, e);
             throw new RuntimeException(e);
         }
-        return subgraphs;
+        return componentsMap.values().stream().toList();
     }
-    
+
+    private List<List<Vertex>> getBlocks(int graphID) {
+        return getComponents(graphID, "blocks");
+    }
+
     private GraphMetadata getGraphMetadata(int graphID) {
         String sql = "SELECT is_directed, is_weighted, has_self_loops, has_multiple_edges FROM graph_metadata WHERE graph_id = " + graphID;
         try {
@@ -390,19 +367,8 @@ public class DataBaseManager {
         return getSubgraph(graphID, "kuratowski_subgraph");
     }
 
-    private Map<Vertex, Integer> getColoring(int graphID) {
-        Map<Vertex, Integer> coloring = new HashMap<>();
-        String sql = "SELECT color, index, data FROM coloring WHERE graph_id = " + graphID;
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            ResultSet rs = preparedStatement.executeQuery();
-            while (rs.next()) {
-                coloring.put(new Vertex(rs.getInt("index"), rs.getString("data")), rs.getInt("color"));
-            }
-        } catch(SQLException e) {
-            log.error("ID {}: vertices haven't been received", graphID, e);
-            throw new RuntimeException(e);
-        }
-        return coloring;
+    private List<List<Vertex>> getColoring(int graphID) {
+        return getComponents(graphID, "coloring");
     }
 
     private GraphModel getMaxClique(int graphID) {
@@ -426,27 +392,7 @@ public class DataBaseManager {
     }
 
     private List<List<Vertex>> getMinimalVertexSeparator(int graphID) {
-        Map<Integer, List<Vertex>> minimalVertexSeparatorMap = new HashMap<>();
-
-        String sql = "SELECT group_number, index, data FROM minimal_vertex_separator WHERE graph_id = " + graphID;
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            ResultSet rs = preparedStatement.executeQuery();
-            while (rs.next()) {
-                if (minimalVertexSeparatorMap.containsKey(rs.getInt("group_number"))) {
-                    minimalVertexSeparatorMap.get(rs.getInt("group_number")).add(new Vertex(rs.getInt("index"), rs.getString("data")));
-                } else {
-                    minimalVertexSeparatorMap.put(rs.getInt("group_number"), new ArrayList<>(List.of(new Vertex(rs.getInt("index"), rs.getString("data")))));
-                }
-            }
-        } catch(SQLException e) {
-            log.error("ID {}: vertices haven't been received", graphID, e);
-            throw new RuntimeException(e);
-        }
-        List<List<Vertex>> minimalVertexSeparator = new ArrayList<>();
-        for (int i = 0; i < minimalVertexSeparatorMap.size(); ++i) {
-            minimalVertexSeparator.add(minimalVertexSeparatorMap.get(i));
-        }
-        return minimalVertexSeparator;
+        return getComponents(graphID, "minimal_vertex_separator");
     }
 
     public void createUser(int userID) {
@@ -548,21 +494,11 @@ public class DataBaseManager {
     }
 
     private void deleteConnectedComponents(int graphID) {
-        deleteSubgraphs(graphID, "connected_components");
-    }
-    
-    private void deleteSubgraphs(int graphID, String tableName) {
-        String sql = "DELETE FROM " + tableName + " WHERE graph_id = " + graphID;
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            preparedStatement.execute();
-        } catch (SQLException e) {
-            log.error("ID {}: subgraphs from {} haven't been deleted", graphID, tableName, e);
-            throw new RuntimeException(e);
-        }
+        deleteVertices(graphID, "connected_components");
     }
 
     private void deleteBlocks(int graphID) {
-        deleteSubgraphs(graphID, "blocks");
+        deleteVertices(graphID, "blocks");
     }
 
     private void deletePerfectEliminationOrder(int graphID) {
@@ -668,7 +604,7 @@ public class DataBaseManager {
     }
 
     private void initConnectedComponentsTable() {
-        String sql = "CREATE TABLE connected_components(id SERIAL PRIMARY KEY, graph_id INT, subgraph_id INT)";
+        String sql = "CREATE TABLE connected_components(id SERIAL PRIMARY KEY, graph_id INT, component_number INT, index INT, data TEXT)";
         try {
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
             preparedStatement.execute();
@@ -679,7 +615,7 @@ public class DataBaseManager {
     }
 
     private void initBlocksTable() {
-        String sql = "CREATE TABLE blocks(id SERIAL PRIMARY KEY, graph_id INT, subgraph_id INT)";
+        String sql = "CREATE TABLE blocks(id SERIAL PRIMARY KEY, graph_id INT, component_number INT, index INT, data TEXT)";
         try {
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
             preparedStatement.execute();
@@ -712,7 +648,7 @@ public class DataBaseManager {
     }
 
     private void initColoringTable() {
-        String sql = "CREATE TABLE coloring(id SERIAL PRIMARY KEY, graph_id INT, color INT, index INT, data TEXT)";
+        String sql = "CREATE TABLE coloring(id SERIAL PRIMARY KEY, graph_id INT, component_number INT, index INT, data TEXT)";
         try {
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
             preparedStatement.execute();
@@ -745,7 +681,7 @@ public class DataBaseManager {
     }
 
     private void initMinimalVertexSeparatorTable() {
-        String sql = "CREATE TABLE minimal_vertex_separator(id SERIAL PRIMARY KEY, graph_id INT, group_number INT, index INT, data TEXT)";
+        String sql = "CREATE TABLE minimal_vertex_separator(id SERIAL PRIMARY KEY, graph_id INT, component_number INT, index INT, data TEXT)";
         try {
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
             preparedStatement.execute();
