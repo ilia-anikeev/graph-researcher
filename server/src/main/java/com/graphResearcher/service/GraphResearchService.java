@@ -96,7 +96,7 @@ public class GraphResearchService {
 
 
             ChordalGraphMaxCliqueFinder<Vertex, WeightedEdge> maxCliqueFinder = new ChordalGraphMaxCliqueFinder<>(graph);
-            info.maxClique = ParsingUtil.listVertexToSubgraph(maxCliqueFinder.getClique().stream().toList(), graphModel);
+            info.maxClique = maxCliqueFinder.getClique().stream().toList();
             ChordalGraphIndependentSetFinder<Vertex, WeightedEdge> independentSetFinder = new ChordalGraphIndependentSetFinder<>(graph);
             info.independentSet = independentSetFinder.getIndependentSet().stream().toList();
 

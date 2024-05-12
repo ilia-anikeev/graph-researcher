@@ -133,7 +133,16 @@ public class DataBaseManager {
     }
 
     private void saveKuratowskiSubgraph(int userID, int graphID, GraphModel graphModel) {
-        saveSubgraph(userID, graphID, graphModel, "kuratowski_subgraph");
+        int subgraph_id = saveGraph(userID, graphModel);
+        String sql = "INSERT INTO kuratowski_subgraph(graph_id, subgraph_id) VALUES(?, ?)";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setInt(1, graphID);
+            preparedStatement.setInt(2, subgraph_id);
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            log.error("ID {}: subgraph haven't been saved", graphID, e);
+            throw new RuntimeException(e);
+        }
     }
 
     private void savePerfectEliminationOrder(int graphID, List<Vertex> perfectEliminationOrder) {
@@ -152,21 +161,8 @@ public class DataBaseManager {
         }
     }
 
-    private void saveMaxClique(int userID, int graphID, GraphModel graphModel) {
-        saveSubgraph(userID, graphID, graphModel, "max_clique");
-    }
-
-    private void saveSubgraph(int userID, int graphID, GraphModel graphModel, String tableName) {
-        int subgraph_id = saveGraph(userID, graphModel);
-        String sql = "INSERT INTO " + tableName + "(graph_id, subgraph_id) VALUES(?, ?)";
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            preparedStatement.setInt(1, graphID);
-            preparedStatement.setInt(2, subgraph_id);
-            preparedStatement.executeUpdate();
-        } catch (SQLException e) {
-            log.error("ID {}: subgraph haven't been saved", graphID, e);
-            throw new RuntimeException(e);
-        }
+    private void saveMaxClique(int graphID, List<Vertex> clique) {
+        saveVertices(graphID, clique, "max_clique");
     }
 
     private void saveColoring(int graphID, List<List<Vertex>> coloring) {
@@ -192,7 +188,7 @@ public class DataBaseManager {
         if (info.isChordal != null && info.isChordal) {
             savePerfectEliminationOrder(graphID, info.perfectEliminationOrder);
             saveColoring(graphID, info.coloring);
-            saveMaxClique(userID, graphID, info.maxClique);
+            saveMaxClique(graphID, info.maxClique);
             saveIndependentSet(graphID, info.independentSet);
             saveMinimalVertexSeparator(graphID, info.minimalVertexSeparator);
         }
@@ -364,19 +360,7 @@ public class DataBaseManager {
     }
 
     private GraphModel getKuratowskiSubgraph(int graphID) {
-        return getSubgraph(graphID, "kuratowski_subgraph");
-    }
-
-    private List<List<Vertex>> getColoring(int graphID) {
-        return getComponents(graphID, "coloring");
-    }
-
-    private GraphModel getMaxClique(int graphID) {
-        return getSubgraph(graphID, "max_clique");
-    }
-
-    private GraphModel getSubgraph(int graphID, String tableName) {
-        String sql = "SELECT subgraph_id FROM " + tableName + " WHERE graph_id = " + graphID;
+        String sql = "SELECT subgraph_id FROM kuratowski_subgraph WHERE graph_id = " + graphID;
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             ResultSet rs = preparedStatement.executeQuery();
             rs.next();
@@ -385,6 +369,14 @@ public class DataBaseManager {
             log.error("ID {}: subgraph haven't been received", graphID, e);
             throw new RuntimeException(e);
         }
+    }
+
+    private List<List<Vertex>> getColoring(int graphID) {
+        return getComponents(graphID, "coloring");
+    }
+
+    private List<Vertex> getMaxClique(int graphID) {
+        return getVertices(graphID, "max_clique");
     }
 
     private List<Vertex> getIndependentSet(int graphID) {
@@ -506,7 +498,13 @@ public class DataBaseManager {
     }
 
     private void deleteKuratowskiSubgraph(int graphID) {
-        deleteSubgraph(graphID, "kuratowski_subgraph");
+        String sql = "DELETE FROM kuratowski_subgraph WHERE graph_id = " + graphID;
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)){
+            preparedStatement.execute();
+        } catch (SQLException e) {
+            log.error("ID {}: subgraph hasn't been deleted", graphID, e);
+            throw new RuntimeException(e);
+        }
     }
 
     private void deleteColoring(int graphID) {
@@ -514,17 +512,7 @@ public class DataBaseManager {
     }
 
     private void deleteMaxClique(int graphID) {
-        deleteSubgraph(graphID, "max_clique");
-    }
-
-    private void deleteSubgraph(int graphID, String tableName) {
-        String sql = "DELETE FROM " + tableName + " WHERE graph_id = " + graphID;
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)){
-            preparedStatement.execute();
-        } catch (SQLException e) {
-            log.error("ID {}: subgraph hasn't been deleted", graphID, e);
-            throw new RuntimeException(e);
-        }
+        deleteVertices(graphID, "max_clique");
     }
 
     private void deleteIndependentSet(int graphID) {
@@ -659,7 +647,7 @@ public class DataBaseManager {
     }
 
     private void initMaxCliqueTable() {
-        String sql = "CREATE TABLE max_clique(id SERIAL PRIMARY KEY, graph_id INT, subgraph_id INT)";
+        String sql = "CREATE TABLE max_clique(id SERIAL PRIMARY KEY, graph_id INT, index INT, data TEXT)";
         try {
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
             preparedStatement.execute();

@@ -25,7 +25,7 @@ public class GraphResearchInfo {
     public List<Vertex> perfectEliminationOrder;
     public Integer chromaticNumber;
     public List<List<Vertex>> coloring;
-    public GraphModel maxClique;
+    public List<Vertex> maxClique;
     public List<Vertex> independentSet;
     public List<List<Vertex>> minimalVertexSeparator;
 
@@ -49,7 +49,7 @@ public class GraphResearchInfo {
             json.set("perfectEliminationOrder", ParsingUtil.verticesListToJsonArray(perfectEliminationOrder));
             json.put("chromaticNumber", chromaticNumber);
             json.set("coloring", ParsingUtil.listListVerticesToJsonArray(coloring));
-            json.set("maxClique", maxClique.toJson());
+            json.set("maxClique", ParsingUtil.verticesListToJsonArray(maxClique));
             json.set("independentSet", ParsingUtil.verticesListToJsonArray(independentSet));
             json.set("minimal_vertex_separator", ParsingUtil.listListVerticesToJsonArray(minimalVertexSeparator));
         }
