@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.graphResearcher.util.ParsingUtil;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
@@ -28,6 +29,10 @@ public class GraphResearchInfo {
     public List<Vertex> maxClique;
     public List<Vertex> independentSet;
     public List<List<Vertex>> minimalVertexSeparator;
+
+    public Boolean isBipartite; //TODO
+    public List<List<Vertex>> partitions; //TODO
+    public List<Edge> minSpanningTree; //TODO
 
 
     public JsonNode toJson() throws JsonProcessingException {

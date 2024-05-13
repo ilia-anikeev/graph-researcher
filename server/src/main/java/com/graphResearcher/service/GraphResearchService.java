@@ -4,6 +4,7 @@ import com.graphResearcher.model.*;
 import com.graphResearcher.util.ParsingUtil;
 import org.jgrapht.Graph;
 import org.jgrapht.alg.clique.ChordalGraphMaxCliqueFinder;
+import org.jgrapht.alg.color.BrownBacktrackColoring;
 import org.jgrapht.alg.color.ChordalGraphColoring;
 import org.jgrapht.alg.connectivity.BiconnectivityInspector;
 import org.jgrapht.alg.connectivity.ConnectivityInspector;
@@ -11,7 +12,13 @@ import org.jgrapht.alg.cycle.ChordalGraphMinimalVertexSeparatorFinder;
 import org.jgrapht.alg.cycle.ChordalityInspector;
 import org.jgrapht.alg.independentset.ChordalGraphIndependentSetFinder;
 import org.jgrapht.alg.interfaces.VertexColoringAlgorithm;
+import org.jgrapht.alg.matching.HopcroftKarpMaximumCardinalityBipartiteMatching;
+import org.jgrapht.alg.matching.KuhnMunkresMinimalWeightBipartitePerfectMatching;
+import org.jgrapht.alg.matching.MaximumWeightBipartiteMatching;
+import org.jgrapht.alg.matching.blossom.v5.KolmogorovWeightedPerfectMatching;
+import org.jgrapht.alg.partition.BipartitePartitioning;
 import org.jgrapht.alg.planar.BoyerMyrvoldPlanarityInspector;
+import org.jgrapht.alg.spanning.KruskalMinimumSpanningTree;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -27,27 +34,27 @@ public class GraphResearchService {
         Graph<Vertex, WeightedEdge> graph = ParsingUtil.graphModelToGraph(graphModel);
         GraphResearchInfo info = new GraphResearchInfo();
 
-        connectivityResearch(info, graph, graphModel);
+        connectivityResearch(info, graph);
 
         if (graph.getType().isUndirected()) {
-            planarityResearch(info, graph, graphModel);
-            chordalityResearch(info, graph, graphModel);
+            planarityResearch(info, graph, graphModel.getMetadata());
+            chordalityResearch(info, graph);
         } else {
             // flowResearch
         }
 
-        //bipartitionResearch
+        bipartitePartitioningResearch(info, graph);
 
         //cycleResearch
 
-        //spanningResearch
+        spanningResearch(info, graph);
 
         //VertexCover
 
         return info;
     }
 
-    private void connectivityResearch(GraphResearchInfo info, Graph<Vertex, WeightedEdge> graph, GraphModel graphModel) {
+    private void connectivityResearch(GraphResearchInfo info, Graph<Vertex, WeightedEdge> graph) {
         BiconnectivityInspector<Vertex, WeightedEdge> biconnectivityInspector = new BiconnectivityInspector<>(graph);
         ConnectivityInspector<Vertex, WeightedEdge> connectivityInspector = new ConnectivityInspector<>(graph);
 
@@ -68,7 +75,7 @@ public class GraphResearchService {
 
     }
 
-    private void planarityResearch(GraphResearchInfo info, Graph<Vertex, WeightedEdge> graph, GraphModel graphModel) {
+    private void planarityResearch(GraphResearchInfo info, Graph<Vertex, WeightedEdge> graph, GraphMetadata metadata) {
         BoyerMyrvoldPlanarityInspector<Vertex, WeightedEdge> planarityInspector = new BoyerMyrvoldPlanarityInspector<>(graph);
         info.isPlanar = planarityInspector.isPlanar();
 
@@ -79,11 +86,11 @@ public class GraphResearchService {
             }
             info.embedding = embedding;
         } else {
-            info.kuratowskiSubgraph = ParsingUtil.graphToGraphModel(planarityInspector.getKuratowskiSubdivision(), graphModel.getMetadata());
+            info.kuratowskiSubgraph = ParsingUtil.graphToGraphModel(planarityInspector.getKuratowskiSubdivision(), metadata);
         }
     }
 
-    private void chordalityResearch(GraphResearchInfo info, Graph<Vertex, WeightedEdge> graph, GraphModel graphModel) {
+    private void chordalityResearch(GraphResearchInfo info, Graph<Vertex, WeightedEdge> graph) {
         ChordalityInspector<Vertex, WeightedEdge> chordalityInspector = new ChordalityInspector<>(graph);
         info.isChordal = chordalityInspector.isChordal();
         if (info.isChordal) {
@@ -94,15 +101,35 @@ public class GraphResearchService {
             info.chromaticNumber = coloring.getNumberColors();
             info.coloring = coloring.getColorClasses().stream().map(st -> (List<Vertex>)new ArrayList<>(st)).toList();
 
-
             ChordalGraphMaxCliqueFinder<Vertex, WeightedEdge> maxCliqueFinder = new ChordalGraphMaxCliqueFinder<>(graph);
             info.maxClique = maxCliqueFinder.getClique().stream().toList();
             ChordalGraphIndependentSetFinder<Vertex, WeightedEdge> independentSetFinder = new ChordalGraphIndependentSetFinder<>(graph);
             info.independentSet = independentSetFinder.getIndependentSet().stream().toList();
 
             ChordalGraphMinimalVertexSeparatorFinder<Vertex, WeightedEdge> minimalVertexSeparatorFinder = new ChordalGraphMinimalVertexSeparatorFinder<>(graph);
-
             info.minimalVertexSeparator = minimalVertexSeparatorFinder.getMinimalSeparators().stream().map(Set::stream).map(Stream::toList).toList();
         }
+    }
+
+    private void bipartitePartitioningResearch(GraphResearchInfo info, Graph<Vertex, WeightedEdge> graph) {
+        BipartitePartitioning<Vertex, WeightedEdge> bipartitePartitioningInspector = new BipartitePartitioning<>(graph);
+        info.isBipartite = bipartitePartitioningInspector.isBipartite();
+        if (info.isBipartite) {
+            info.partitions = bipartitePartitioningInspector.getPartitioning().getPartitions().stream().map(s -> (List<Vertex>)new ArrayList<>(s)).toList();
+
+            info.chromaticNumber = 2; //TODO
+            info.coloring = info.partitions; //TODO
+
+            if (info.partitions.get(0).size() < info.partitions.get(1).size()) {
+                info.independentSet = info.partitions.get(1);
+            } else {
+                info.independentSet = info.partitions.get(0);
+            }
+        }
+    }
+
+    private void spanningResearch(GraphResearchInfo info, Graph<Vertex, WeightedEdge> graph) {
+        KruskalMinimumSpanningTree<Vertex,WeightedEdge> KruskalMinimumSpanningTreeAlgo = new KruskalMinimumSpanningTree<>(graph);
+        info.minSpanningTree = KruskalMinimumSpanningTreeAlgo.getSpanningTree().getEdges().stream().map(WeightedEdge::toEdge).toList();
     }
 }
