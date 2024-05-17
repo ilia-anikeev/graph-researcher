@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useRef, useEffect } from "react";
 import PropTypes from 'prop-types';
 import "./VertexButton.css";
 
@@ -7,17 +7,48 @@ function VertexButton(props) {
     const verticesRef = useRef([]);
     const [drawEdge,setDrawEdge]=React.useState(false);
     const [source,setSource]=React.useState(0);
+    const [id, setId] = React.useState(0);
 
-    const handleMouseMove = (id, vertex) => (event) => {
-        const rect = event.target.getBoundingClientRect();
-        const v = document.getElementsByClassName('vertex');
-        const a = Array.prototype.find.call(v, ver => ((rect.y <= ver.getBoundingClientRect().bottom) && (rect.y >= ver.getBoundingClientRect().top) & (rect.x <= ver.getBoundingClientRect().right) && (rect.x >= ver.getBoundingClientRect().left)))
-        props.updateButtonCoordinates(id, a.getBoundingClientRect().left + (a.getBoundingClientRect().right - a.getBoundingClientRect().left) / 2, a.getBoundingClientRect().top + (a.getBoundingClientRect().top - a.getBoundingClientRect().bottom) / 2 - 50);
-        console.log(a.getBoundingClientRect().left + (a.getBoundingClientRect().right - a.getBoundingClientRect().left) / 2, a.getBoundingClientRect().top + (a.getBoundingClientRect().top - a.getBoundingClientRect().bottom) / 2 - 100)
+    const handleMouseMove = (id) => () => {
+        setId(id);
         createEdge(id);    
         deleteEdge(id);
-        deleteVertex(id)
+        deleteVertex(id);
     };
+
+    useEffect(() => {
+        const mouseMove = (event) => {
+            if (id !== 0) {
+                const rect = event.target.getBoundingClientRect();
+                const v = document.getElementsByClassName('vertex');
+                const a = Array.prototype.find.call(v, ver => (
+                    rect.y <= ver.getBoundingClientRect().bottom &&
+                    rect.y >= ver.getBoundingClientRect().top &&
+                    rect.x <= ver.getBoundingClientRect().right &&
+                    rect.x >= ver.getBoundingClientRect().left
+                ));
+                if (a) {
+                    props.updateButtonCoordinates(id,
+                        a.getBoundingClientRect().left + (a.getBoundingClientRect().right - a.getBoundingClientRect().left) / 2,
+                        a.getBoundingClientRect().top + (a.getBoundingClientRect().top - a.getBoundingClientRect().bottom) / 2 - 50
+                    );
+                }
+            }
+        };
+
+        const mouseUp = () => {
+            setId(0);
+        };
+
+        window.addEventListener('mousemove', mouseMove);
+        window.addEventListener('mouseup', mouseUp);
+
+        return () => {
+            window.removeEventListener('mousemove', mouseMove);
+            window.removeEventListener('mouseup', mouseUp);
+        };
+    }, [id, props])
+
 
     function createEdge(id){
         if (props.edgeCreate === true){
@@ -66,7 +97,7 @@ function VertexButton(props) {
                     <div 
                         key={vertex.id} 
                         ref={ref => verticesRef.current[vertex.id] = ref}
-                        onClick={handleMouseMove(vertex.id, vertex.vertex)}
+                        onMouseDown={handleMouseMove(vertex.id)}
                     >
                         {vertex.vertex}
                     </div>
@@ -85,7 +116,7 @@ VertexButton.propTypes = {
     deleteVetrex: PropTypes.func,
     edgeCreate: PropTypes.bool,
     source: PropTypes.number,
-    createEdge: PropTypes.func
+    createEdge: PropTypes.func,
 }
 
 export default VertexButton;

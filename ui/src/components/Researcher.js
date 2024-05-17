@@ -4,7 +4,6 @@ import './Researcher.css'
 import Vertex from "./Vertex";
 import GraphMetadata from "./GraphMetadata"
 import { useNavigate } from "react-router-dom";
-// import SignIn from './SignIn'
 
 function Researcher() {
   const [vertices, setVertex] = React.useState([]);
@@ -25,7 +24,7 @@ function Researcher() {
     updateCount(newCount)
     setVertex([...vertices,
       {id: count, 
-       vertex: <Vertex key={count} id={count} data={count}/>,
+       vertex: <Vertex key={count} id={count} data={count} draw={draw} edges={edges}/>,
        x: 0, y: 0}]
     )
   }
@@ -112,24 +111,23 @@ function Researcher() {
       ctx.lineTo(v2.x,v2.y);
       ctx.stroke();
     }
-    
 };
 
-  useLayoutEffect(() =>{
+  useLayoutEffect(() => {
     const canvas=document.getElementById('canvas');
     const ctx = canvas.getContext("2d");
     ctx.clearRect(0,0,canvas.width, canvas.height);
     edges.forEach(element=>{
-      draw(element.source,element.target)
+      draw(element.source,element.target);
     })
   });
 
   const handle = () => {
-    setIsDirected(!isDirected)
+    setIsDirected(!isDirected);
   }
 
   const goToSignInPage = () => {
-    navigate('/signIn')
+    navigate('/signIn');
   }
 
   return (
@@ -146,7 +144,9 @@ function Researcher() {
                           edgeCreate={edgeCreate} 
                           deleteEdge={deleteEdge}
                           vertexRemove={vertexRemove}
-                          deleteVertex={deleteVertex}/>
+                          deleteVertex={deleteVertex}
+                          draw={draw}
+                          edges={edges}/>
         </div>
         <div style={{paddingTop: "3rem"}}>
           <button className='button' onClick={() => isEdgeCreate()}> Create edge</button>

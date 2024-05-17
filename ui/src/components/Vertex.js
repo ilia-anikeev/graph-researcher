@@ -21,7 +21,7 @@ function Vertex(props){
 }
 
 Vertex.propTypes = {
-    data: PropTypes.number
+    data: PropTypes.number,
 }
 
 export default Vertex
