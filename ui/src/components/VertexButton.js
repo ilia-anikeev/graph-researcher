@@ -10,8 +10,8 @@ function VertexButton(props) {
     const [id, setId] = React.useState(0);
 
     const handleMouseMove = (id) => () => {
-        setId(id);
-        createEdge(id);    
+        setId(id);    
+        createEdge(id);
         deleteEdge(id);
         deleteVertex(id);
     };
@@ -30,7 +30,7 @@ function VertexButton(props) {
                 if (a) {
                     props.updateButtonCoordinates(id,
                         a.getBoundingClientRect().left + (a.getBoundingClientRect().right - a.getBoundingClientRect().left) / 2,
-                        a.getBoundingClientRect().top + (a.getBoundingClientRect().top - a.getBoundingClientRect().bottom) / 2 - 50
+                        a.getBoundingClientRect().top + (a.getBoundingClientRect().top - a.getBoundingClientRect().bottom) / 2 - 55
                     );
                 }
             }
@@ -50,15 +50,15 @@ function VertexButton(props) {
     }, [id, props])
 
 
-    function createEdge(id){
+    function createEdge(id){ 
         if (props.edgeCreate === true){
             if(drawEdge===true){
                 if(id===props.source){
                     setDrawEdge(false);
                     return;
                 }else{
-                   props.createEdge(source,id);
-                   setDrawEdge(false);
+                    props.createEdge(source,id);
+                    setDrawEdge(false);
                 }
             }else{
                 setSource(id);

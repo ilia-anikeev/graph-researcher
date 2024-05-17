@@ -1,15 +1,17 @@
 import React from "react";
-import "./GraphMetadata.css";
 import PropTypes from 'prop-types';
+import "./GraphMetadata.css";
 import "../index.css"
-
 
 function GraphMetadata(props){
     const [isOpen, setState] = React.useState(false)
 
     return (
         <div>
-            <button className="button" onClick={() => {setTimeout(() => setState(true), 1500); props.setEdgeCreate(false)}}>      
+            <button className="button" onClick={() => {
+                setTimeout(() => setState(true), 1500); 
+                props.setEdgeCreate(false)}
+                }>      
                     Research      
             </button>
             {isOpen && <div className="GraphMetadata">

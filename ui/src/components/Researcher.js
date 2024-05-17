@@ -1,4 +1,4 @@
-import React, { useLayoutEffect } from "react";
+import React, { useLayoutEffect, useEffect } from "react";
 import VertexButton from "./VertexButton";
 import './Researcher.css'
 import Vertex from "./Vertex";
@@ -67,17 +67,13 @@ function Researcher() {
   }
 
   function deleteVertex(id){
-    console.log(id)
     setVertex(vertices.filter(vertex => (vertex.id !== id)))
     setEdges(edges.filter(edge => ((edge.source !== id) & (edge.target !== id))))
-    console.log("vertices", vertices)
-    console.log("edges", edges)
   }
 
   function deleteEdge(ids,idt){
     const newCounter=edgeCounter-1
     setEdgeCounter(newCounter)
-    console.log(ids, idt)
     setEdges(edges.filter(edge => !(edge.source === ids & edge.target === idt) && !(edge.source === idt & edge.target === ids)))
     console.log(edges)
   }
@@ -88,29 +84,49 @@ function Researcher() {
     ctx.lineWidth=4;
     const v1 = vertices.find(element => element.id===ids);
     const v2 = vertices.find(element => element.id===idt);
-    // const v = document.getElementsByClassName('vertex');
-    // const a = v.find(element => element.id===ids)
-
     ctx.beginPath();
-    if (isDirected){
-      var headlen = 10;
-      var angle = Math.atan2(v2.y-v1.y,v2.x-v1.x);
-      ctx.beginPath();
+    var newx = 0, newy = 0;
+    var headlen = 25; 
+    if (ids === idt) {
+      ctx.moveTo(v2.x, v2.y - 25);
+      ctx.bezierCurveTo(v2.x - 15, v2.y - 50, v2.x - 30, v2.y - 100, v2.x, v2.y - 100);
+      ctx.moveTo(v2.x, v2.y - 100);
+      ctx.bezierCurveTo(v2.x + 30, v2.y - 100, v2.x + 15, v2.y - 50, v2.x, v2.y - 25);
+      if (isDirected){
+        const angle = Math.atan2(v2.y - 25 - v2.y + 50, v2.x - v1.x -15);;
+        newx = v2.x ;
+        newy = v2.y - 25;  
+        ctx.lineTo(newx - headlen * Math.cos(angle - Math.PI / 6), newy - headlen * Math.sin(angle - Math.PI / 6));
+        ctx.moveTo(newx, newy);
+        ctx.lineTo(newx - headlen * Math.cos(angle + Math.PI / 6), newy - headlen * Math.sin(angle + Math.PI / 6));
+      }
+      ctx.stroke();
+    } else if (isDirected){
+      var angle = Math.atan2(v2.y - v1.y, v2.x - v1.x );
+      if (v2.x > v1.x && v2.y > v1.y){
+        newx = v2.x - Math.sin(Math.PI / 2 - angle) * 25;  
+        newy = v2.y - Math.cos(Math.PI / 2 - angle) * 25;  
+      } else if (v2.x > v1.x && v2.y < v1.y){
+        newx = v2.x - Math.sin(Math.PI / 2 - angle) * 25;
+        newy = v2.y + Math.cos(Math.PI / 2 + angle) * 25;  
+      } else if (v2.x < v1.x && v2.y < v1.y) {
+        newx = v2.x - Math.sin(Math.PI / 2 + angle) * 25;  
+        newy = v2.y + Math.cos(Math.PI / 2 + angle) * 25;  
+      } else if (v2.x < v1.x && v2.y > v1.y){
+        newx = v2.x - Math.sin(Math.PI / 2 - angle) * 25;
+        newy = v2.y + Math.cos(Math.PI / 2 + angle) * 25;  
+      }
       ctx.moveTo(v1.x, v1.y);
       ctx.lineTo(v2.x, v2.y);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(v2.x, v2.y);
-      ctx.lineTo(v2.x-headlen*Math.cos(angle-Math.PI/7), v2.y-headlen*Math.sin(angle-Math.PI/7));
-      ctx.lineTo(v2.x-headlen*Math.cos(angle+Math.PI/7), v2.y-headlen*Math.sin(angle+Math.PI/7));
-      ctx.lineTo(v2.x, v2.y);
-      ctx.lineTo(v2.x-headlen*Math.cos(angle-Math.PI/7), v2.y-headlen*Math.sin(angle-Math.PI/7));
-      ctx.stroke();
+      ctx.moveTo(newx, newy);
+      ctx.lineTo(newx - headlen * Math.cos(angle - Math.PI / 6), newy - headlen * Math.sin(angle - Math.PI / 6));
+      ctx.moveTo(newx, newy);
+      ctx.lineTo(newx - headlen * Math.cos(angle + Math.PI / 6), newy - headlen * Math.sin(angle + Math.PI / 6));
     } else {
       ctx.moveTo(v1.x,v1.y);
       ctx.lineTo(v2.x,v2.y);
-      ctx.stroke();
     }
+    ctx.stroke();
 };
 
   useLayoutEffect(() => {
