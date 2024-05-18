@@ -90,6 +90,34 @@ function VertexButton(props) {
         }
     }
 
+    useEffect(() => {    
+        const handleKeyPress = (event) => {
+          if (event.key === 'd'){
+            const v = document.getElementsByClassName('vertex');
+            const a = Array.prototype.find.call(v, ver => (
+                props.coordinates[1] <= ver.getBoundingClientRect().bottom &&
+                props.coordinates[1] >= ver.getBoundingClientRect().top &&
+                props.coordinates[0] <= ver.getBoundingClientRect().right &&
+                props.coordinates[0] >= ver.getBoundingClientRect().left
+            ));
+            if (a) {
+                console.log(a.children[0].textContent);
+                deleteVertexx(parseInt(a.children[0].textContent));
+            }
+          }
+        };
+    
+        function deleteVertexx(id){
+            props.deleteVertex(id);
+        }
+
+        window.addEventListener('keypress', handleKeyPress);
+    
+        return (() => {
+          window.removeEventListener('keypress', handleKeyPress);
+        })
+      });
+
     return (
         <div>
             {props.vertices ? props.vertices.map(vertex => {
@@ -109,6 +137,7 @@ function VertexButton(props) {
 
 VertexButton.propTypes = {
     vertices: PropTypes.array,
+    coordinates: PropTypes.array,
     updateButtonCoordinates: PropTypes.func,
     deleteEdge: PropTypes.func,
     edgeRemove: PropTypes.bool,

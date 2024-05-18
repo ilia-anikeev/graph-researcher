@@ -14,18 +14,20 @@ function Researcher() {
   const [edgeCreate,setEdgeCreate]=React.useState(false);
   const [vertexRemove,setVertexRemove]=React.useState(false);
   const [isDirected,setIsDirected]=React.useState(false);
+  const [coordinates, updateCoordinates] = React.useState([]);
   const navigate = useNavigate();
 
-  function createVertex() {
+  function createVertex(xx, yy) {
     setVertexRemove(false);
     setEdgeRemove(false);
     setEdgeCreate(false);
     const newCount = count + 1
     updateCount(newCount)
+    // console.log(xx, yy)
     setVertex([...vertices,
       {id: count, 
-       vertex: <Vertex key={count} id={count} data={count} draw={draw} edges={edges}/>,
-       x: 0, y: 0}]
+       vertex: <Vertex data={count} x={xx - 61} y={yy - 230}/>,
+       x: xx, y: yy - 90}]
     )
   }
 
@@ -45,7 +47,7 @@ function Researcher() {
     target: idt,
     id: edgeCounter
     }])
-    console.log(edges)
+    // console.log(edges)
   }
 
   function isEdgeCreate(){
@@ -75,7 +77,7 @@ function Researcher() {
     const newCounter=edgeCounter-1
     setEdgeCounter(newCounter)
     setEdges(edges.filter(edge => !(edge.source === ids & edge.target === idt) && !(edge.source === idt & edge.target === ids)))
-    console.log(edges)
+    // console.log(edges)
   }
 
   const draw = (ids, idt)=>{
@@ -129,6 +131,26 @@ function Researcher() {
     ctx.stroke();
 };
 
+  useEffect(() => {
+    const drawVertex = (event) => {
+      updateCoordinates([event.clientX, event.clientY]);
+    }
+
+    const handleKeyPress = (event) => {
+      if (event.key === 'v'){
+        createVertex(coordinates[0], coordinates[1]);
+      }
+    };
+
+    document.addEventListener('mousemove', drawVertex);
+    window.addEventListener('keypress', handleKeyPress);
+
+    return (() => {
+      document.removeEventListener('mousemove', drawVertex);
+      window.removeEventListener('keypress', handleKeyPress);
+    })
+  });
+
   useLayoutEffect(() => {
     const canvas=document.getElementById('canvas');
     const ctx = canvas.getContext("2d");
@@ -152,7 +174,7 @@ function Researcher() {
         <p className='title'>Graph Researcher</p>
       </div>
       <div className="menu">
-        <div ><button className='button' onClick={() => createVertex()}> Create vertex</button>
+        <div ><button className='button' onClick={() => createVertex(200, 200)}> Create vertex</button>
             <VertexButton vertices={vertices} 
                           updateButtonCoordinates={updateButtonCoordinates} 
                           createEdge={createEdge} 
@@ -162,7 +184,8 @@ function Researcher() {
                           vertexRemove={vertexRemove}
                           deleteVertex={deleteVertex}
                           draw={draw}
-                          edges={edges}/>
+                          edges={edges}
+                          coordinates={coordinates}/>
         </div>
         <div style={{paddingTop: "3rem"}}>
           <button className='button' onClick={() => isEdgeCreate()}> Create edge</button>

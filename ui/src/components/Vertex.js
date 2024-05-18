@@ -9,7 +9,7 @@ function Vertex(props){
     return (
             <Draggable nodeRef={noderef}
                 axis="both"
-                defaultPosition={{x: 200, y: 200}}
+                defaultPosition={{x: props.x, y: props.y}}
                 position={null}
                 grid={[1,1]}
                 scale={1}>
@@ -22,6 +22,8 @@ function Vertex(props){
 
 Vertex.propTypes = {
     data: PropTypes.number,
+    x: PropTypes.number, 
+    y: PropTypes.number, 
 }
 
 export default Vertex
