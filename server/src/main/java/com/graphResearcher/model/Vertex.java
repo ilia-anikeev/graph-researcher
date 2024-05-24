@@ -7,8 +7,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.util.Objects;
-
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
@@ -20,7 +18,7 @@ public class Vertex {
 
     public Vertex(JsonNode json) {
         index = json.get("index").asInt();
-        if (json.get("data") != null) {
+        if (json.has("data")) {
             data = json.get("data").asText();
         }
     }

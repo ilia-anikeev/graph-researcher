@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.graphResearcher.util.ParsingUtil;
+import com.graphResearcher.util.Converter;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -40,10 +40,10 @@ public class GraphResearchInfo {
         ObjectNode json = objectMapper.createObjectNode();
         json.put("isConnected", isConnected);
         json.put("isBiconnected", isBiconnected);
-        json.set("articulationPoints", ParsingUtil.verticesListToJsonArray(articulationPoints));
-        json.set("bridges", ParsingUtil.edgesListToJsonArray(bridges));
-        json.set("connectedComponents", ParsingUtil.listListVerticesToJsonArray(connectedComponents));
-        json.set("blocks", ParsingUtil.listListVerticesToJsonArray(blocks));
+        json.set("articulationPoints", Converter.verticesListToJsonArray(articulationPoints));
+        json.set("bridges", Converter.edgesListToJsonArray(bridges));
+        json.set("connectedComponents", Converter.listListVerticesToJsonArray(connectedComponents));
+        json.set("blocks", Converter.listListVerticesToJsonArray(blocks));
         if (isPlanar != null) json.put("isPlanar", isPlanar);
         if (isPlanar != null && !isPlanar) {
             json.set("kuratovskySubgraph", kuratowskiSubgraph.toJson());
@@ -51,13 +51,43 @@ public class GraphResearchInfo {
 
         if (isChordal != null) json.put("isChordal", isChordal);
         if (isChordal != null && isChordal) {
-            json.set("perfectEliminationOrder", ParsingUtil.verticesListToJsonArray(perfectEliminationOrder));
+            json.set("perfectEliminationOrder", Converter.verticesListToJsonArray(perfectEliminationOrder));
             json.put("chromaticNumber", chromaticNumber);
-            json.set("coloring", ParsingUtil.listListVerticesToJsonArray(coloring));
-            json.set("maxClique", ParsingUtil.verticesListToJsonArray(maxClique));
-            json.set("independentSet", ParsingUtil.verticesListToJsonArray(independentSet));
-            json.set("minimal_vertex_separator", ParsingUtil.listListVerticesToJsonArray(minimalVertexSeparator));
+            json.set("coloring", Converter.listListVerticesToJsonArray(coloring));
+            json.set("maxClique", Converter.verticesListToJsonArray(maxClique));
+            json.set("independentSet", Converter.verticesListToJsonArray(independentSet));
+            json.set("minimal_vertex_separator", Converter.listListVerticesToJsonArray(minimalVertexSeparator));
         }
         return json;
+    }
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof GraphResearchInfo other)) {
+            return false;
+        }
+        boolean equals = true;
+        equals &= bridges.equals(other.bridges);
+        equals &= isConnected.equals(other.isConnected);
+        equals &= isBiconnected.equals(other.isBiconnected);
+        equals &= bridges.equals(other.bridges);
+        equals &= articulationPoints.equals(other.articulationPoints);
+        equals &= connectedComponents.equals(other.connectedComponents);
+        equals &= blocks.equals(other.blocks);
+
+        equals &= isPlanar == other.isPlanar;
+        if (isPlanar != null && !isPlanar) {
+            equals &= kuratowskiSubgraph.equals(other.kuratowskiSubgraph);
+        }
+
+        equals &= isChordal == other.isChordal;
+        if (isChordal != null && isChordal) {
+            equals &= perfectEliminationOrder.equals(other.perfectEliminationOrder);
+            equals &= chromaticNumber.equals(other.chromaticNumber);
+            equals &= coloring.equals(other.coloring);
+            equals &= maxClique.equals(other.maxClique);
+            equals &= independentSet.equals(other.independentSet);
+            equals &= minimalVertexSeparator.equals(other.minimalVertexSeparator);
+        }
+        return equals;
     }
 }

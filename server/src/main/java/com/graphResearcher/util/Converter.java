@@ -1,10 +1,8 @@
 package com.graphResearcher.util;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.graphResearcher.model.*;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.*;
@@ -13,11 +11,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 
-public class ParsingUtil {
+public class Converter {
     private static final ObjectMapper mapper = new ObjectMapper();
 
     public static ArrayNode listListVerticesToJsonArray(List<List<Vertex>> list) {
-        return list.stream().map(ParsingUtil::verticesListToJsonArray).collect(
+        return list.stream().map(Converter::verticesListToJsonArray).collect(
                 mapper::createArrayNode,
                 ArrayNode::add,
                 ArrayNode::addAll

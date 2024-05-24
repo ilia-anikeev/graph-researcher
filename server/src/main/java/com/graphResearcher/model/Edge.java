@@ -3,12 +3,10 @@ package com.graphResearcher.model;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
-@AllArgsConstructor
 @NoArgsConstructor
 public class Edge {
     private Vertex source;
@@ -19,12 +17,20 @@ public class Edge {
 
     private String data;
 
+    public Edge(Vertex source, Vertex target, double weight, String data) {
+        this.source = source;
+        this.target = target;
+        this.weight = weight;
+        this.data = data;
+    }
+
     public Edge(JsonNode json) {
         source = new Vertex(json.get("source"));
         target = new Vertex(json.get("target"));
         weight = json.get("weight").asInt();
-        if (json.get("data") != null)
+        if (json.has("data")) {
             data = json.get("data").asText();
+        }
     }
 
     @Override

@@ -16,6 +16,9 @@ repositories {
 }
 
 dependencies {
+    //jdbc
+    implementation 'org.springframework:spring-jdbc:5.3.9'
+
     //spring-boot
     implementation 'org.springframework.boot:spring-boot-starter-web'
 

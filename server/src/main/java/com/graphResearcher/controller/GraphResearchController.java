@@ -41,10 +41,13 @@ public class GraphResearchController {
             return ResponseEntity.ok(researchResult.toJson().toString());
         } catch (JsonProcessingException e) {
             log.error("Json parsing error", e);
-            throw new RuntimeException(e);
+            return ResponseEntity.badRequest().body("Wrong json format");
         } catch (IOException e) {
             log.error("Request parsing error", e);
-            throw new RuntimeException(e);
+            return ResponseEntity.badRequest().body("Wrong json format");
+        } catch (Throwable e) {
+            log.error("Server error", e);
+            return ResponseEntity.internalServerError().body(e.getMessage());
         }
     }
 

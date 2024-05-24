@@ -1,10 +1,9 @@
 package com.graphResearcher.service;
 
 import com.graphResearcher.model.*;
-import com.graphResearcher.util.ParsingUtil;
+import com.graphResearcher.util.Converter;
 import org.jgrapht.Graph;
 import org.jgrapht.alg.clique.ChordalGraphMaxCliqueFinder;
-import org.jgrapht.alg.color.BrownBacktrackColoring;
 import org.jgrapht.alg.color.ChordalGraphColoring;
 import org.jgrapht.alg.connectivity.BiconnectivityInspector;
 import org.jgrapht.alg.connectivity.ConnectivityInspector;
@@ -12,10 +11,6 @@ import org.jgrapht.alg.cycle.ChordalGraphMinimalVertexSeparatorFinder;
 import org.jgrapht.alg.cycle.ChordalityInspector;
 import org.jgrapht.alg.independentset.ChordalGraphIndependentSetFinder;
 import org.jgrapht.alg.interfaces.VertexColoringAlgorithm;
-import org.jgrapht.alg.matching.HopcroftKarpMaximumCardinalityBipartiteMatching;
-import org.jgrapht.alg.matching.KuhnMunkresMinimalWeightBipartitePerfectMatching;
-import org.jgrapht.alg.matching.MaximumWeightBipartiteMatching;
-import org.jgrapht.alg.matching.blossom.v5.KolmogorovWeightedPerfectMatching;
 import org.jgrapht.alg.partition.BipartitePartitioning;
 import org.jgrapht.alg.planar.BoyerMyrvoldPlanarityInspector;
 import org.jgrapht.alg.spanning.KruskalMinimumSpanningTree;
@@ -25,13 +20,13 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.graphResearcher.util.ParsingUtil.graphToGraphModel;
+import static com.graphResearcher.util.Converter.graphToGraphModel;
 
 
 @Service
 public class GraphResearchService {
     public GraphResearchInfo research(GraphModel graphModel) {
-        Graph<Vertex, WeightedEdge> graph = ParsingUtil.graphModelToGraph(graphModel);
+        Graph<Vertex, WeightedEdge> graph = Converter.graphModelToGraph(graphModel);
         GraphResearchInfo info = new GraphResearchInfo();
 
         connectivityResearch(info, graph);
@@ -86,7 +81,7 @@ public class GraphResearchService {
             }
             info.embedding = embedding;
         } else {
-            info.kuratowskiSubgraph = ParsingUtil.graphToGraphModel(planarityInspector.getKuratowskiSubdivision(), metadata);
+            info.kuratowskiSubgraph = Converter.graphToGraphModel(planarityInspector.getKuratowskiSubdivision(), metadata);
         }
     }
 

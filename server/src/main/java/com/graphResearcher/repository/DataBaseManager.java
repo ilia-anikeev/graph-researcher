@@ -3,36 +3,33 @@ package com.graphResearcher.repository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.graphResearcher.model.*;
 
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.ResultSet;
-import java.sql.Connection;
-import java.sql.DriverManager;
+import java.io.PrintWriter;
+import java.sql.*;
 
 import java.util.*;
 
 import com.graphResearcher.util.ParseResearchInfo;
-import com.graphResearcher.util.ParsingUtil;
+import com.graphResearcher.util.Converter;
 import com.graphResearcher.util.PropertiesUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
+
+import javax.sql.DataSource;
+
 
 @Repository
 public class DataBaseManager {
     private static final Logger log = LoggerFactory.getLogger(DataBaseManager.class);
-    private final Connection connection;
+    DataSource dataSource;
     public DataBaseManager() {
-        try {
-            String NAME = "db.username";
-            String PASSWORD = "db.password";
-            String URL = "db.url";
-            connection = DriverManager.getConnection(PropertiesUtil.get(URL), PropertiesUtil.get(NAME), PropertiesUtil.get(PASSWORD));
-        } catch (SQLException e) {
-            log.error("DataBaseManager hasn't been created", e);
-            throw new RuntimeException(e);
-        }
+        String name = PropertiesUtil.get("db.username");
+        String password = PropertiesUtil.get("db.password");
+        String url = PropertiesUtil.get("db.url");
+        dataSource = new DriverManagerDataSource(url, name, password);
+
         log.info("DataBaseManager has been created");
     }
 
@@ -43,7 +40,9 @@ public class DataBaseManager {
                 + ", " + graph.getMetadata().hasMultipleEdges + ") " +
                 "RETURNING graph_id";
         int graphID;
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+
+        try (Connection conn = dataSource.getConnection();
+                PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
             ResultSet rs = preparedStatement.executeQuery();
             rs.next();
             graphID = rs.getInt("graph_id");
@@ -63,7 +62,8 @@ public class DataBaseManager {
 
     private void saveVertices(int graphID, List<Vertex> vertices, String tableName) {
         String sql = "INSERT INTO " + tableName + "(graph_id, index, data) VALUES(?, ?, ?)";
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
             for (Vertex v: vertices) {
                 preparedStatement.setInt(1, graphID);
                 preparedStatement.setInt(2, v.getIndex());
@@ -86,7 +86,8 @@ public class DataBaseManager {
 
     private void saveEdges(int graphID, List<Edge> edges, String tableName) {
         String sql = "INSERT INTO " + tableName + "(graph_id, source, target, weight, data) VALUES(?, ?, ?, ?, ?)";
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
             for (Edge e: edges) {
                 preparedStatement.setInt(1, graphID);
                 preparedStatement.setInt(2, e.getSource().getIndex());
@@ -116,7 +117,8 @@ public class DataBaseManager {
     private void saveComponents(int graphID, List<List<Vertex>> components, String tableName) {
         String sql = "INSERT INTO " + tableName + "(graph_id, component_number, index, data) VALUES(?, ?, ?, ?)";
 
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
             for (int i = 0; i < components.size(); ++i) {
                 for (Vertex v: components.get(i)) {
                     preparedStatement.setInt(1, graphID);
@@ -135,7 +137,8 @@ public class DataBaseManager {
     private void saveKuratowskiSubgraph(int userID, int graphID, GraphModel graphModel) {
         int subgraph_id = saveGraph(userID, graphModel);
         String sql = "INSERT INTO kuratowski_subgraph(graph_id, subgraph_id) VALUES(?, ?)";
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
             preparedStatement.setInt(1, graphID);
             preparedStatement.setInt(2, subgraph_id);
             preparedStatement.executeUpdate();
@@ -147,7 +150,8 @@ public class DataBaseManager {
 
     private void savePerfectEliminationOrder(int graphID, List<Vertex> perfectEliminationOrder) {
         String sql = "INSERT INTO perfect_elimination_order(graph_id, sequence_number, index, data) VALUES(?, ?, ?, ?)";
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
             for (int i = 0; i < perfectEliminationOrder.size(); ++i) {
                 preparedStatement.setInt(1, graphID);
                 preparedStatement.setInt(2, i);
@@ -198,11 +202,12 @@ public class DataBaseManager {
         String sql1 = "DELETE FROM graph_research_info WHERE graph_id = " + graphID;
 
         String sql2 = "INSERT INTO graph_research_info(" + "user_id, " + result.fieldsName + ") VALUES(" + userID + ", " + result.fields + ")";
-        try {
-            PreparedStatement preparedStatement1 = connection.prepareStatement(sql1);
+        try (Connection conn = dataSource.getConnection();
+            PreparedStatement preparedStatement1 = conn.prepareStatement(sql1);
+            PreparedStatement preparedStatement2 = conn.prepareStatement(sql2)) {
+
             preparedStatement1.execute();
 
-            PreparedStatement preparedStatement2 = connection.prepareStatement(sql2);
             preparedStatement2.execute();
         } catch (SQLException e) {
             log.error("ID {}: research info haven't been saved", graphID, e);
@@ -213,11 +218,12 @@ public class DataBaseManager {
 
     public GraphResearchInfo getResearchInfo(int graphID) {
         String sql = "SELECT * FROM graph_research_info WHERE graph_id = " + graphID;
-        try {
-            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement preparedStatement = conn.prepareStatement(sql)){
+
             ResultSet rs = preparedStatement.executeQuery();
 
-            GraphResearchInfo researchInfo = ParsingUtil.resultSetToGraphResearchInfo(rs);
+            GraphResearchInfo researchInfo = Converter.resultSetToGraphResearchInfo(rs);
             researchInfo.articulationPoints = getArticulationPoints(graphID);
             researchInfo.bridges = getBridges(graphID);
             researchInfo.connectedComponents = getConnectedComponents(graphID);
@@ -251,7 +257,8 @@ public class DataBaseManager {
     private List<List<Vertex>> getComponents(int graphID, String tableName) {
         Map<Integer, List<Vertex>> componentsMap = new HashMap<>();
         String sql = "SELECT component_number, index, data FROM " + tableName + " WHERE graph_id = " + graphID;
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
             ResultSet rs = preparedStatement.executeQuery();
             while (rs.next()) {
                 if (componentsMap.containsKey(rs.getInt("component_number"))) {
@@ -273,8 +280,8 @@ public class DataBaseManager {
 
     private GraphMetadata getGraphMetadata(int graphID) {
         String sql = "SELECT is_directed, is_weighted, has_self_loops, has_multiple_edges FROM graph_metadata WHERE graph_id = " + graphID;
-        try {
-            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement preparedStatement = conn.prepareStatement(sql)){
             ResultSet rs = preparedStatement.executeQuery();
             rs.next();
             return new GraphMetadata(rs.getBoolean("is_directed"), rs.getBoolean("is_weighted"), rs.getBoolean("has_self_loops"), rs.getBoolean("has_multiple_edges"));
@@ -299,7 +306,8 @@ public class DataBaseManager {
     private List<Vertex> getVertices(int graphID, String tableName) {
         List<Vertex> vertices = new ArrayList<>();
         String sql = "SELECT index, data FROM " + tableName  + " WHERE graph_id = " + graphID;
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
             ResultSet rs = preparedStatement.executeQuery();
             while (rs.next()) {
                 vertices.add(new Vertex(rs.getInt("index"), rs.getString("data")));
@@ -327,7 +335,8 @@ public class DataBaseManager {
         }
         List<Edge> edges = new ArrayList<>();
         String sql = "SELECT source, target, weight, data FROM " + tableName + " WHERE graph_id = " + graphID;
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
             ResultSet rs = preparedStatement.executeQuery();
             while (rs.next()) {
                 Vertex s = verticesMap.get(rs.getInt("source"));
@@ -347,7 +356,8 @@ public class DataBaseManager {
             vertices.add(new Vertex());
         }
         String sql = "SELECT index, data, sequence_number FROM perfect_elimination_order WHERE graph_id = " + graphID;
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
             ResultSet rs = preparedStatement.executeQuery();
             while (rs.next()) {
                 vertices.set(rs.getInt("sequence_number"), new Vertex(rs.getInt("index"), rs.getString("data")));
@@ -361,7 +371,8 @@ public class DataBaseManager {
 
     private GraphModel getKuratowskiSubgraph(int graphID) {
         String sql = "SELECT subgraph_id FROM kuratowski_subgraph WHERE graph_id = " + graphID;
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
             ResultSet rs = preparedStatement.executeQuery();
             rs.next();
             return getGraph(rs.getInt("subgraph_id"));
@@ -397,7 +408,8 @@ public class DataBaseManager {
 
     private void deleteAllUserGraphs(int userID) {
         String sql1 = "SELECT graph_id FROM graph_metadata WHERE user_id = " + userID;
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql1)) {
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement preparedStatement = conn.prepareStatement(sql1)) {
             ResultSet rs = preparedStatement.executeQuery();
             while (rs.next()) {
                 int graphID = rs.getInt("graph_id");
@@ -409,7 +421,8 @@ public class DataBaseManager {
         }
 
         String sql2 = "DELETE FROM graph_metadata WHERE user_id = " + userID;
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql2)) {
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement preparedStatement = conn.prepareStatement(sql2)) {
             preparedStatement.execute();
         } catch (SQLException e) {
             log.error("All user{} graphs haven't been deleted", userID, e);
@@ -417,7 +430,8 @@ public class DataBaseManager {
         }
         
         String sql3 = "DELETE FROM graph_research_info WHERE user_id = " + userID;
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql3)) {
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement preparedStatement = conn.prepareStatement(sql3)) {
             preparedStatement.execute();
         } catch (SQLException e) {
             log.error("User{} researches haven't been deleted", userID, e);
@@ -428,7 +442,8 @@ public class DataBaseManager {
 
     public void deleteGraph(int graphID) {
         String sql = "DELETE FROM graph_metadata WHERE graph_id = " + graphID;
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
             preparedStatement.execute();
         } catch (SQLException e) {
             log.error("ID {}: graph haven't been deleted", graphID, e);
@@ -455,7 +470,8 @@ public class DataBaseManager {
 
     private void deleteVertices(int graphID, String tableName) {
         String sql = "DELETE FROM " + tableName + " WHERE graph_id = " + graphID;
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
             preparedStatement.execute();
         } catch (SQLException e) {
             log.error("ID {}: vertices from {} haven't been deleted", graphID, tableName, e);
@@ -473,7 +489,8 @@ public class DataBaseManager {
 
     private void deleteEdges(int graphID, String tableName) {
         String sql = "DELETE FROM " + tableName + " WHERE graph_id = " + graphID;
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
             preparedStatement.execute();
         } catch (SQLException e) {
             log.error("ID {}: edges from {} haven't been deleted", graphID, tableName, e);
@@ -499,7 +516,8 @@ public class DataBaseManager {
 
     private void deleteKuratowskiSubgraph(int graphID) {
         String sql = "DELETE FROM kuratowski_subgraph WHERE graph_id = " + graphID;
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)){
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement preparedStatement = conn.prepareStatement(sql)){
             preparedStatement.execute();
         } catch (SQLException e) {
             log.error("ID {}: subgraph hasn't been deleted", graphID, e);
@@ -526,8 +544,8 @@ public class DataBaseManager {
     private void initVerticesTable() {
         String sql = "CREATE TABLE vertices(id SERIAL PRIMARY KEY, graph_id INT, index INT, data TEXT)";
 
-        try {
-            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement preparedStatement = conn.prepareStatement(sql)){
             preparedStatement.execute();
         } catch (SQLException e) {
             log.error("Init vertices table error", e);
@@ -537,8 +555,8 @@ public class DataBaseManager {
 
     private void initEdgesTable() {
         String sql = "CREATE TABLE edges(id SERIAL PRIMARY KEY, graph_id INT, source INT, target INT, weight DOUBLE PRECISION, data TEXT)";
-        try {
-            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement preparedStatement = conn.prepareStatement(sql)){
             preparedStatement.execute();
         } catch (SQLException e) {
             log.error("Init edges table error", e);
@@ -548,7 +566,8 @@ public class DataBaseManager {
 
     private void initMetadataTable() {
         String sql = "CREATE TABLE graph_metadata(graph_id SERIAL PRIMARY KEY, user_id INT, is_directed BOOLEAN, is_weighted BOOLEAN, has_self_loops BOOLEAN, has_multiple_edges BOOLEAN)";
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
             preparedStatement.execute();
         } catch (SQLException e) {
             log.error("Init metadata table error", e);
@@ -561,7 +580,8 @@ public class DataBaseManager {
                 "graph_id INT, user_id INT, is_connected BOOLEAN, is_biconnected BOOLEAN, " +
                 "articulation_points INT, bridges INT, connected_components INT, " +
                 "blocks INT, is_planar BOOLEAN, kuratovsky_sub_graph_id INT, is_chordal BOOLEAN, chromatic_number INT)";
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
             preparedStatement.execute();
         } catch (SQLException e) {
             log.error("Init graphResearchInfo table error", e);
@@ -571,8 +591,8 @@ public class DataBaseManager {
 
     private void initArticulationPointsTable() {
         String sql = "CREATE TABLE articulation_points(id SERIAL PRIMARY KEY, graph_id INT, index INT, data TEXT)";
-        try {
-            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement preparedStatement = conn.prepareStatement(sql)){
             preparedStatement.execute();
         } catch (SQLException e) {
             log.error("Init articulationPoints table error", e);
@@ -582,8 +602,8 @@ public class DataBaseManager {
 
     private void initBridgesTable() {
         String sql = "CREATE TABLE bridges(id SERIAL PRIMARY KEY, graph_id INT, source INT, target INT, weight DOUBLE PRECISION, data TEXT)";
-        try {
-            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement preparedStatement = conn.prepareStatement(sql);){
             preparedStatement.execute();
         } catch (SQLException e) {
             log.error("Init bridges table error", e);
@@ -593,8 +613,8 @@ public class DataBaseManager {
 
     private void initConnectedComponentsTable() {
         String sql = "CREATE TABLE connected_components(id SERIAL PRIMARY KEY, graph_id INT, component_number INT, index INT, data TEXT)";
-        try {
-            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement preparedStatement = conn.prepareStatement(sql)){
             preparedStatement.execute();
         } catch (SQLException e) {
             log.error("Init connected components table error", e);
@@ -604,8 +624,8 @@ public class DataBaseManager {
 
     private void initBlocksTable() {
         String sql = "CREATE TABLE blocks(id SERIAL PRIMARY KEY, graph_id INT, component_number INT, index INT, data TEXT)";
-        try {
-            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
             preparedStatement.execute();
         } catch (SQLException e) {
             log.error("Init blocks table error", e);
@@ -615,8 +635,8 @@ public class DataBaseManager {
 
     private void initPerfectEliminationOrderTable() {
         String sql = "CREATE TABLE perfect_elimination_order(id SERIAL PRIMARY KEY, graph_id INT, sequence_number INT, index INT, data TEXT)";
-        try {
-            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement preparedStatement = conn.prepareStatement(sql)){
             preparedStatement.execute();
         } catch (SQLException e) {
             log.error("Init perfectEliminationOrder table error", e);
@@ -626,8 +646,8 @@ public class DataBaseManager {
     
     private void initKuratowskiSubgraphTable() {
         String sql = "CREATE TABLE kuratowski_subgraph(id SERIAL PRIMARY KEY, graph_id INT, subgraph_id INT)";
-        try {
-            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement preparedStatement = conn.prepareStatement(sql)){
             preparedStatement.execute();
         } catch (SQLException e) {
             log.error("Init Kuratowski subgraph table error", e);
@@ -637,8 +657,8 @@ public class DataBaseManager {
 
     private void initColoringTable() {
         String sql = "CREATE TABLE coloring(id SERIAL PRIMARY KEY, graph_id INT, component_number INT, index INT, data TEXT)";
-        try {
-            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
             preparedStatement.execute();
         } catch (SQLException e) {
             log.error("Init coloring table error", e);
@@ -648,8 +668,8 @@ public class DataBaseManager {
 
     private void initMaxCliqueTable() {
         String sql = "CREATE TABLE max_clique(id SERIAL PRIMARY KEY, graph_id INT, index INT, data TEXT)";
-        try {
-            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement preparedStatement = conn.prepareStatement(sql)){
             preparedStatement.execute();
         } catch (SQLException e) {
             log.error("Init max clique table error", e);
@@ -659,8 +679,8 @@ public class DataBaseManager {
 
     private void initIndependentSetTable() {
         String sql = "CREATE TABLE independent_set(id SERIAL PRIMARY KEY, graph_id INT, index INT, data TEXT)";
-        try {
-            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement preparedStatement = conn.prepareStatement(sql);) {
             preparedStatement.execute();
         } catch (SQLException e) {
             log.error("Init independent_set table error", e);
@@ -670,8 +690,8 @@ public class DataBaseManager {
 
     private void initMinimalVertexSeparatorTable() {
         String sql = "CREATE TABLE minimal_vertex_separator(id SERIAL PRIMARY KEY, graph_id INT, component_number INT, index INT, data TEXT)";
-        try {
-            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
             preparedStatement.execute();
         } catch (SQLException e) {
             log.error("Init minimal_vertex_separator table error", e);
@@ -699,61 +719,61 @@ public class DataBaseManager {
     }
     
     public void deleteDB() {
-        try {
+        try (Connection conn = dataSource.getConnection()){
             String sql = "DROP TABLE articulation_points";
-            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            PreparedStatement preparedStatement = conn.prepareStatement(sql);
             preparedStatement.execute();
 
             sql = "DROP TABLE blocks";
-            preparedStatement = connection.prepareStatement(sql);
+            preparedStatement = conn.prepareStatement(sql);
             preparedStatement.execute();
 
             sql = "DROP TABLE bridges";
-            preparedStatement = connection.prepareStatement(sql);
+            preparedStatement = conn.prepareStatement(sql);
             preparedStatement.execute();
 
             sql = "DROP TABLE connected_components";
-            preparedStatement = connection.prepareStatement(sql);
+            preparedStatement = conn.prepareStatement(sql);
             preparedStatement.execute();
 
             sql = "DROP TABLE edges";
-            preparedStatement = connection.prepareStatement(sql);
+            preparedStatement = conn.prepareStatement(sql);
             preparedStatement.execute();
 
             sql = "DROP TABLE graph_metadata";
-            preparedStatement = connection.prepareStatement(sql);
+            preparedStatement = conn.prepareStatement(sql);
             preparedStatement.execute();
 
             sql = "DROP TABLE graph_research_info";
-            preparedStatement = connection.prepareStatement(sql);
+            preparedStatement = conn.prepareStatement(sql);
             preparedStatement.execute();
 
             sql = "DROP TABLE perfect_elimination_order";
-            preparedStatement = connection.prepareStatement(sql);
+            preparedStatement = conn.prepareStatement(sql);
             preparedStatement.execute();
 
             sql = "DROP TABLE vertices";
-            preparedStatement = connection.prepareStatement(sql);
+            preparedStatement = conn.prepareStatement(sql);
             preparedStatement.execute();
 
             sql = "DROP TABLE kuratowski_subgraph";
-            preparedStatement = connection.prepareStatement(sql);
+            preparedStatement = conn.prepareStatement(sql);
             preparedStatement.execute();
 
             sql = "DROP TABLE coloring";
-            preparedStatement = connection.prepareStatement(sql);
+            preparedStatement = conn.prepareStatement(sql);
             preparedStatement.execute();
 
             sql = "DROP TABLE max_clique";
-            preparedStatement = connection.prepareStatement(sql);
+            preparedStatement = conn.prepareStatement(sql);
             preparedStatement.execute();
 
             sql = "DROP TABLE independent_set";
-            preparedStatement = connection.prepareStatement(sql);
+            preparedStatement = conn.prepareStatement(sql);
             preparedStatement.execute();
 
             sql = "DROP TABLE minimal_vertex_separator";
-            preparedStatement = connection.prepareStatement(sql);
+            preparedStatement = conn.prepareStatement(sql);
             preparedStatement.execute();
         } catch (SQLException e) {
             log.error("Delete db error", e);
