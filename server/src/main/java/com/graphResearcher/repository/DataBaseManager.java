@@ -278,7 +278,8 @@ public class DataBaseManager {
             while (rs.next()) {
                 Vertex s = verticesMap.get(rs.getInt("source"));
                 Vertex t = verticesMap.get(rs.getInt("target"));
-                edges.add(new Edge(s, t, rs.getInt("weight"), rs.getString("data")));
+                Edge e = new Edge(s, t, rs.getInt("weight"), rs.getString("data"));
+                edges.add(e);
             }
             return edges;
         } catch (SQLException e) {

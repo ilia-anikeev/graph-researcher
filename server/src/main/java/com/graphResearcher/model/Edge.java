@@ -28,9 +28,7 @@ public class Edge {
         source = new Vertex(json.get("source"));
         target = new Vertex(json.get("target"));
         weight = json.get("weight").asInt();
-        if (json.has("data")) {
-            data = json.get("data").asText();
-        }
+        data = json.get("data").asText();
     }
 
     @Override
@@ -48,7 +46,7 @@ public class Edge {
         json.set("source", source.toJson());
         json.set("target", target.toJson());
         json.put("weight", weight);
-        if (data != null) json.put("data", data);
+        json.put("data", data);
         return json;
     }
 }

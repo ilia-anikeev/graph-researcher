@@ -20,9 +20,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.graphResearcher.util.Converter.graphToGraphModel;
-
-
 @Service
 public class GraphResearchService {
     public GraphResearchInfo research(GraphModel graphModel) {

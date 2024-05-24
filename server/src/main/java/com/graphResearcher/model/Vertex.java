@@ -18,9 +18,7 @@ public class Vertex {
 
     public Vertex(JsonNode json) {
         index = json.get("index").asInt();
-        if (json.has("data")) {
-            data = json.get("data").asText();
-        }
+        data = json.get("data").asText();
     }
 
     @Override
@@ -41,8 +39,7 @@ public class Vertex {
         ObjectNode json = objectMapper.createObjectNode();
 
         json.put("index", index);
-        if (data != null)
-            json.put("data", data);
+        json.put("data", data);
 
         return json;
     }
