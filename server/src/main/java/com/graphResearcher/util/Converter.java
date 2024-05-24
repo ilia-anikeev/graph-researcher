@@ -12,6 +12,60 @@ import java.sql.SQLException;
 import java.util.*;
 
 public class Converter {
+    private static final int EMPTY_MASK = 0;
+    private static final int IS_DIRECTED = 1;
+    private static final int IS_WEIGHTED = 1 << 1;
+    private static final int HAS_MULTIPLE_EDGES = 1 << 2;
+    private static final int HAS_SELF_LOOPS = 1 << 3;
+
+    private static Graph<Vertex, WeightedEdge> getEmptyGraph(GraphModel graphModel) {
+        int mask = EMPTY_MASK;
+        if (graphModel.getMetadata().isDirected) {
+            mask |= IS_DIRECTED;
+        }
+        if (graphModel.getMetadata().isWeighted) {
+            mask |= IS_WEIGHTED;
+        }
+        if (graphModel.getMetadata().hasMultipleEdges) {
+            mask |= HAS_MULTIPLE_EDGES;
+        }
+        if (graphModel.getMetadata().hasSelfLoops) {
+            mask |= HAS_SELF_LOOPS;
+        }
+        return switch (mask) {
+            case EMPTY_MASK -> new SimpleGraph<>(WeightedEdge.class);
+            case IS_DIRECTED -> new SimpleDirectedGraph<>(WeightedEdge.class);
+            case HAS_MULTIPLE_EDGES -> new Multigraph<>(WeightedEdge.class);
+            case HAS_SELF_LOOPS -> new DefaultUndirectedGraph<>(WeightedEdge.class);
+            case IS_WEIGHTED -> new SimpleWeightedGraph<>(WeightedEdge.class);
+            case IS_DIRECTED | HAS_MULTIPLE_EDGES -> new DirectedMultigraph<>(WeightedEdge.class);
+            case IS_DIRECTED | IS_WEIGHTED -> new SimpleDirectedWeightedGraph<>(WeightedEdge.class);
+            case IS_DIRECTED | HAS_SELF_LOOPS -> new DefaultDirectedGraph<>(WeightedEdge.class);
+            case HAS_MULTIPLE_EDGES | HAS_SELF_LOOPS -> new Pseudograph<>(WeightedEdge.class);
+            case HAS_MULTIPLE_EDGES | IS_WEIGHTED -> new WeightedMultigraph<>(WeightedEdge.class);
+            case HAS_SELF_LOOPS | IS_WEIGHTED -> new DefaultUndirectedWeightedGraph<>(WeightedEdge.class);
+            case IS_DIRECTED | HAS_MULTIPLE_EDGES | HAS_SELF_LOOPS -> new DirectedPseudograph<>(WeightedEdge.class);
+            case IS_DIRECTED | HAS_MULTIPLE_EDGES | IS_WEIGHTED -> new DirectedWeightedMultigraph<>(WeightedEdge.class);
+            case IS_DIRECTED | HAS_SELF_LOOPS | IS_WEIGHTED -> new DefaultDirectedWeightedGraph<>(WeightedEdge.class);
+            case HAS_MULTIPLE_EDGES | HAS_SELF_LOOPS | IS_WEIGHTED -> new WeightedPseudograph<>(WeightedEdge.class);
+            default -> new DirectedWeightedPseudograph<>(WeightedEdge.class);
+        };
+    }
+
+    public static Graph<Vertex, WeightedEdge> graphModelToGraph(GraphModel graphModel) {
+        Graph<Vertex, WeightedEdge> g = getEmptyGraph(graphModel);
+        for (Vertex v : graphModel.getVertices()) {
+            g.addVertex(v);
+        }
+        for (Edge e : graphModel.getEdges()) {
+            g.addEdge(e.getSource(), e.getTarget());
+            if (graphModel.getMetadata().isWeighted) {
+                g.setEdgeWeight(e.getSource(), e.getTarget(), e.getWeight());
+            }
+        }
+        return g;
+    }
+
     private static final ObjectMapper mapper = new ObjectMapper();
 
     public static ArrayNode listListVerticesToJsonArray(List<List<Vertex>> list) {
@@ -79,60 +133,6 @@ public class Converter {
             }
         }
         return new GraphModel(vertices, edges, graph.getMetadata());
-    }
-
-    private static final int EMPTY_MASK = 0;
-    private static final int IS_DIRECTED = 1;
-    private static final int IS_WEIGHTED = 1 << 1;
-    private static final int HAS_MULTIPLE_EDGES = 1 << 2;
-    private static final int HAS_SELF_LOOPS = 1 << 3;
-
-    private static Graph<Vertex, WeightedEdge> getEmptyGraph(GraphModel graphModel) {
-        int mask = EMPTY_MASK;
-        if (graphModel.getMetadata().isDirected) {
-            mask |= IS_DIRECTED;
-        }
-        if (graphModel.getMetadata().isWeighted) {
-            mask |= IS_WEIGHTED;
-        }
-        if (graphModel.getMetadata().hasMultipleEdges) {
-            mask |= HAS_MULTIPLE_EDGES;
-        }
-        if (graphModel.getMetadata().hasSelfLoops) {
-            mask |= HAS_SELF_LOOPS;
-        }
-        return switch (mask) {
-            case EMPTY_MASK -> new SimpleGraph<>(WeightedEdge.class);
-            case IS_DIRECTED -> new SimpleDirectedGraph<>(WeightedEdge.class);
-            case HAS_MULTIPLE_EDGES -> new Multigraph<>(WeightedEdge.class);
-            case HAS_SELF_LOOPS -> new DefaultUndirectedGraph<>(WeightedEdge.class);
-            case IS_WEIGHTED -> new SimpleWeightedGraph<>(WeightedEdge.class);
-            case IS_DIRECTED | HAS_MULTIPLE_EDGES -> new DirectedMultigraph<>(WeightedEdge.class);
-            case IS_DIRECTED | IS_WEIGHTED -> new SimpleDirectedWeightedGraph<>(WeightedEdge.class);
-            case IS_DIRECTED | HAS_SELF_LOOPS -> new DefaultDirectedGraph<>(WeightedEdge.class);
-            case HAS_MULTIPLE_EDGES | HAS_SELF_LOOPS -> new Pseudograph<>(WeightedEdge.class);
-            case HAS_MULTIPLE_EDGES | IS_WEIGHTED -> new WeightedMultigraph<>(WeightedEdge.class);
-            case HAS_SELF_LOOPS | IS_WEIGHTED -> new DefaultUndirectedWeightedGraph<>(WeightedEdge.class);
-            case IS_DIRECTED | HAS_MULTIPLE_EDGES | HAS_SELF_LOOPS -> new DirectedPseudograph<>(WeightedEdge.class);
-            case IS_DIRECTED | HAS_MULTIPLE_EDGES | IS_WEIGHTED -> new DirectedWeightedMultigraph<>(WeightedEdge.class);
-            case IS_DIRECTED | HAS_SELF_LOOPS | IS_WEIGHTED -> new DefaultDirectedWeightedGraph<>(WeightedEdge.class);
-            case HAS_MULTIPLE_EDGES | HAS_SELF_LOOPS | IS_WEIGHTED -> new WeightedPseudograph<>(WeightedEdge.class);
-            default -> new DirectedWeightedPseudograph<>(WeightedEdge.class);
-        };
-    }
-
-    public static Graph<Vertex, WeightedEdge> graphModelToGraph(GraphModel graphModel) {
-        Graph<Vertex, WeightedEdge> g = getEmptyGraph(graphModel);
-        for (Vertex v : graphModel.getVertices()) {
-            g.addVertex(v);
-        }
-        for (Edge e : graphModel.getEdges()) {
-            g.addEdge(e.getSource(), e.getTarget());
-            if (graphModel.getMetadata().isWeighted) {
-                g.setEdgeWeight(e.getSource(), e.getTarget(), e.getWeight());
-            }
-        }
-        return g;
     }
 
     public static String getFields(GraphResearchInfo info, int graphID) {

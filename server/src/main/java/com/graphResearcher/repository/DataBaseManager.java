@@ -33,7 +33,6 @@ public class DataBaseManager {
         String sql = "INSERT INTO graph_metadata(user_id, is_directed, is_weighted, has_self_loops, has_multiple_edges) " +
                 "VALUES(?, ?, ?, ?, ?)" +
                 "RETURNING graph_id";
-        int graphID;
 
         try (Connection conn = dataSource.getConnection();
              PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
@@ -45,19 +44,15 @@ public class DataBaseManager {
 
             ResultSet rs = preparedStatement.executeQuery();
             rs.next();
-            graphID = rs.getInt("graph_id");
-            saveVertices(graphID, graph.getVertices(), conn);
-            saveEdges(graphID, graph.getEdges(), conn);
+            int graphID = rs.getInt("graph_id");
+            saveVertices(graphID, graph.getVertices(), "vertices", conn);
+            saveEdges(graphID, graph.getEdges(), "edges", conn);
+            log.info("ID {}: graph has been saved", graphID);
+            return graphID;
         } catch (SQLException e) {
             log.error("Graph hasn't been saved", e);
             throw new RuntimeException(e);
         }
-        log.info("ID {}: graph has been saved", graphID);
-        return graphID;
-    }
-
-    private void saveVertices(int graphID, List<Vertex> vertices, Connection conn) {
-        saveVertices(graphID, vertices, "vertices", conn);
     }
 
     private void saveVertices(int graphID, List<Vertex> vertices, String tableName, Connection conn) {
@@ -73,14 +68,6 @@ public class DataBaseManager {
             log.error("ID {}: vertices haven't been saved", graphID, e);
             throw new RuntimeException(e);
         }
-    }
-
-    private void saveArticulationPoints(int graphID, List<Vertex> vertices, Connection conn) {
-        saveVertices(graphID, vertices, "articulation_points", conn);
-    }
-
-    private void saveEdges(int graphID, List<Edge> edges, Connection conn) {
-        saveEdges(graphID, edges, "edges", conn);
     }
 
     private void saveEdges(int graphID, List<Edge> edges, String tableName, Connection conn) {
@@ -99,19 +86,6 @@ public class DataBaseManager {
             throw new RuntimeException(e);
         }
     }
-
-    private void saveBridges(int graphID, List<Edge> edges, Connection conn) {
-        saveEdges(graphID, edges, "bridges", conn);
-    }
-
-    private void saveConnectedComponents(int graphID, List<List<Vertex>> components, Connection conn) {
-        saveComponents(graphID, components, "connected_components", conn);
-    }
-
-    private void saveBlocks(int graphID, List<List<Vertex>> blocks, Connection conn) {
-        saveComponents(graphID, blocks, "blocks", conn);
-    }
-
 
     private void saveComponents(int graphID, List<List<Vertex>> components, String tableName, Connection conn) {
         String sql = "INSERT INTO " + tableName + "(graph_id, component_number, index, data) VALUES(?, ?, ?, ?)";
@@ -161,77 +135,64 @@ public class DataBaseManager {
         }
     }
 
-    private void saveMaxClique(int graphID, List<Vertex> clique, Connection conn) {
-        saveVertices(graphID, clique, "max_clique", conn);
-    }
-
-    private void saveColoring(int graphID, List<List<Vertex>> coloring, Connection conn) {
-        saveComponents(graphID, coloring, "coloring", conn);
-    }
-
-    private void saveIndependentSet(int graphID, List<Vertex> independentSet, Connection conn) {
-        saveVertices(graphID, independentSet, "independent_set", conn);
-    }
-
-    private void saveMinimalVertexSeparator(int graphID, List<List<Vertex>> minimalVertexSeparator, Connection conn) {
-        saveComponents(graphID, minimalVertexSeparator, "minimal_vertex_separator", conn);
-    }
-
     public void saveResearchInfo(int userID, int graphID, GraphResearchInfo info) {
         try (Connection conn = dataSource.getConnection()) {
-            saveArticulationPoints(graphID, info.articulationPoints, conn);
-            saveBridges(graphID, info.bridges, conn);
-            saveConnectedComponents(graphID, info.connectedComponents, conn);
-            saveBlocks(graphID, info.blocks, conn);
+            saveVertices(graphID, info.articulationPoints, "articulation_points", conn);
+            saveEdges(graphID, info.bridges, "bridges",conn);
+            saveComponents(graphID, info.connectedComponents, "connected_components", conn);
+            saveComponents(graphID, info.blocks, "blocks", conn);
             if (info.isPlanar != null && !info.isPlanar) {
                 saveKuratowskiSubgraph(userID, graphID, info.kuratowskiSubgraph, conn);
             }
             if (info.isChordal != null && info.isChordal) {
                 savePerfectEliminationOrder(graphID, info.perfectEliminationOrder, conn);
-                saveColoring(graphID, info.coloring, conn);
-                saveMaxClique(graphID, info.maxClique, conn);
-                saveIndependentSet(graphID, info.independentSet, conn);
-                saveMinimalVertexSeparator(graphID, info.minimalVertexSeparator, conn);
+                saveComponents(graphID, info.coloring, "coloring", conn);
+                saveVertices(graphID, info.maxClique, "max_clique", conn);
+                saveVertices(graphID, info.independentSet, "independent_set", conn);
+                saveComponents(graphID, info.minimalVertexSeparator, "minimal_vertex_separator", conn);
             }
 
-            String sql1 = "DELETE FROM graph_research_info WHERE graph_id = " + graphID;
+            String sql1 = "DELETE FROM graph_research_info WHERE graph_id = ?";
 
-            String sql2 = "INSERT INTO graph_research_info(" + "user_id, " + Converter.getFieldsNames(info) + ") VALUES(" + userID + ", " + Converter.getFields(info, graphID) + ")";
+            String sql2 = "INSERT INTO graph_research_info(user_id, " + Converter.getFieldsNames(info) + ") VALUES(?, " + Converter.getFields(info, graphID) + ")";
 
             PreparedStatement preparedStatement1 = conn.prepareStatement(sql1);
-            PreparedStatement preparedStatement2 = conn.prepareStatement(sql2);
+            preparedStatement1.setInt(1, graphID);
 
+            PreparedStatement preparedStatement2 = conn.prepareStatement(sql2);
+            preparedStatement2.setInt(1, userID);
             preparedStatement1.execute();
 
             preparedStatement2.execute();
+            log.info("ID {}: research info have been saved", graphID);
         } catch (SQLException e) {
             log.error("ID {}: research info haven't been saved", graphID, e);
             throw new RuntimeException(e);
         }
-        log.info("ID {}: research info have been saved", graphID);
     }
 
     public GraphResearchInfo getResearchInfo(int graphID) {
-        String sql = "SELECT * FROM graph_research_info WHERE graph_id = " + graphID;
+        String sql = "SELECT * FROM graph_research_info WHERE graph_id = ?";
         try (Connection conn = dataSource.getConnection();
              PreparedStatement preparedStatement = conn.prepareStatement(sql)){
+            preparedStatement.setInt(1, graphID);
 
             ResultSet rs = preparedStatement.executeQuery();
-
             GraphResearchInfo researchInfo = Converter.resultSetToGraphResearchInfo(rs);
-            researchInfo.articulationPoints = getArticulationPoints(graphID, conn);
-            researchInfo.bridges = getBridges(graphID, conn);
-            researchInfo.connectedComponents = getConnectedComponents(graphID, conn);
-            researchInfo.blocks = getBlocks(graphID, conn);
+
+            researchInfo.articulationPoints = getVertices(graphID, "articulation_points", conn);
+            researchInfo.bridges = getEdges(graphID, "bridges", conn);
+            researchInfo.connectedComponents = getComponents(graphID, "connected_components", conn);
+            researchInfo.blocks = getComponents(graphID, "blocks", conn);
             if (researchInfo.isPlanar != null && !researchInfo.isPlanar) {
                 researchInfo.kuratowskiSubgraph = getKuratowskiSubgraph(graphID, conn);
             }
             if (researchInfo.isChordal != null && researchInfo.isChordal) {
                 researchInfo.perfectEliminationOrder = getPerfectEliminationOrder(graphID, conn);
-                researchInfo.coloring = getColoring(graphID, conn);
-                researchInfo.maxClique = getMaxClique(graphID, conn);
-                researchInfo.independentSet = getIndependentSet(graphID, conn);
-                researchInfo.minimalVertexSeparator = getMinimalVertexSeparator(graphID, conn);
+                researchInfo.coloring = getComponents(graphID, "coloring", conn);
+                researchInfo.maxClique = getVertices(graphID, "max_clique", conn);
+                researchInfo.independentSet = getVertices(graphID, "independent_set", conn);
+                researchInfo.minimalVertexSeparator = getComponents(graphID, "minimal_vertex_separator", conn);
             }
             log.info("ID {}: research info have been received", graphID);
             return researchInfo;
@@ -244,14 +205,11 @@ public class DataBaseManager {
         }
     }
 
-    private List<List<Vertex>> getConnectedComponents(int graphID, Connection conn) {
-        return getComponents(graphID, "connected_components", conn);
-    }
-
     private List<List<Vertex>> getComponents(int graphID, String tableName, Connection conn) {
         Map<Integer, List<Vertex>> componentsMap = new HashMap<>();
-        String sql = "SELECT component_number, index, data FROM " + tableName + " WHERE graph_id = " + graphID;
+        String sql = "SELECT component_number, index, data FROM " + tableName + " WHERE graph_id = ?";
         try (PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
+            preparedStatement.setInt(1, graphID);
             ResultSet rs = preparedStatement.executeQuery();
             while (rs.next()) {
                 Vertex v = new Vertex(rs.getInt("index"), rs.getString("data"));
@@ -261,20 +219,17 @@ public class DataBaseManager {
                     componentsMap.put(rs.getInt("component_number"), new ArrayList<>(List.of(v)));
                 }
             }
+            return componentsMap.values().stream().toList();
         } catch(SQLException e) {
             log.error("ID {}: components haven't been received", graphID, e);
             throw new RuntimeException(e);
         }
-        return componentsMap.values().stream().toList();
-    }
-
-    private List<List<Vertex>> getBlocks(int graphID, Connection conn) {
-        return getComponents(graphID, "blocks", conn);
     }
 
     private GraphMetadata getGraphMetadata(int graphID, Connection conn) {
-        String sql = "SELECT is_directed, is_weighted, has_self_loops, has_multiple_edges FROM graph_metadata WHERE graph_id = " + graphID;
+        String sql = "SELECT is_directed, is_weighted, has_self_loops, has_multiple_edges FROM graph_metadata WHERE graph_id = ?";
         try (PreparedStatement preparedStatement = conn.prepareStatement(sql)){
+            preparedStatement.setInt(1, graphID);
             ResultSet rs = preparedStatement.executeQuery();
             rs.next();
             return new GraphMetadata(rs.getBoolean("is_directed"), rs.getBoolean("is_weighted"), rs.getBoolean("has_self_loops"), rs.getBoolean("has_multiple_edges"));
@@ -286,87 +241,75 @@ public class DataBaseManager {
 
     public GraphModel getGraph(int graphID) {
         try (Connection conn = dataSource.getConnection()) {
-            return new GraphModel(getVertices(graphID, conn), getEdges(graphID, conn), getGraphMetadata(graphID, conn));
+            return new GraphModel(getVertices(graphID, "vertices", conn), getEdges(graphID, "edges", conn), getGraphMetadata(graphID, conn));
         } catch (SQLException e) {
             log.error("ID {}: graph haven't been received", graphID);
             throw new RuntimeException(e);
         }
     }
 
-    private List<Vertex> getVertices(int graphID, Connection conn) {
-        return getVertices(graphID, "vertices", conn);
-    }
-
-    private List<Vertex> getArticulationPoints(int graphID, Connection conn) {
-        return getVertices(graphID, "articulation_points", conn);
-    }
-
     private List<Vertex> getVertices(int graphID, String tableName, Connection conn) {
-        List<Vertex> vertices = new ArrayList<>();
-        String sql = "SELECT index, data FROM " + tableName  + " WHERE graph_id = " + graphID;
+        String sql = "SELECT index, data FROM " + tableName  + " WHERE graph_id = ?";
         try (PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
+            preparedStatement.setInt(1, graphID);
             ResultSet rs = preparedStatement.executeQuery();
+            List<Vertex> vertices = new ArrayList<>();
             while (rs.next()) {
                 vertices.add(new Vertex(rs.getInt("index"), rs.getString("data")));
             }
+            return vertices;
         } catch(SQLException e) {
             log.error("ID {}: vertices haven't been received", graphID, e);
             throw new RuntimeException(e);
         }
-        return vertices;
-    }
-
-    private List<Edge> getEdges(int graphID, Connection conn) {
-        return getEdges(graphID, "edges", conn);
-    }
-
-    private List<Edge> getBridges(int graphID, Connection conn) {
-        return getEdges(graphID, "bridges", conn);
     }
 
     private List<Edge> getEdges(int graphID, String tableName, Connection conn) {
-        List<Vertex> vertices = getVertices(graphID, conn);
+        List<Vertex> vertices = getVertices(graphID, "vertices", conn);
         Map<Integer, Vertex> verticesMap = new HashMap<>();
         for (Vertex v: vertices) {
             verticesMap.put(v.getIndex(), v);
         }
         List<Edge> edges = new ArrayList<>();
-        String sql = "SELECT source, target, weight, data FROM " + tableName + " WHERE graph_id = " + graphID;
+        String sql = "SELECT source, target, weight, data FROM " + tableName + " WHERE graph_id = ?";
         try (PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
+            preparedStatement.setInt(1, graphID);
             ResultSet rs = preparedStatement.executeQuery();
             while (rs.next()) {
                 Vertex s = verticesMap.get(rs.getInt("source"));
                 Vertex t = verticesMap.get(rs.getInt("target"));
                 edges.add(new Edge(s, t, rs.getInt("weight"), rs.getString("data")));
             }
+            return edges;
         } catch (SQLException e) {
             log.error("ID {}: edges haven't been received", graphID, e);
             throw new RuntimeException(e);
         }
-        return edges;
     }
 
     private List<Vertex> getPerfectEliminationOrder(int graphID, Connection conn) {
         List<Vertex> vertices = new ArrayList<>();
-        for (int i = 0; i < getVertices(graphID, conn).size(); ++i) {
+        for (int i = 0; i < getVertices(graphID, "vertices", conn).size(); ++i) {
             vertices.add(new Vertex());
         }
-        String sql = "SELECT index, data, sequence_number FROM perfect_elimination_order WHERE graph_id = " + graphID;
+        String sql = "SELECT index, data, sequence_number FROM perfect_elimination_order WHERE graph_id = ?";
         try (PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
+            preparedStatement.setInt(1, graphID);
             ResultSet rs = preparedStatement.executeQuery();
             while (rs.next()) {
                 vertices.set(rs.getInt("sequence_number"), new Vertex(rs.getInt("index"), rs.getString("data")));
             }
+            return vertices;
         } catch(SQLException e) {
             log.error("ID {}: vertices haven't been received", graphID, e);
             throw new RuntimeException(e);
         }
-        return vertices;
     }
 
     private GraphModel getKuratowskiSubgraph(int graphID, Connection conn) {
-        String sql = "SELECT subgraph_id FROM kuratowski_subgraph WHERE graph_id = " + graphID;
+        String sql = "SELECT subgraph_id FROM kuratowski_subgraph WHERE graph_id = ?";
         try (PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
+            preparedStatement.setInt(1, graphID);
             ResultSet rs = preparedStatement.executeQuery();
             rs.next();
             return getGraph(rs.getInt("subgraph_id"));
@@ -374,22 +317,6 @@ public class DataBaseManager {
             log.error("ID {}: subgraph haven't been received", graphID, e);
             throw new RuntimeException(e);
         }
-    }
-
-    private List<List<Vertex>> getColoring(int graphID, Connection conn) {
-        return getComponents(graphID, "coloring", conn);
-    }
-
-    private List<Vertex> getMaxClique(int graphID, Connection conn) {
-        return getVertices(graphID, "max_clique", conn);
-    }
-
-    private List<Vertex> getIndependentSet(int graphID, Connection conn) {
-        return getVertices(graphID, "independent_set", conn);
-    }
-
-    private List<List<Vertex>> getMinimalVertexSeparator(int graphID, Connection conn) {
-        return getComponents(graphID, "minimal_vertex_separator", conn);
     }
 
     public void createUser(int userID) {
@@ -406,8 +333,9 @@ public class DataBaseManager {
     }
 
     private void deleteAllUserGraphs(int userID, Connection conn) {
-        String sql1 = "SELECT graph_id FROM graph_metadata WHERE user_id = " + userID;
+        String sql1 = "SELECT graph_id FROM graph_metadata WHERE user_id = ?";
         try (PreparedStatement preparedStatement = conn.prepareStatement(sql1)) {
+            preparedStatement.setInt(1, userID);
             ResultSet rs = preparedStatement.executeQuery();
             while (rs.next()) {
                 int graphID = rs.getInt("graph_id");
@@ -418,16 +346,18 @@ public class DataBaseManager {
             throw new RuntimeException(e);
         }
 
-        String sql2 = "DELETE FROM graph_metadata WHERE user_id = " + userID;
+        String sql2 = "DELETE FROM graph_metadata WHERE user_id = ?";
         try (PreparedStatement preparedStatement = conn.prepareStatement(sql2)) {
+            preparedStatement.setInt(1, userID);
             preparedStatement.execute();
         } catch (SQLException e) {
             log.error("All user{} graphs haven't been deleted", userID, e);
             throw new RuntimeException(e);
         }
         
-        String sql3 = "DELETE FROM graph_research_info WHERE user_id = " + userID;
+        String sql3 = "DELETE FROM graph_research_info WHERE user_id = ?";
         try (PreparedStatement preparedStatement = conn.prepareStatement(sql3)) {
+            preparedStatement.setInt(1, userID);
             preparedStatement.execute();
         } catch (SQLException e) {
             log.error("User{} researches haven't been deleted", userID, e);
@@ -437,22 +367,23 @@ public class DataBaseManager {
     }
 
     public void deleteGraph(int graphID) {
-        String sql = "DELETE FROM graph_metadata WHERE graph_id = " + graphID;
+        String sql = "DELETE FROM graph_metadata WHERE graph_id = ?";
         try (Connection conn = dataSource.getConnection();
              PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
+            preparedStatement.setInt(1, graphID);
             preparedStatement.execute();
-            deleteVertices(graphID, conn);
-            deleteEdges(graphID, conn);
-            deleteArticulationPoints(graphID, conn);
-            deleteBridges(graphID, conn);
-            deleteConnectedComponents(graphID, conn);
-            deleteBlocks(graphID, conn);
+            deleteVertices(graphID, "vertices", conn);
+            deleteEdges(graphID, "edges", conn);
+            deleteVertices(graphID, "articulation_points", conn);
+            deleteEdges(graphID, "bridges", conn);
+            deleteVertices(graphID, "connected_components", conn);
+            deleteVertices(graphID, "blocks", conn);
             deletePerfectEliminationOrder(graphID, conn);
             deleteKuratowskiSubgraph(graphID, conn);
-            deleteColoring(graphID, conn);
-            deleteMaxClique(graphID, conn);
-            deleteIndependentSet(graphID, conn);
-            deleteMinimalVertexSeparator(graphID, conn);
+            deleteVertices(graphID, "coloring", conn);
+            deleteVertices(graphID, "max_clique", conn);
+            deleteVertices(graphID, "independent_set", conn);
+            deleteVertices(graphID, "minimal_vertex_separator", conn);
             log.info("ID {}: graph have been deleted", graphID);
         } catch (SQLException e) {
             log.error("ID {}: graph haven't been deleted", graphID, e);
@@ -460,13 +391,11 @@ public class DataBaseManager {
         }
     }
 
-    private void deleteVertices(int graphID, Connection conn) {
-        deleteVertices(graphID, "vertices", conn);
-    }
 
     private void deleteVertices(int graphID, String tableName, Connection conn) {
-        String sql = "DELETE FROM " + tableName + " WHERE graph_id = " + graphID;
+        String sql = "DELETE FROM " + tableName + " WHERE graph_id = ?";
         try (PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
+            preparedStatement.setInt(1, graphID);
             preparedStatement.execute();
         } catch (SQLException e) {
             log.error("ID {}: vertices from {} haven't been deleted", graphID, tableName, e);
@@ -474,17 +403,10 @@ public class DataBaseManager {
         }
     }
 
-    private void deleteArticulationPoints(int graphID, Connection conn) {
-        deleteVertices(graphID, "articulation_points", conn);
-    }
-
-    private void deleteEdges(int graphID, Connection conn) {
-        deleteEdges(graphID, "edges", conn);
-    }
-
     private void deleteEdges(int graphID, String tableName, Connection conn) {
-        String sql = "DELETE FROM " + tableName + " WHERE graph_id = " + graphID;
+        String sql = "DELETE FROM " + tableName + " WHERE graph_id = ?";
         try (PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
+            preparedStatement.setInt(1, graphID);
             preparedStatement.execute();
         } catch (SQLException e) {
             log.error("ID {}: edges from {} haven't been deleted", graphID, tableName, e);
@@ -492,46 +414,19 @@ public class DataBaseManager {
         }
     }
 
-    private void deleteBridges(int graphID, Connection conn) {
-        deleteEdges(graphID, "bridges", conn);
-    }
-
-    private void deleteConnectedComponents(int graphID, Connection conn) {
-        deleteVertices(graphID, "connected_components", conn);
-    }
-
-    private void deleteBlocks(int graphID, Connection conn) {
-        deleteVertices(graphID, "blocks", conn);
-    }
-
     private void deletePerfectEliminationOrder(int graphID, Connection conn) {
         deleteVertices(graphID, "perfect_elimination_order", conn);
     }
 
     private void deleteKuratowskiSubgraph(int graphID, Connection conn) {
-        String sql = "DELETE FROM kuratowski_subgraph WHERE graph_id = " + graphID;
+        String sql = "DELETE FROM kuratowski_subgraph WHERE graph_id = ?";
         try (PreparedStatement preparedStatement = conn.prepareStatement(sql)){
+            preparedStatement.setInt(1, graphID);
             preparedStatement.execute();
         } catch (SQLException e) {
             log.error("ID {}: subgraph hasn't been deleted", graphID, e);
             throw new RuntimeException(e);
         }
-    }
-
-    private void deleteColoring(int graphID, Connection conn) {
-        deleteVertices(graphID, "coloring", conn);
-    }
-
-    private void deleteMaxClique(int graphID, Connection conn) {
-        deleteVertices(graphID, "max_clique", conn);
-    }
-
-    private void deleteIndependentSet(int graphID, Connection conn) {
-        deleteVertices(graphID, "independent_set", conn);
-    }
-
-    private void deleteMinimalVertexSeparator(int graphID, Connection conn) {
-        deleteVertices(graphID, "minimal_vertex_separator", conn);
     }
 
     private void initVerticesTable(Connection conn) {
@@ -569,7 +464,7 @@ public class DataBaseManager {
         String sql = "CREATE TABLE graph_research_info(id SERIAL PRIMARY KEY, " +
                 "graph_id INT, user_id INT, is_connected BOOLEAN, is_biconnected BOOLEAN, " +
                 "articulation_points INT, bridges INT, connected_components INT, " +
-                "blocks INT, is_planar BOOLEAN, kuratovsky_sub_graph_id INT, is_chordal BOOLEAN, chromatic_number INT)";
+                "blocks INT, is_planar BOOLEAN, is_chordal BOOLEAN, chromatic_number INT)";
         try (PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
             preparedStatement.execute();
         } catch (SQLException e) {
@@ -678,7 +573,7 @@ public class DataBaseManager {
         }
     }
     
-    public void initDB() {
+    private void initDB() {
         try (Connection conn = dataSource.getConnection()) {
             initEdgesTable(conn);
             initVerticesTable(conn);
@@ -695,9 +590,9 @@ public class DataBaseManager {
             initMaxCliqueTable(conn);
             initIndependentSetTable(conn);
             initMinimalVertexSeparatorTable(conn);
-            log.info("Initialization was successful");
+            log.info("Database initialization was successful");
         } catch (SQLException e) {
-            log.error("DB haven't been inited", e);
+            log.error("Database haven't been initialized", e);
             throw new RuntimeException(e);
         }
     }
@@ -760,7 +655,7 @@ public class DataBaseManager {
             preparedStatement = conn.prepareStatement(sql);
             preparedStatement.execute();
         } catch (SQLException e) {
-            log.error("Delete db error", e);
+            log.error("Delete database error", e);
             throw new RuntimeException(e);
         }
     }
