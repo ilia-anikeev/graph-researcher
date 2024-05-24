@@ -10,7 +10,6 @@ public class GraphMetadata {
     public final boolean hasSelfLoops;
     public final boolean hasMultipleEdges;
 
-
     public GraphMetadata(boolean isDirected, boolean isWeighted, boolean hasSelfLoops, boolean hasMultipleEdges) {
         this.isDirected = isDirected;
         this.isWeighted = isWeighted;
@@ -24,6 +23,18 @@ public class GraphMetadata {
         hasSelfLoops = json.get("hasSelfLoops").asBoolean();
         hasMultipleEdges = json.get("hasMultipleEdges").asBoolean();
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof GraphMetadata metadata)) {
+            return false;
+        }
+        return this.hasMultipleEdges == metadata.hasMultipleEdges &&
+                this.hasSelfLoops == metadata.hasSelfLoops &&
+                this.isDirected == metadata.isDirected &&
+                this.isWeighted == metadata.isWeighted;
+    }
+
     public JsonNode toJson() {
         ObjectMapper objectMapper = new ObjectMapper();
         ObjectNode json = objectMapper.createObjectNode();

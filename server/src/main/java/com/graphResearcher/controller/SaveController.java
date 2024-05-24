@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.slf4j.Logger;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
 
 
 @RestController
@@ -34,10 +33,13 @@ public class SaveController {
             int graphID = saveService.saveGraph(userID, graph);
 
             log.info("Graph has been saved");
-            return new ResponseEntity<>("Graph has been saved with ID" + graphID, HttpStatus.OK);
+            return ResponseEntity.ok("Graph has been saved with ID" + graphID);
         } catch (JsonProcessingException e) {
-            log.error("Json parsing error in saveGraph", e);
-            throw new RuntimeException(e);
+            log.error("Json parsing error", e);
+            return ResponseEntity.badRequest().body("Wrong json format");
+        } catch (Throwable e) {
+            log.error("Server error", e);
+            return ResponseEntity.internalServerError().body(e.getMessage());
         }
     }
 
