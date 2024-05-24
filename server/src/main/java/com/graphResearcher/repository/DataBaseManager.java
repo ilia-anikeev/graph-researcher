@@ -7,7 +7,6 @@ import java.sql.*;
 
 import java.util.*;
 
-import com.graphResearcher.util.ParseResearchInfo;
 import com.graphResearcher.util.Converter;
 import com.graphResearcher.util.PropertiesUtil;
 import org.slf4j.Logger;
@@ -28,7 +27,6 @@ public class DataBaseManager {
         String password = PropertiesUtil.get("db.password");
         String url = PropertiesUtil.get("db.url");
         dataSource = new DriverManagerDataSource(url, name, password);
-        log.info("DataBaseManager has been created");
     }
 
     public int saveGraph(int userID, GraphModel graph) {
@@ -196,11 +194,9 @@ public class DataBaseManager {
                 saveMinimalVertexSeparator(graphID, info.minimalVertexSeparator, conn);
             }
 
-            ParseResearchInfo result = new ParseResearchInfo(info, graphID);
-
             String sql1 = "DELETE FROM graph_research_info WHERE graph_id = " + graphID;
 
-            String sql2 = "INSERT INTO graph_research_info(" + "user_id, " + result.fieldsName + ") VALUES(" + userID + ", " + result.fields + ")";
+            String sql2 = "INSERT INTO graph_research_info(" + "user_id, " + Converter.getFieldsNames(info) + ") VALUES(" + userID + ", " + Converter.getFields(info, graphID) + ")";
 
             PreparedStatement preparedStatement1 = conn.prepareStatement(sql1);
             PreparedStatement preparedStatement2 = conn.prepareStatement(sql2);
@@ -706,7 +702,7 @@ public class DataBaseManager {
         }
     }
     
-    public void deleteDB() {
+    private void deleteDB() {
         try (Connection conn = dataSource.getConnection()){
             String sql = "DROP TABLE articulation_points";
             PreparedStatement preparedStatement = conn.prepareStatement(sql);
