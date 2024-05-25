@@ -14,6 +14,7 @@ function Researcher() {
   const [edgeCreate,setEdgeCreate]=React.useState(false);
   const [vertexRemove,setVertexRemove]=React.useState(false);
   const [isDirected,setIsDirected]=React.useState(false);
+  const [isWeighted,setIsWeighted]=React.useState(false);
   const [coordinates, updateCoordinates] = React.useState([]);
   const navigate = useNavigate();
 
@@ -23,31 +24,33 @@ function Researcher() {
     setEdgeCreate(false);
     const newCount = count + 1
     updateCount(newCount)
-    // console.log(xx, yy)
     setVertex([...vertices,
-      {id: count, 
-       vertex: <Vertex data={count} x={xx - 61} y={yy - 230}/>,
-       x: xx, y: yy - 90}]
+      {index: count, 
+       vertex: <Vertex index={count.toString()} x={xx - 61} y={yy - 220} vertices={vertices} setVertex={setVertex} data={count.toString}/>,
+       x: xx, y: yy - 90,
+       data: count.toString()}]
     )
   }
 
   function updateButtonCoordinates (id, x, y){    
     setVertex(vertices.map(vertex => {
-      return vertex.id === id ? { ...vertex, x, y } : vertex}
-      ))
+      return vertex.index === id ? { ...vertex, x, y } : vertex}
+      )); 
   }
 
   function createEdge(ids,idt){
     setVertexRemove(false);
     setEdgeRemove(false);
+    setEdgeCreate(false);
     const newCounter=edgeCounter+1
     setEdgeCounter(newCounter)
 
     setEdges([...edges,{source: ids,
     target: idt,
-    id: edgeCounter
+    id: edgeCounter,
+    data: '',
+    weight: 1.0
     }])
-    // console.log(edges)
   }
 
   function isEdgeCreate(){
@@ -69,7 +72,7 @@ function Researcher() {
   }
 
   function deleteVertex(id){
-    setVertex(vertices.filter(vertex => (vertex.id !== id)))
+    setVertex(vertices.filter(vertex => (vertex.index !== id)))
     setEdges(edges.filter(edge => ((edge.source !== id) & (edge.target !== id))))
   }
 
@@ -77,15 +80,14 @@ function Researcher() {
     const newCounter=edgeCounter-1
     setEdgeCounter(newCounter)
     setEdges(edges.filter(edge => !(edge.source === ids & edge.target === idt) && !(edge.source === idt & edge.target === ids)))
-    // console.log(edges)
   }
 
-  const draw = (ids, idt)=>{
+  const draw = (ids, idt, data)=>{
     const canvas = document.getElementById("canvas");
     const ctx = canvas.getContext("2d");
     ctx.lineWidth=4;
-    const v1 = vertices.find(element => element.id===ids);
-    const v2 = vertices.find(element => element.id===idt);
+    const v1 = vertices.find(element => element.index===ids);
+    const v2 = vertices.find(element => element.index===idt);
     ctx.beginPath();
     var newx = 0, newy = 0;
     var headlen = 25; 
@@ -104,7 +106,7 @@ function Researcher() {
       }
       ctx.stroke();
     } else if (isDirected){
-      var angle = Math.atan2(v2.y - v1.y, v2.x - v1.x );
+      var angle = Math.atan2(v2.y - v1.y, v2.x - v1.x);
       if (v2.x > v1.x && v2.y > v1.y){
         newx = v2.x - Math.sin(Math.PI / 2 - angle) * 25;  
         newy = v2.y - Math.cos(Math.PI / 2 - angle) * 25;  
@@ -127,6 +129,7 @@ function Researcher() {
     } else {
       ctx.moveTo(v1.x,v1.y);
       ctx.lineTo(v2.x,v2.y);
+
     }
     ctx.stroke();
 };
@@ -156,12 +159,18 @@ function Researcher() {
     const ctx = canvas.getContext("2d");
     ctx.clearRect(0,0,canvas.width, canvas.height);
     edges.forEach(element=>{
-      draw(element.source,element.target);
+      draw(element.source,element.target, element.data);
     })
+
+
   });
 
   const handle = () => {
     setIsDirected(!isDirected);
+  }
+
+  const handle2 = () => {
+    setIsWeighted(!isWeighted);
   }
 
   const goToSignInPage = () => {
@@ -197,7 +206,9 @@ function Researcher() {
         <button className='button' onClick={() => removeEdge()}> Remove edge</button>
         </div>
         <div style={{paddingTop: "3rem"}}>
-            <GraphMetadata setEdgeCreate={setEdgeCreate}/>  
+            <GraphMetadata setEdgeCreate={setEdgeCreate}
+                           vertices={vertices}
+                           edges={edges}/>  
         </div>  
         <div style={{paddingTop: "3rem"}}>
           <div>
@@ -207,11 +218,41 @@ function Researcher() {
           </div>
         </div>
         <div style={{paddingTop: "3rem"}}>
+          <div>
+            <label> <input type="checkbox" onChange={handle2}/>  
+                Weighted
+            </label>
+          </div>
+        </div>
+        <div style={{paddingTop: "3rem"}}>
             <button className='button' onClick={goToSignInPage}> SignIn</button>
         </div>
-      </div>        
-      <div>
-        <canvas className="canvas"
+      </div>   
+      <div >
+        {isWeighted && edges.map(edge => {
+          const v1 = vertices.find(element => element.index===edge.source);
+          const v2 = vertices.find(element => element.index===edge.target);
+          const midy = (v2.y + v1.y) / 2;
+          const midx = (v2.x + v1.x) / 2;
+          if (v1.x > v2.x) {
+            const angle = Math.atan2(v1.y-v2.y, v1.x-v2.x) * 180 / Math.PI;
+            return (
+              <div >
+                <input type='text' defaultValue={edge.weight} style={{position:"absolute", left:`${midx}px`, top: `${midy + 95}px`, transform:`translate(-50%, -50%) rotate(${angle}deg)`, textAlign: "center", transformOrigin:'center', background: 'none', border: 'none', outline: 'none'}}/>
+              </div>
+            )
+          } else {
+            const angle = Math.atan2(v2.y-v1.y, v2.x-v1.x) * 180 / Math.PI;
+            return (
+              <div >
+                <input type='text' defaultValue={edge.weight} style={{position:"absolute", left:`${midx}px`, top: `${midy + 95}px`, transform:`translate(-50%, -50%) rotate(${angle}deg)`, textAlign: "center", transformOrigin:'center', background: 'none', border: 'none', outline: 'none'}}/>
+              </div>
+            )
+          }
+        })}
+      </div>
+      <div className="canvas">
+        <canvas 
                 id="canvas"
                 width={window.innerWidth-2}
                 height={window.innerHeight-112}>

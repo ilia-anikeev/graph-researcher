@@ -11,3 +11,12 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+svg {
+  border: 1px solid black;
+}
+
+.edge-input {
+  position: absolute;
+  transform: translate(-50%, -50%);
+}

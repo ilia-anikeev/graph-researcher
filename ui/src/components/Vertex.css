@@ -8,9 +8,14 @@
     text-align: center;
 }
 
-.text{
+.in{
     position: relative;
     text-align: center;
     top: 26%;
     font-size: 20px;
+    background: none;
+    border: none;
+    width: 40px;
+    outline: none;
+    /* caret-color: transparent; */
 }

@@ -12,6 +12,11 @@
     background: pink;
     position: static
   }
+
+  .edges{
+    position: absolute;
+    
+  }
   
   .button{
     position: static;
@@ -28,3 +33,10 @@
     width: 140px;
     height: 770px;
   }
+
+  .in{
+    position: absolute;
+    background: none;
+    border: none;
+    outline: none;
+}
