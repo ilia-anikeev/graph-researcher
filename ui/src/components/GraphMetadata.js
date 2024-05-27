@@ -6,11 +6,31 @@ import "../index.css"
 function GraphMetadata(props){
     const [isOpen, setState] = React.useState(false)
 
+    const research = () => {
+        fetch('http://localhost:8080/research', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            mode: 'no-cors',
+            body: JSON.stringify({
+                graph: {
+                    vertices: props.vertices,
+                    edges: props.edges,
+                    info: []
+                }
+            }),
+        })
+        .then(response => console.log(response.text()))
+        .catch(error => console.log(error));
+    }
+
     return (
         <div>
             <button className="button" onClick={() => {
                 setTimeout(() => setState(true), 1500); 
-                props.setEdgeCreate(false)}
+                props.setEdgeCreate(false);
+                research()}
                 }>      
                     Research      
             </button>
@@ -31,5 +51,7 @@ function GraphMetadata(props){
 export default GraphMetadata;
 
 GraphMetadata.propTypes = {
-    setEdgeCreate: PropTypes.func
+    setEdgeCreate: PropTypes.func,
+    vertecies: PropTypes.array,
+    edges: PropTypes.array
 }

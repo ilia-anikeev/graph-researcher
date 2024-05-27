@@ -5,7 +5,7 @@ import './Vertex.css';
 
 function Vertex(props) {
     const noderef = React.useRef();
-    const [data, setData] = React.useState(props.index); 
+    const [data, setData] = React.useState(props.index.toString()); 
 
     const handleDataChange = (e) => {
         const newData = e.target.value;
@@ -38,7 +38,7 @@ function Vertex(props) {
 }
 
 Vertex.propTypes = {
-    index: PropTypes.string,
+    index: PropTypes.number,
     vertices: PropTypes.array,
     setVertex: PropTypes.func,
     x: PropTypes.number,
