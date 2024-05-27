@@ -9,9 +9,9 @@ function Vertex(props) {
 
     const handleDataChange = (e) => {
         const newData = e.target.value;
-        props.setVertex(props.vertices.map(vertex =>{
-            console.log(vertex.data)
-            return (vertex.data === data) ? { ...vertex, data: newData } : vertex
+        props.addVertex(props.vertices.map(vertex =>{
+            console.log(vertex.data);
+            return (vertex.data === data) ? { ...vertex, data: newData } : vertex;
         }
         ));
         setData(newData);
@@ -40,7 +40,7 @@ function Vertex(props) {
 Vertex.propTypes = {
     index: PropTypes.number,
     vertices: PropTypes.array,
-    setVertex: PropTypes.func,
+    addVertex: PropTypes.func,
     x: PropTypes.number,
     y: PropTypes.number,
 };

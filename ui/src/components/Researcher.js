@@ -10,11 +10,27 @@ function Researcher(props) {
     navigate('/signIn');
   }
 
-  const handle = () => {
+  const handleCreateVertexButton = () => {
+    props.createVertex(200, 200);
+  }
+
+  const handleCreateEdgeButton = () => {
+    props.setEdgeCreateMode(true);
+  }
+
+  const handleRemoveVertexButton = () => {
+    props.setVertexRemoveMode(true);
+  }
+
+  const handleRemoveEdgeButton = () => {
+    props.setEdgeRemoveMode(true);
+  }
+
+  const handleIsDirectedCheckbox = () => {
     props.setIsDirected(!props.isDirected);
   }
 
-  const handle2 = () => {
+  const handleIsWeightedCheckbox = () => {
     props.setIsWeighted(!props.isWeighted);
   }
 
@@ -24,32 +40,31 @@ function Researcher(props) {
         <p className='title'>Graph Researcher</p>
         </div>
       <div className="menu">
-        <div ><button className='button' onClick={() => props.createVertex(200, 200)}> Create vertex</button>
+        <div ><button className='button' onClick={handleCreateVertexButton}> Create vertex</button>
         </div>
         <div style={{paddingTop: "3rem"}}>
-          <button className='button' onClick={() => props.setEdgeCreate(true)}> Create edge</button>
+          <button className='button' onClick={handleCreateEdgeButton}> Create edge</button>
         </div>
         <div style={{paddingTop: "3rem"}}>
-          <button className='button' onClick={() => props.setVertexRemove(true)}> Remove vertex</button>
+          <button className='button' onClick={handleRemoveVertexButton}> Remove vertex</button>
         </div>
         <div style={{paddingTop: "3rem"}}>
-        <button className='button' onClick={() => props.setEdgeRemove(true)}> Remove edge</button>
+        <button className='button' onClick={handleRemoveEdgeButton}> Remove edge</button>
         </div>
         <div style={{paddingTop: "3rem"}}>
-            <GraphMetadata setEdgeCreate={props.setEdgeCreate}
-                           vertices={props.vertices}
+            <GraphMetadata vertices={props.vertices}
                            edges={props.edges}/>  
         </div>  
         <div style={{paddingTop: "3rem"}}>
           <div>
-            <label> <input type="checkbox" onChange={handle}/>  
+            <label> <input type="checkbox" onChange={handleIsDirectedCheckbox}/>  
                 Directed
             </label>
           </div>
         </div>
         <div style={{paddingTop: "3rem"}}>
           <div>
-            <label> <input type="checkbox" onChange={handle2}/>  
+            <label> <input type="checkbox" onChange={handleIsWeightedCheckbox}/>  
                 Weighted
             </label>
           </div>
@@ -72,16 +87,15 @@ function Researcher(props) {
 
 Researcher.propTypes = {
   createVertex: PropTypes.func,
-  setVertexRemove: PropTypes.func,
-  setEdgeRemove: PropTypes.func,
-  setEdgeCreate: PropTypes.func,
+  setVertexRemoveMode: PropTypes.func,
+  setEdgeRemoveMode: PropTypes.func,
+  setEdgeCreateMode: PropTypes.func,
   setIsDirected: PropTypes.func,
   setIsWeighted: PropTypes.func,
   goToSignInPage: PropTypes.func,
   isWeighted: PropTypes.bool,
   isDirected: PropTypes.bool,
   vertices: PropTypes.array,
-  setVertex: PropTypes.func,
   edges: PropTypes.array
 };
 

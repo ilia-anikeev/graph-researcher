@@ -1,117 +1,118 @@
-import React, {useRef, useEffect} from 'react';
+import React, {useRef, useEffect, useState} from 'react';
 import './Researcher.css'
 import Researcher from "./Researcher"
 import Vertex from "./Vertex";
-import Edge from './Edge';
+import Edges from './Edges';
 
 function Graph() {
-    const [vertices, setVertex] = React.useState([]);
-    const [count, updateCount] = React.useState(1);
-    const [edges,setEdges]=React.useState([]);
-    const [edgeCounter,setEdgeCounter]=React.useState(1);
-    const [edgeRemove,setEdgeRemove]=React.useState(false);
-    const [edgeCreate,setEdgeCreate]=React.useState(false);
-    const [vertexRemove,setVertexRemove]=React.useState(false);
-    const [isDirected,setIsDirected]=React.useState(false);
-    const [isWeighted,setIsWeighted]=React.useState(false);
-    const [coordinates, updateCoordinates] = React.useState([]);
-    const verticesRef = useRef([]);
-    const [drawEdge,setDrawEdge]=React.useState(false);
-    const [source,setSource]=React.useState(0);
-    const [id, setId] = React.useState(0);
+    const [vertices, addVertex] = useState([]);
+    const [vertexCounter, updateVertexCount] = useState(1);
+    const [edges, addEdge]= useState([]);
+    const [edgeCounter, setEdgeCounter] = useState(1);
+    const [isDirected, setIsDirected] = useState(false);
+    const [isWeighted, setIsWeighted] = useState(false);
 
-  
-    function createVertex(xx, yy) {           //OK
-      setVertexRemove(false);
-      setEdgeRemove(false);
-      setEdgeCreate(false);
-      const newCount = count + 1
-      updateCount(newCount)
-      setVertex([...vertices,
-        {index: count,
+    const [removeEdgeMode, setEdgeRemoveMode] = useState(false);
+    const [createEdgeMode, setEdgeCreateMode] = useState(false);
+    const [vertexRemoveMode, setVertexRemoveMode] = useState(false);
+    const [coordinates, updateCoordinates] = useState([]);
+    const [drawEdgeMode, setDrawEdge] = useState(false);
+    const [source, setSource] = useState(0);
+    const [id, setId] = useState(0);
+    const verticesRef = useRef([]);
+
+
+    const createVertex = (xx, yy) => {
+      setEdgeRemoveMode(false);
+      setVertexRemoveMode(false);
+      setEdgeCreateMode(false);
+      const newVertexCounter = vertexCounter + 1;
+      updateVertexCount(newVertexCounter);
+      addVertex([...vertices,
+        {index: vertexCounter,
          x: xx, y: yy,
-         data: count.toString()}]
+         data: vertexCounter.toString()}]
       )
     }
-  
-    function updateButtonCoordinates (id, x, y){                   //TODO
-      setVertex(vertices.map(vertex => {
-        return vertex.index === id ? { ...vertex, x, y } : vertex}
+
+    const updateVertexCoordinates = (index, newX, newY) => {
+        addVertex(vertices.map(vertex => {
+        return vertex.index === index ? { ...vertex, x: newX, y: newY } : vertex}
         )); 
     }
 
-    function createEdgee(id){                    //OK
-        if (edgeCreate === true){
-            if(drawEdge===true){
-                    setVertexRemove(false);
-                    setEdgeRemove(false);
-                    setEdgeCreate(false);
-                    const newCounter=edgeCounter+1
-                    setEdgeCounter(newCounter)
-                    setEdges([...edges,{source: source,
-                    target: id,
-                    id: edgeCounter,
-                    data: '',
-                    weight: 1.0
-                    }])
+    const createEdge = (id) => {
+        console.log(vertices);
+        if (createEdgeMode === true) {
+            if (drawEdgeMode === true){
+                    setEdgeRemoveMode(false);
+                    setVertexRemoveMode(false);
+                    setEdgeCreateMode(false);
+                    const newCounter = edgeCounter + 1;
+                    setEdgeCounter(newCounter);
+                    addEdge([...edges, 
+                            {source: source,
+                            target: id,
+                            id: edgeCounter,
+                            data: '',
+                            weight: 1.0}]
+                    )
                     setDrawEdge(false);
             }else{
                 setSource(id);
                 setDrawEdge(true);
             }
         } 
-        console.log(edges);
     }
-  
-    function deleteVertexx(id){             //OK
-        if (vertexRemove === true){
-            console.log('skuf');
-            setVertex(vertices.filter(vertex => (vertex.index !== id)))
-            setEdges(edges.filter(edge => ((edge.source !== id) & (edge.target !== id))))
+
+    const deleteVertex = (index) =>{
+        if (vertexRemoveMode === true){
+            addVertex(vertices.filter(vertex => (vertex.index !== index)))
+            addEdge(edges.filter(edge => ((edge.source !== index) & (edge.target !== index))))
         }
-        setVertexRemove(false);
+        setVertexRemoveMode(false);
     }
 
 
-    function deleteEdgee(id){              //OK
-        if (edgeRemove === true){
-            if(drawEdge===true){
-                const newCounter = edgeCounter-1
-                setEdgeCounter(newCounter)
-                setEdges(edges.filter(edge => !(edge.source === source & edge.target === id) && !(edge.source === id & edge.target === source)))
+    const deleteEdge = (index) => {
+        if (removeEdgeMode === true){
+            if (drawEdgeMode === true) {
+                const newEdgeCounter = edgeCounter - 1;
+                setEdgeCounter(newEdgeCounter);
+                addEdge(edges.filter(edge => !(edge.source === source & edge.target === index) && !(edge.source === index & edge.target === source)));
                 setDrawEdge(false);
-                setEdgeRemove(false);
+                setEdgeRemoveMode(false);
             }else{
-                setSource(id);
+                setSource(index);
                 setDrawEdge(true);
             }
         }
     }
 
-    const handleMouseMove = (id) => () => {
-        setId(id);    
-        createEdgee(id);
-        deleteEdgee(id);
-        deleteVertexx(id);
+    const handleMouseMove = (index) => () => {
+        setId(index);
+        createEdge(index);
+        deleteEdge(index);
+        deleteVertex(index);
     };
 
 
     useEffect(() => {                                        // TODO
-      const drawVertex = (event) => {
+      const setCoordinates = (event) => {
         updateCoordinates([event.clientX, event.clientY]);
       }
-  
+
       const handleKeyPress = (event) => {
         if (event.key === 'v'){
           createVertex(coordinates[0], coordinates[1]);
         }
       };
-  
-      document.addEventListener('mousemove', drawVertex);
+
+      document.addEventListener('mousemove', setCoordinates);
       window.addEventListener('keypress', handleKeyPress);
-  
+
       return (() => {
-        document.removeEventListener('mousemove', drawVertex);
+        document.removeEventListener('mousemove', setCoordinates);
         window.removeEventListener('keypress', handleKeyPress);
       })
     });
@@ -121,23 +122,22 @@ function Graph() {
     useEffect(() => {                                                          //TODO
         const handleKeyPress = (event) => {
           if (event.key === 'd'){
-            const v = document.getElementsByClassName('vertex');
-            const a = Array.prototype.find.call(v, ver => (
-                coordinates[1] <= ver.getBoundingClientRect().bottom &&
-                coordinates[1] >= ver.getBoundingClientRect().top &&
-                coordinates[0] <= ver.getBoundingClientRect().right &&
-                coordinates[0] >= ver.getBoundingClientRect().left
+            const verticesDOM = document.getElementsByClassName('vertex');
+            const vertexDOM = Array.prototype.find.call(verticesDOM, (v) => (
+                coordinates[1] <= v.getBoundingClientRect().bottom &&
+                coordinates[1] >= v.getBoundingClientRect().top &&
+                coordinates[0] <= v.getBoundingClientRect().right &&
+                coordinates[0] >= v.getBoundingClientRect().left
             ));
-            if (a) {
-                console.log(a.children[0].value);
-                setVertexRemove(true);
-                deleteVertexxx(parseInt(a.children[0].value));
+            if (vertexDOM) {
+                setVertexRemoveMode(true);
+                deleteVertexx(parseInt(vertexDOM.children[0].value));
             }
           }
         };
     
-        function deleteVertexxx(id){
-            deleteVertexx(id);
+        function deleteVertexx(id){
+            deleteVertex(id);
         }
 
         window.addEventListener('keypress', handleKeyPress);
@@ -152,17 +152,17 @@ function Graph() {
         const mouseMove = (event) => {
             if (id !== 0) {
                 const rect = event.target.getBoundingClientRect();
-                const v = document.getElementsByClassName('vertex');
-                const a = Array.prototype.find.call(v, ver => (
+                const verticesDOM = document.getElementsByClassName('vertex');
+                const vertexDOM = Array.prototype.find.call(verticesDOM, ver => (
                     rect.y <= ver.getBoundingClientRect().bottom &&
                     rect.y >= ver.getBoundingClientRect().top &&
                     rect.x <= ver.getBoundingClientRect().right &&
                     rect.x >= ver.getBoundingClientRect().left
                 ));
-                if (a) {
-                    updateButtonCoordinates(id,
-                        a.getBoundingClientRect().left + (a.getBoundingClientRect().right - a.getBoundingClientRect().left) / 2,
-                        a.getBoundingClientRect().top + (a.getBoundingClientRect().top - a.getBoundingClientRect().bottom) / 2 - 55
+                if (vertexDOM) {
+                    updateVertexCoordinates(id,
+                        vertexDOM.getBoundingClientRect().left + (vertexDOM.getBoundingClientRect().right - vertexDOM.getBoundingClientRect().left) / 2,
+                        vertexDOM.getBoundingClientRect().top + (vertexDOM.getBoundingClientRect().top - vertexDOM.getBoundingClientRect().bottom) / 2 - 55
                     );
                 }
             }
@@ -183,7 +183,6 @@ function Graph() {
 
         return (
             <div >
-              
               <div>
                     {vertices ? vertices.map(vertex => {
                         return (
@@ -192,30 +191,28 @@ function Graph() {
                                 ref={ref => verticesRef.current[vertex.index] = ref}
                                 onMouseDown={handleMouseMove(vertex.index)}
                             >
-                                <Vertex index={vertex.index} x={vertex.x} y={vertex.y} vertices={vertices} setVertex={setVertex} data={vertex.data}/>
+                                <Vertex index={vertex.index} x={vertex.x} y={vertex.y} vertices={vertices} addVertex={addVertex} data={vertex.data}/>
                             </div>
                         );
-                    }) : null}  
+                    }) : null}
                 </div>
                 <div>
-                <Edge isWeighted={isWeighted}
-                      vertices={vertices}
-                      edges={edges}
-                      isDirected={isDirected}/>
+                <Edges isWeighted={isWeighted}
+                       vertices={vertices}
+                       edges={edges}
+                       isDirected={isDirected}/>
                 </div>
                 <div>
                     <Researcher createVertex={createVertex}
-                                setVertexRemove={setVertexRemove}
-                                setEdgeRemove={setEdgeRemove}
-                                setEdgeCreate={setEdgeCreate}
+                                setVertexRemoveMode={setVertexRemoveMode}
+                                setEdgeRemoveMode={setEdgeRemoveMode}
+                                setEdgeCreateMode={setEdgeCreateMode}
                                 setIsDirected={setIsDirected}
                                 setIsWeighted={setIsWeighted}
                                 isWeighted={isWeighted}
                                 isDirected={isDirected}
                                 vertices={vertices}
-                                setVertex={setVertex}
                                 edges={edges}/>
-
                 </div>
             </div>
           );

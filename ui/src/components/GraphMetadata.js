@@ -1,10 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
 import PropTypes from 'prop-types';
 import "./GraphMetadata.css";
 import "../index.css"
 
 function GraphMetadata(props){
-    const [isOpen, setState] = React.useState(false)
+    const [isOpen, setState] = useState(false)
 
     const research = () => {
         fetch('http://localhost:8080/research', {
@@ -29,8 +29,7 @@ function GraphMetadata(props){
         <div>
             <button className="button" onClick={() => {
                 setTimeout(() => setState(true), 1500); 
-                props.setEdgeCreate(false);
-                research()}
+                research();}
                 }>      
                     Research      
             </button>
@@ -51,7 +50,6 @@ function GraphMetadata(props){
 export default GraphMetadata;
 
 GraphMetadata.propTypes = {
-    setEdgeCreate: PropTypes.func,
     vertecies: PropTypes.array,
     edges: PropTypes.array
 }
