@@ -39,7 +39,7 @@ function GraphMetadata(props){
                     <p>Bridges                                                                     no </p>  
                     <p>Articulation Points                                                 3</p>
                     <p>Connected Components                              (1, 2, 3, 4, 5)</p>
-                    <button style={{alignSelf: "right"}} onClick={() => setState(false)}>Close</button>
+                    <button style={{alignSelf: 'right'}} onClick={() => setState(false)}>Close</button>
                 </div>
             </div>
             }
