@@ -53,7 +53,11 @@ function Researcher(props) {
         </div>
         <div style={{paddingTop: "3rem"}}>
             <GraphMetadata vertices={props.vertices}
-                           edges={props.edges}/>  
+                           edges={props.edges}
+                           isWeighted={props.isWeighted}
+                           isDirected={props.isDirected}
+                           hasMultipleEdges={props.hasMultipleEdges}
+                           hasSelfLoops={props.hasSelfLoops}/>  
         </div>  
         <div style={{paddingTop: "3rem"}}>
           <div>
@@ -95,6 +99,8 @@ Researcher.propTypes = {
   goToSignInPage: PropTypes.func,
   isWeighted: PropTypes.bool,
   isDirected: PropTypes.bool,
+  hasSelfLoops: PropTypes.number,
+  hasMultipleEdges: PropTypes.number,
   vertices: PropTypes.array,
   edges: PropTypes.array
 };

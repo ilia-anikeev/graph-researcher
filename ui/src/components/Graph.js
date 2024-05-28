@@ -237,6 +237,8 @@ function Graph() {
                                 setIsWeighted={setIsWeighted}
                                 isWeighted={isWeighted}
                                 isDirected={isDirected}
+                                hasSelfLoops={hasSelfLoops}
+                                hasMultipleEdges={hasMultipleEdges}
                                 vertices={vertices}
                                 edges={edges}/>
                 </div>

@@ -7,17 +7,35 @@ function GraphMetadata(props){
     const [isOpen, setState] = useState(false)
 
     const research = () => {
+        const hasMultipleEdges = props.hasMultipleEdges > 0 ? true : false;
+        const hasSelfLoops = props.hasSelfLoops > 0 ? true : false;
+        const edges = props.edges.map(edge => {
+            const source = props.vertices.find(vertex => vertex.index === edge.source);
+            const target = props.vertices.find(vertex => vertex.index === edge.target);
+            return {
+                source: {index: source.index, data: source.data},
+                target: {index: target.index, data: target.data},
+                weight: edge.weight,
+                data: edge.data
+            }
+        })
         fetch('http://localhost:8080/research', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'Connection': 'keep-alive'
             },
-            mode: 'no-cors',
             body: JSON.stringify({
+                userID: 0,
                 graph: {
                     vertices: props.vertices,
-                    edges: props.edges,
-                    info: []
+                    edges: edges,
+                    info: {
+                        isDirected: props.isDirected,
+                        isWeighted: props.isWeighted,
+                        hasSelfLoops: hasSelfLoops,
+                        hasMultipleEdges: hasMultipleEdges
+                    }
                 }
             }),
         })
@@ -28,9 +46,9 @@ function GraphMetadata(props){
     return (
         <div>
             <button className="button" onClick={() => {
-                setTimeout(() => setState(true), 1500); 
-                research();}
-                }>      
+                    research();
+                }
+            }>      
                     Research      
             </button>
             {isOpen && <div className="GraphMetadata">
@@ -50,6 +68,10 @@ function GraphMetadata(props){
 export default GraphMetadata;
 
 GraphMetadata.propTypes = {
-    vertecies: PropTypes.array,
-    edges: PropTypes.array
+    vertices: PropTypes.array,
+    edges: PropTypes.array,
+    isWeighted: PropTypes.bool,
+    isDirected: PropTypes.bool,
+    hasSelfLoops: PropTypes.number,
+    hasMultipleEdges: PropTypes.number,
 }
