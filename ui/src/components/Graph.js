@@ -11,14 +11,16 @@ function Graph() {
     const [edgeCounter, setEdgeCounter] = useState(1);
     const [isDirected, setIsDirected] = useState(false);
     const [isWeighted, setIsWeighted] = useState(false);
+    const [hasSelfLoops, setHasSelfLoops] = useState(0);
+    const [hasMultipleEdges, sethasMultipleEdges] = useState(0);
 
     const [removeEdgeMode, setEdgeRemoveMode] = useState(false);
     const [createEdgeMode, setEdgeCreateMode] = useState(false);
     const [vertexRemoveMode, setVertexRemoveMode] = useState(false);
     const [coordinates, updateCoordinates] = useState([]);
     const [drawEdgeMode, setDrawEdge] = useState(false);
-    const [source, setSource] = useState(0);
-    const [id, setId] = useState(0);
+    const [source, setSource] = useState(1);
+    const [id, setId] = useState(1);
     const verticesRef = useRef([]);
 
 
@@ -41,25 +43,33 @@ function Graph() {
         )); 
     }
 
-    const createEdge = (id) => {
-        console.log(vertices);
+    const createEdge = (index) => {
         if (createEdgeMode === true) {
             if (drawEdgeMode === true){
+                    if (index === source) {
+                        const newhasSelfLoops = hasSelfLoops + 1;
+                        setHasSelfLoops(newhasSelfLoops);
+                    }
+                    if (edges.find(edge => (edge.source === source & edge.target === index) 
+                                        || (edge.source === index & edge.target === source))) {
+                        const newHasMultipleEdges = hasMultipleEdges + 1;
+                        sethasMultipleEdges(newHasMultipleEdges);
+                    }
                     setEdgeRemoveMode(false);
                     setVertexRemoveMode(false);
                     setEdgeCreateMode(false);
-                    const newCounter = edgeCounter + 1;
-                    setEdgeCounter(newCounter);
+                    const newEdgeCounter = edgeCounter + 1;
+                    setEdgeCounter(newEdgeCounter);
                     addEdge([...edges, 
                             {source: source,
-                            target: id,
+                            target: index,
                             id: edgeCounter,
                             data: '',
                             weight: 1.0}]
                     )
                     setDrawEdge(false);
             }else{
-                setSource(id);
+                setSource(index);
                 setDrawEdge(true);
             }
         } 
@@ -67,8 +77,11 @@ function Graph() {
 
     const deleteVertex = (index) =>{
         if (vertexRemoveMode === true){
-            addVertex(vertices.filter(vertex => (vertex.index !== index)))
-            addEdge(edges.filter(edge => ((edge.source !== index) & (edge.target !== index))))
+            addVertex(vertices.filter(vertex => (vertex.index !== index)));
+            const loopsCount = edges.filter(edge => ((edge.source === index) & (edge.target === index))).length;
+            console.log(loopsCount);
+            setHasSelfLoops(hasSelfLoops - loopsCount);
+            addEdge(edges.filter(edge => ((edge.source !== index) & (edge.target !== index))));
         }
         setVertexRemoveMode(false);
     }
@@ -77,9 +90,22 @@ function Graph() {
     const deleteEdge = (index) => {
         if (removeEdgeMode === true){
             if (drawEdgeMode === true) {
-                const newEdgeCounter = edgeCounter - 1;
-                setEdgeCounter(newEdgeCounter);
-                addEdge(edges.filter(edge => !(edge.source === source & edge.target === index) && !(edge.source === index & edge.target === source)));
+                const edgeToDelete = edges.filter(edge => (edge.source === source & edge.target === index 
+                                                        || edge.source === index & edge.target === source));
+                const indexToDelete = edges.indexOf(edgeToDelete[0]);
+                if (indexToDelete >= 0) {
+                    const newEdges = [...edges];
+                    newEdges.splice(indexToDelete, 1);
+                    addEdge(newEdges);
+                    if (source === index) {
+                        const newHasSelfLoops = hasSelfLoops - 1;
+                        setHasSelfLoops(newHasSelfLoops);
+                    }
+                    if (edgeToDelete.length >= 2) {
+                        const newHasMultipleEdges = hasMultipleEdges - 1;
+                        setHasSelfLoops(newHasMultipleEdges);
+                    }
+                }
                 setDrawEdge(false);
                 setEdgeRemoveMode(false);
             }else{
