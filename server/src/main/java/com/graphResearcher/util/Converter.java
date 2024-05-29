@@ -228,4 +228,22 @@ public class Converter {
         }
         return fields.toString();
     }
+
+    public static GraphModel buildGraphFromMatrix(int[][] matrix, GraphMetadata metadata) {
+        int n = matrix.length;
+        Map<Integer, Vertex> vertexMap = new HashMap<>();
+        for (int i = 0; i < n; ++i) {
+            vertexMap.put(i, new Vertex(i, i + ""));
+        }
+        List<Edge> edges = new ArrayList<>();
+        for (int i = 0; i < n; ++i) {
+            for (int j = 0; j < i; ++j) {
+                if (matrix[i][j] == 1) {
+                    Edge e = new Edge(vertexMap.get(i), vertexMap.get(j), 1.0, "");
+                    edges.add(e);
+                }
+            }
+        }
+        return new GraphModel(vertexMap.values().stream().toList(), edges, metadata);
+    }
 }
