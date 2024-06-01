@@ -1,12 +1,17 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import PropTypes from 'prop-types';
 import "./GraphMetadata.css";
-import "../index.css"
+import "../index.css";
 
 function GraphMetadata(props){
-    const [isOpen, setState] = useState(false)
+    const [isOpen, setState] = useState(false);
+    const [isRequestSent, setRequestSent] = useState(true);
+    const [graphMetaData, setGraphMetaData] = useState(null);
 
-    const research = () => {
+    useEffect(() => {
+        if (!isRequestSent) {
+            return;
+        }
         const hasMultipleEdges = props.hasMultipleEdges > 0 ? true : false;
         const hasSelfLoops = props.hasSelfLoops > 0 ? true : false;
         const edges = props.edges.map(edge => {
@@ -19,6 +24,7 @@ function GraphMetadata(props){
                 data: edge.data
             }
         })
+        setRequestSent(false);
         fetch('http://localhost:8080/research', {
             method: 'POST',
             headers: {
@@ -39,14 +45,92 @@ function GraphMetadata(props){
                 }
             }),
         })
-        .then(response => console.log(response.text()))
+        .then(response => response.json())
+        .then(metaData => {setGraphMetaData(metaData); console.log(metaData)})
         .catch(error => console.log(error));
+    }, [isRequestSent, props.hasMultipleEdges, props.hasSelfLoops, props.edges, props.vertices, props.isDirected, props.isWeighted]);
+
+    const getStringData = (data) => {
+        var string = '';
+        if (Array.isArray(data) && data.length !== 0) {
+            for (let i = 0; i < data.length; ++i) {
+                var newString = getStringData(data[i]);
+                if (newString === '') {
+                    continue;
+                }
+                string += string === '' ? newString : ', ' + newString; 
+            }
+        }
+        if (data != null && 'source' in data && 'target' in data) {
+            string += string === '' ? '{' + data.source.data.toString() + '-' + data.target.data.toString() + '}':
+                                ', {' + data.source.data.toString() + '-' + data.target.data.toString() + '}';
+        } else if (data != null && 'data' in data) {
+            string += string === '' ? data.data.toString() : ', ' + data.data.toString();
+        }
+        return Array.isArray(data) && string !== '' && string[0] !== '[' ? '[' + string + ']' : string;
     }
+
+    const getType = (data) => {
+        if (Array.isArray(data)) {
+            return getStringData(data) === '' ? 'no' : getStringData(data);
+        }
+        if (typeof data === 'number') {
+            return data.toString();
+        }
+        return data ? 'yes' : 'no';
+    }
+
+   const getStringKey = (key) => {
+        switch (key){
+            case 'isConnected':
+                return 'Connected';
+            case 'isBiconnected':
+                return 'Biconnected';
+            case 'articulationPoints':
+                return 'Articulation Points';
+            case 'bridges':
+                return 'Bridges'
+            case 'connectedComponents':
+                return 'Connected Components';
+            case 'blocks':
+                return 'Blocks';        
+            case 'isPlanar':
+                return 'Planar';
+            case 'embedding':
+                return 'Embedding';
+            case 'kuratowskiSubgraph':
+                return 'Kuratowski Subgraph';
+            case 'isChordal':
+                return 'Chordal';
+            case 'perfectEliminationOrder':
+                return 'Perfect Elimination Order';
+            case 'chromaticNumber':
+                return 'Chromatic Number';
+            case 'coloring':
+                return 'Coloring';
+            case 'maxClique':
+                return 'Max Clique';
+            case 'independentSet':
+                return 'Independent Set';
+            case 'minimal_vertex_separator':
+                return 'Minimal Vertex Separator';
+            case 'isBipartite':
+                return 'Bipartite';    
+            case 'partitions':
+                return 'Partitions';
+            case 'minSpanningTree':
+                return 'Min Spanning Tree';
+            default :
+                return '';    
+        }
+    }    
+
 
     return (
         <div>
             <button className="button" onClick={() => {
-                    research();
+                    setRequestSent(true);
+                    setState(true);
                 }
             }>      
                     Research      
@@ -54,10 +138,14 @@ function GraphMetadata(props){
             {isOpen && <div className="GraphMetadata">
                 <div className="GraphMetadata-body" >
                     <h1 style={{textAlign: "center"}}>Info</h1>
-                    <p>Bridges                                                                     no </p>  
-                    <p>Articulation Points                                                 3</p>
-                    <p>Connected Components                              (1, 2, 3, 4, 5)</p>
-                    <button style={{alignSelf: 'right'}} onClick={() => setState(false)}>Close</button>
+                    {Object.keys(graphMetaData).map(key => {
+                        return (
+                            <div>
+                                <p> {getStringKey(key.toString())} : {getType(graphMetaData[key])} </p>
+                            </div>
+                        )
+                    })}
+                     <button style={{alignSelf: 'right'}} onClick={() => setState(false)}>Close</button>
                 </div>
             </div>
             }
