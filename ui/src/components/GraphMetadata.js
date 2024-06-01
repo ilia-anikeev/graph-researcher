@@ -7,6 +7,7 @@ function GraphMetadata(props){
     const [isOpen, setState] = useState(false);
     const [isRequestSent, setRequestSent] = useState(true);
     const [graphMetaData, setGraphMetaData] = useState(null);
+    const [errorMessage, setErrorMessage] = useState('');
 
     useEffect(() => {
         if (!isRequestSent) {
@@ -47,32 +48,38 @@ function GraphMetadata(props){
         })
         .then(response => response.json())
         .then(metaData => {setGraphMetaData(metaData); console.log(metaData)})
-        .catch(error => console.log(error));
-    }, [isRequestSent, props.hasMultipleEdges, props.hasSelfLoops, props.edges, props.vertices, props.isDirected, props.isWeighted]);
+        .catch(error => {
+            setErrorMessage('Something went wrong, try again'); 
+            setGraphMetaData(null);
+        });
+    }, [isRequestSent, props.hasMultipleEdges, props.hasSelfLoops, 
+        props.edges, props.vertices, props.isDirected, props.isWeighted]);
 
-    const getStringData = (data) => {
-        var string = '';
+    const getString = (data) => {
+        var stringData = '';
         if (Array.isArray(data) && data.length !== 0) {
             for (let i = 0; i < data.length; ++i) {
-                var newString = getStringData(data[i]);
-                if (newString === '') {
+                if (getString(data[i]) === '') {
                     continue;
                 }
-                string += string === '' ? newString : ', ' + newString; 
+                stringData += stringData === '' ? getString(data[i]) : ', ' + getString(data[i]); 
             }
         }
         if (data != null && 'source' in data && 'target' in data) {
-            string += string === '' ? '{' + data.source.data.toString() + '-' + data.target.data.toString() + '}':
-                                ', {' + data.source.data.toString() + '-' + data.target.data.toString() + '}';
-        } else if (data != null && 'data' in data) {
-            string += string === '' ? data.data.toString() : ', ' + data.data.toString();
+            stringData += stringData === '' 
+                          ? '{' + data.source.data.toString() + '-' + data.target.data.toString() + '}'
+                          : ', {' + data.source.data.toString() + '-' + data.target.data.toString() + '}';
+        } else 
+        if (data != null && 'data' in data) {
+            stringData += stringData === '' ? data.data.toString() : ', ' + data.data.toString();
         }
-        return Array.isArray(data) && string !== '' && string[0] !== '[' ? '[' + string + ']' : string;
+        return Array.isArray(data) && stringData !== '' && stringData[0] !== '[' ? '[' + stringData + ']' : stringData;
     }
 
-    const getType = (data) => {
+    const getStringData = (data) => {
         if (Array.isArray(data)) {
-            return getStringData(data) === '' ? 'no' : getStringData(data);
+            console.log(getString(data));
+            return getString(data) === '' ? 'no' : getString(data);
         }
         if (typeof data === 'number') {
             return data.toString();
@@ -138,13 +145,17 @@ function GraphMetadata(props){
             {isOpen && <div className="GraphMetadata">
                 <div className="GraphMetadata-body" >
                     <h1 style={{textAlign: "center"}}>Info</h1>
-                    {Object.keys(graphMetaData).map(key => {
+                    {graphMetaData ? Object.keys(graphMetaData).map(key => {
                         return (
                             <div>
-                                <p> {getStringKey(key.toString())} : {getType(graphMetaData[key])} </p>
+                                <p> {getStringKey(key.toString())} : {getStringData(graphMetaData[key])} </p>
                             </div>
                         )
-                    })}
+                    }) : 
+                        <p>
+                            {errorMessage}
+                        </p>
+                    }
                      <button style={{alignSelf: 'right'}} onClick={() => setState(false)}>Close</button>
                 </div>
             </div>
