@@ -21,7 +21,7 @@ function Vertex(props) {
         <Draggable
             nodeRef={noderef}
             axis="both"
-            defaultPosition={{ x: props.x, y: props.y }}
+            defaultPosition={{ x: props.x - 25, y: props.y + 80}}
             position={null}
             grid={[1, 1]}
             scale={1}>

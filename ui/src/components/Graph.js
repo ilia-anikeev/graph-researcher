@@ -32,7 +32,7 @@ function Graph() {
       updateVertexCount(newVertexCounter);
       addVertex([...vertices,
         {index: vertexCounter,
-         x: xx, y: yy,
+         x: xx + 25, y: yy - 80,
          data: vertexCounter.toString()}]
       )
     }
@@ -123,9 +123,9 @@ function Graph() {
     };
 
 
-    useEffect(() => {                                        // TODO
+    useEffect(() => {                                       
       const setCoordinates = (event) => {
-        updateCoordinates([event.clientX, event.clientY]);
+        updateCoordinates([event.clientX - 25, event.clientY - 25]);
       }
 
       const handleKeyPress = (event) => {
