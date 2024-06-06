@@ -5,7 +5,7 @@ import com.graphResearcher.model.GraphModel;
 
 
 public class GraphArchive {
-    public GraphModel getPetersenGraph() {
+    public static GraphModel getPetersenGraph() {
         int[][] matrix = {
               // 1  2  3  4  5  6  7  8  9  10
                 {0, 0, 1, 1, 0, 1, 0, 0, 0, 0}, // 1
@@ -19,10 +19,10 @@ public class GraphArchive {
                 {0, 0, 0, 1, 0, 0, 0, 1, 0, 1}, // 9
                 {0, 0, 0, 0, 1, 1, 0, 0, 1, 0}, // 10
         };
-        return Converter.buildGraphFromMatrix(matrix, new GraphMetadata(false, false, false, false));
+        return Converter.buildGraphFromMatrix(matrix, new GraphMetadata("Petersen graph", false, false, false, false));
     }
 
-    public GraphModel getGrotzschGraph() {
+    public static GraphModel getGrotzschGraph() {
         int[][] matrix = {
               // 1  2  3  4  5  6  7  8  9  10 11
                 {0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0}, // 1
@@ -37,10 +37,10 @@ public class GraphArchive {
                 {1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1}, // 10
                 {0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0}, // 11
         };
-        return Converter.buildGraphFromMatrix(matrix, new GraphMetadata(false, false, false, false));
+        return Converter.buildGraphFromMatrix(matrix, new GraphMetadata("Grotzsch graph", false, false, false, false));
     }
 
-    public GraphModel getChvatalGraph() {
+    public static GraphModel getChvatalGraph() {
         int[][] matrix = {
               // 1  2  3  4  5  6  7  8  9  10 11 12
                 {0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0}, // 1
@@ -56,10 +56,10 @@ public class GraphArchive {
                 {1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1}, // 11
                 {0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1, 0}, // 12
         };
-        return Converter.buildGraphFromMatrix(matrix, new GraphMetadata(false, false, false, false));
+        return Converter.buildGraphFromMatrix(matrix, new GraphMetadata("Chvatal graph", false, false, false, false));
     }
 
-    public GraphModel getApollonianGraph() {
+    public static GraphModel getApollonianGraph() {
         int[][] matrix = {
               // 1  2  3  4  5  6  7  8  9  10
                 {0, 1, 1, 1, 1, 0, 0, 1, 1, 1}, // 1
@@ -73,10 +73,10 @@ public class GraphArchive {
                 {1, 0, 0, 0, 0, 0, 0, 1, 0, 1}, // 9
                 {1, 0, 1, 0, 1, 0, 1, 1, 1, 0}, // 10
         };
-        return Converter.buildGraphFromMatrix(matrix, new GraphMetadata(false, false, false, false));
+        return Converter.buildGraphFromMatrix(matrix, new GraphMetadata("Apollonian_graph", false, false, false, false));
     }
 
-    public GraphModel getHerschelGraph() {
+    public static GraphModel getHerschelGraph() {
         int[][] matrix = {
               // 1  2  3  4  5  6  7  8  9  10 11
                 {0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0}, // 1
@@ -91,6 +91,6 @@ public class GraphArchive {
                 {0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1}, // 10
                 {0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0}, // 11
         };
-        return Converter.buildGraphFromMatrix(matrix, new GraphMetadata(false, false, false, false));
+        return Converter.buildGraphFromMatrix(matrix, new GraphMetadata("Herschel_graph", false, false, false, false));
     }
 }

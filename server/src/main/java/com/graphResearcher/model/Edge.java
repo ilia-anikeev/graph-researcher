@@ -6,16 +6,14 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Getter
-@NoArgsConstructor
 public class Edge {
-    private Vertex source;
+    public Vertex source;
 
-    private Vertex target;
+    public Vertex target;
 
-    private double weight;
+    public double weight;
 
-    private String data;
+    public String data;
 
     public Edge(Vertex source, Vertex target, double weight, String data) {
         this.source = source;

@@ -58,9 +58,9 @@ public class Converter {
             g.addVertex(v);
         }
         for (Edge e : graphModel.getEdges()) {
-            g.addEdge(e.getSource(), e.getTarget());
+            g.addEdge(e.source, e.target);
             if (graphModel.getMetadata().isWeighted) {
-                g.setEdgeWeight(e.getSource(), e.getTarget(), e.getWeight());
+                g.setEdgeWeight(e.source, e.target, e.weight);
             }
         }
         return g;
@@ -128,7 +128,7 @@ public class Converter {
 
         List<Edge> edges = new ArrayList<>();
         for (Edge e : graph.getEdges()) {
-            if (vertexSet.contains(e.getSource()) && vertexSet.contains(e.getTarget())) {
+            if (vertexSet.contains(e.source) && vertexSet.contains(e.target)) {
                 edges.add(e);
             }
         }

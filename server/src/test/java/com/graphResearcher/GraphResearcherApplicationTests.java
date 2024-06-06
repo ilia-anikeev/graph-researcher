@@ -1,10 +1,12 @@
 package com.graphResearcher;
 
 import com.graphResearcher.model.*;
+import com.graphResearcher.repository.DataBaseCleaner;
 import com.graphResearcher.repository.DataBaseManager;
 import com.graphResearcher.service.GraphResearchService;
 import org.junit.jupiter.api.Test;
 
+import javax.xml.crypto.Data;
 import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -22,28 +24,30 @@ class GraphResearcherApplicationTests {
     void saveGraphTest1() {
         int userID = 1;
         DataBaseManager db = new DataBaseManager();
-        db.reloadDB();
-        db.createUser(userID);
+        DataBaseCleaner cleaner = new DataBaseCleaner();
+        cleaner.reloadDB();
+        cleaner.createUser(userID);
 
         int graphID = db.saveGraph(userID, graph1);
         GraphModel receivedGraph = db.getGraph(graphID);
         assertEquals(graph1, receivedGraph);
 
-        db.deleteUser(userID);
+        cleaner.deleteUser(userID);
     }
 
     @Test
     void saveGraphTest2() {
         int userID = 2;
         DataBaseManager db = new DataBaseManager();
-        db.reloadDB();
-        db.createUser(userID);
+        DataBaseCleaner cleaner = new DataBaseCleaner();
+        cleaner.reloadDB();
+        cleaner.createUser(userID);
 
         int graphID = db.saveGraph(userID, graph2);
         GraphModel receivedGraph = db.getGraph(graphID);
         assertEquals(graph2, receivedGraph);
 
-        db.deleteUser(userID);
+        cleaner.deleteUser(userID);
     }
 
     @Test
@@ -51,8 +55,9 @@ class GraphResearcherApplicationTests {
         int userID = 1;
         GraphResearchService service = new GraphResearchService();
         DataBaseManager db = new DataBaseManager();
-        db.reloadDB();
-        db.createUser(userID);
+        DataBaseCleaner cleaner = new DataBaseCleaner();
+        cleaner.reloadDB();
+        cleaner.createUser(userID);
 
         int graphID = db.saveGraph(userID, graph1);
         GraphResearchInfo info = service.research(graph1);
@@ -63,7 +68,7 @@ class GraphResearcherApplicationTests {
 
         assertEquals(info, receivedInfo);
 
-        db.deleteUser(userID);
+        cleaner.deleteUser(userID);
     }
 
     @Test
@@ -71,8 +76,9 @@ class GraphResearcherApplicationTests {
         int userID = 2;
         GraphResearchService service = new GraphResearchService();
         DataBaseManager db = new DataBaseManager();
-        db.reloadDB();
-        db.createUser(userID);
+        DataBaseCleaner cleaner = new DataBaseCleaner();
+        cleaner.reloadDB();
+        cleaner.createUser(userID);
 
         int graphID = db.saveGraph(userID, graph2);
         GraphResearchInfo info = service.research(graph2);
@@ -83,7 +89,7 @@ class GraphResearcherApplicationTests {
 
         assertEquals(info, receivedInfo);
 
-        db.deleteUser(userID);
+        cleaner.deleteUser(userID);
     }
 
     @Test
@@ -91,8 +97,9 @@ class GraphResearcherApplicationTests {
         int userID = 3;
         GraphResearchService service = new GraphResearchService();
         DataBaseManager db = new DataBaseManager();
-        db.reloadDB();
-        db.createUser(userID);
+        DataBaseCleaner cleaner = new DataBaseCleaner();
+        cleaner.reloadDB();
+        cleaner.createUser(userID);
 
         int graphID1 = db.saveGraph(userID, graph1);
         GraphResearchInfo info1 = service.research(graph1);
@@ -111,7 +118,7 @@ class GraphResearcherApplicationTests {
         GraphResearchInfo receivedInfo2 = db.getResearchInfo(graphID2);
 
         assertEquals(info2, receivedInfo2);
-        db.deleteUser(userID);
+        cleaner.deleteUser(userID);
     }
 
 
@@ -129,7 +136,7 @@ class GraphResearcherApplicationTests {
         edges.add(new Edge(v2, v3, 1.0, "buenos noches"));
         edges.add(new Edge(v3, v1, 1.0, "guten morgen"));
 
-        GraphMetadata info = new GraphMetadata(false, false, false, false);
+        GraphMetadata info = new GraphMetadata("graph1", false, false, false, false);
         graph1 = new GraphModel(vertices, edges, info);
     }
     private void buildGraph2() {
@@ -149,7 +156,7 @@ class GraphResearcherApplicationTests {
         edges.add(new Edge(v2, v3, 1.0, "pupupu1"));
         edges.add(new Edge(v4, v3, 1.0, "pupupu2"));
 
-        GraphMetadata metadata = new GraphMetadata(true, true, true, false);
+        GraphMetadata metadata = new GraphMetadata("graph2", true, true, true, false);
         graph2 = new GraphModel(vertices, edges, metadata);
     }
 }
