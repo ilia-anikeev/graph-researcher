@@ -9,7 +9,7 @@ import com.graphResearcher.model.GraphModel;
 import java.util.List;
 
 @Service
-public class SaveService {
+public class GraphArchiveService {
     private final DataBaseManager db;
 
     public int saveGraph(int userID, GraphModel graphModel) {
@@ -20,11 +20,11 @@ public class SaveService {
         db.saveResearchInfo(userID, graphID, researchResult);
     }
 
-//    public List<GraphModel> getAllUserGraphs(int userID) {
-//        return db.getAllUserGraphs(userID);
-//    }
+    public List<GraphModel> getAllUserGraphs(int userID) {
+        return db.getAllUserGraphs(userID);
+    }
 
-    public SaveService(DataBaseManager db) {
+    public GraphArchiveService(DataBaseManager db) {
         this.db = db;
     }
 }

@@ -257,8 +257,8 @@ public class DataBaseManager {
         return new GraphModel(getVertices(graphID, "vertices", conn), getEdges(graphID, "edges", conn), getGraphMetadata(graphID, conn));
     }
 
-    public Map<Integer, GraphModel> getAllUserGraphs(int userID) {
-        Map<Integer, GraphModel> graphModelMap = new HashMap<>();
+    public List<GraphModel> getAllUserGraphs(int userID) {
+        List<GraphModel> graphModelList = new ArrayList<>();
         String sql = "SELECT graph_id FROM graph_metadata WHERE user_id = ?";
         try (Connection conn = dataSource.getConnection();
              PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
@@ -267,13 +267,13 @@ public class DataBaseManager {
                 while (rs.next()) {
                     int graphID = rs.getInt("graph_id");
                     GraphModel g = getGraph(graphID, conn);
-                    graphModelMap.put(graphID, g);
+                    graphModelList.add(g);
                 }
         } catch (SQLException e) {
             log.error("userID {}: all user graphs haven't been received", userID);
             throw new RuntimeException(e);
         }
-        return graphModelMap;
+        return graphModelList;
     }
 
     private List<Vertex> getVertices(int graphID, String tableName, Connection conn) {

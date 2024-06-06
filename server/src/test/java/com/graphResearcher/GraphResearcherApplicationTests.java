@@ -118,6 +118,7 @@ class GraphResearcherApplicationTests {
         GraphResearchInfo receivedInfo2 = db.getResearchInfo(graphID2);
 
         assertEquals(info2, receivedInfo2);
+
         cleaner.deleteUser(userID);
     }
 

@@ -31,6 +31,7 @@ public class GraphMetadata {
     }
 
     public GraphMetadata(JsonNode json) {
+        graphName = json.get("graphName").asText();
         isDirected = json.get("isDirected").asBoolean();
         isWeighted = json.get("isWeighted").asBoolean();
         hasSelfLoops = json.get("hasSelfLoops").asBoolean();
@@ -51,7 +52,8 @@ public class GraphMetadata {
     public JsonNode toJson() {
         ObjectMapper objectMapper = new ObjectMapper();
         ObjectNode json = objectMapper.createObjectNode();
-
+        json.put("graphID", graphID);
+        json.put("graphName", graphName);
         json.put("isDirected", isDirected);
         json.put("isWeighted", isWeighted);
         json.put("hasSelfLoops", hasSelfLoops);

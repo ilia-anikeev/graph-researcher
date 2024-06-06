@@ -4,13 +4,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.graphResearcher.model.*;
+import com.graphResearcher.service.GraphArchiveService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.graphResearcher.service.GraphResearchService;
-import com.graphResearcher.service.SaveService;
 import jakarta.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.stream.Collectors;
@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 public class GraphResearchController {
     private static final Logger log = LoggerFactory.getLogger(GraphResearchController.class);
     private final GraphResearchService researchService;
-    private final SaveService saveService;
+    private final GraphArchiveService graphArchiveService;
 
     @PostMapping("/research")
     public ResponseEntity<String> research(HttpServletRequest request) {
@@ -31,11 +31,11 @@ public class GraphResearchController {
             GraphModel graphModel = new GraphModel(json.get("graph"));
 
             int userID = json.get("userID").asInt();
-            int graphID = saveService.saveGraph(userID, graphModel);
+            int graphID = graphArchiveService.saveGraph(userID, graphModel);
 
             GraphResearchInfo researchResult = researchService.research(graphModel);
 
-            saveService.saveResearchResult(userID, graphID, researchResult);
+            graphArchiveService.saveResearchResult(userID, graphID, researchResult);
 
             log.info("Research was successfully completed");
             return ResponseEntity.ok(researchResult.toJson().toString());
@@ -51,8 +51,8 @@ public class GraphResearchController {
         }
     }
 
-    GraphResearchController(GraphResearchService researchService, SaveService saveService) {
+    GraphResearchController(GraphResearchService researchService, GraphArchiveService saveService) {
         this.researchService = researchService;
-        this.saveService = saveService;
+        this.graphArchiveService = saveService;
     }
 }

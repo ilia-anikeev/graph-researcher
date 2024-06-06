@@ -92,6 +92,14 @@ public class Converter {
         );
     }
 
+    public static ArrayNode GraphModelListToJsonArray(List<GraphModel> list) {
+        return list.stream().map(GraphModel::toJson).collect(
+                mapper::createArrayNode,
+                ArrayNode::add,
+                ArrayNode::addAll
+        );
+    }
+
     public static GraphModel graphToGraphModel(Graph<Vertex, WeightedEdge> graph, GraphMetadata metadata) {
         return new GraphModel(new ArrayList<>(graph.vertexSet()), graph.edgeSet().stream().map(WeightedEdge::toEdge).toList(), metadata);
     }
