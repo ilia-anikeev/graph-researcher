@@ -1,12 +1,12 @@
 package com.graphResearcher;
 
 import com.graphResearcher.model.*;
+import com.graphResearcher.model.graphInfo.GraphResearchInfo;
 import com.graphResearcher.repository.DataBaseCleaner;
 import com.graphResearcher.repository.DataBaseManager;
 import com.graphResearcher.service.GraphResearchService;
 import org.junit.jupiter.api.Test;
 
-import javax.xml.crypto.Data;
 import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

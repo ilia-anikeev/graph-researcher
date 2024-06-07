@@ -8,6 +8,7 @@ import java.sql.*;
 
 import java.util.*;
 
+import com.graphResearcher.model.graphInfo.GraphResearchInfo;
 import com.graphResearcher.util.Converter;
 import com.graphResearcher.util.PropertiesUtil;
 import org.slf4j.Logger;
@@ -147,12 +148,12 @@ public class DataBaseManager {
             if (info.planarityInfo.isPlanar != null && !info.planarityInfo.isPlanar) {
                 saveKuratowskiSubgraph(userID, graphID, info.planarityInfo.kuratowskiSubgraph, conn);
             }
-            if (info.isChordal != null && info.isChordal) {
-                savePerfectEliminationOrder(graphID, info.perfectEliminationOrder, conn);
-                saveComponents(graphID, info.coloring, "coloring", conn);
-                saveVertices(graphID, info.maxClique, "max_clique", conn);
-                saveVertices(graphID, info.independentSet, "independent_set", conn);
-                saveComponents(graphID, info.minimalVertexSeparator, "minimal_vertex_separator", conn);
+            if (info.chordalityInfo.isChordal != null && info.chordalityInfo.isChordal) {
+                savePerfectEliminationOrder(graphID, info.chordalityInfo.perfectEliminationOrder, conn);
+                saveComponents(graphID, info.chordalityInfo.coloring, "coloring", conn);
+                saveVertices(graphID, info.chordalityInfo.maxClique, "max_clique", conn);
+                saveVertices(graphID, info.chordalityInfo.independentSet, "independent_set", conn);
+                saveComponents(graphID, info.chordalityInfo.minimalVertexSeparator, "minimal_vertex_separator", conn);
             }
 
             String sql1 = "DELETE FROM graph_research_info WHERE graph_id = ?";
@@ -190,12 +191,12 @@ public class DataBaseManager {
             if (researchInfo.planarityInfo.isPlanar != null && !researchInfo.planarityInfo.isPlanar) {
                 researchInfo.planarityInfo.kuratowskiSubgraph = getKuratowskiSubgraph(graphID, conn);
             }
-            if (researchInfo.isChordal != null && researchInfo.isChordal) {
-                researchInfo.perfectEliminationOrder = getPerfectEliminationOrder(graphID, conn);
-                researchInfo.coloring = getComponents(graphID, "coloring", conn);
-                researchInfo.maxClique = getVertices(graphID, "max_clique", conn);
-                researchInfo.independentSet = getVertices(graphID, "independent_set", conn);
-                researchInfo.minimalVertexSeparator = getComponents(graphID, "minimal_vertex_separator", conn);
+            if (researchInfo.chordalityInfo.isChordal != null && researchInfo.chordalityInfo.isChordal) {
+                researchInfo.chordalityInfo.perfectEliminationOrder = getPerfectEliminationOrder(graphID, conn);
+                researchInfo.chordalityInfo.coloring = getComponents(graphID, "coloring", conn);
+                researchInfo.chordalityInfo.maxClique = getVertices(graphID, "max_clique", conn);
+                researchInfo.chordalityInfo.independentSet = getVertices(graphID, "independent_set", conn);
+                researchInfo.chordalityInfo.minimalVertexSeparator = getComponents(graphID, "minimal_vertex_separator", conn);
             }
             log.info("ID {}: research info have been received", graphID);
             return researchInfo;

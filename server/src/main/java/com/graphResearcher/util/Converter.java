@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.graphResearcher.model.*;
+import com.graphResearcher.model.graphInfo.GraphResearchInfo;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.*;
 
@@ -119,13 +120,13 @@ public class Converter {
         if (rs.wasNull()) {
             info.planarityInfo.isPlanar = null;
         }
-        info.isChordal = rs.getBoolean("is_chordal");
+        info.chordalityInfo.isChordal = rs.getBoolean("is_chordal");
         if (rs.wasNull()) {
-            info.isChordal = null;
+            info.chordalityInfo.isChordal = null;
         }
-        info.chromaticNumber = rs.getInt("chromatic_number");
+        info.chordalityInfo.chromaticNumber = rs.getInt("chromatic_number");
         if (rs.wasNull()) {
-            info.chromaticNumber = null;
+            info.chordalityInfo.chromaticNumber = null;
         }
 
         return info;
@@ -183,14 +184,14 @@ public class Converter {
             answer.append(info.planarityInfo.isPlanar);
             answer.append("'");
         }
-        if (info.isChordal != null) {
+        if (info.chordalityInfo.isChordal != null) {
             answer.append(", '");
-            answer.append(info.isChordal);
+            answer.append(info.chordalityInfo.isChordal);
             answer.append("'");
         }
-        if (info.chromaticNumber != null) {
+        if (info.chordalityInfo.chromaticNumber != null) {
             answer.append(", '");
-            answer.append(info.chromaticNumber);
+            answer.append(info.chordalityInfo.chromaticNumber);
             answer.append("'");
         }
         return answer.toString();
@@ -220,10 +221,10 @@ public class Converter {
         if (info.planarityInfo.isPlanar != null) {
             notNullFields.add("is_planar");
         }
-        if (info.isChordal != null) {
+        if (info.chordalityInfo.isChordal != null) {
             notNullFields.add("is_chordal");
         }
-        if (info.chromaticNumber != null) {
+        if (info.chordalityInfo.chromaticNumber != null) {
             notNullFields.add("chromatic_number");
         }
         StringBuilder fields = new StringBuilder();

@@ -1,4 +1,7 @@
-package com.graphResearcher.model;
+package com.graphResearcher.model.graphInfo;
+
+import com.graphResearcher.model.Edge;
+import com.graphResearcher.model.Vertex;
 
 import java.util.List;
 

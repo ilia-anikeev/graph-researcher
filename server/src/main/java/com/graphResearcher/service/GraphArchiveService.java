@@ -2,7 +2,7 @@ package com.graphResearcher.service;
 
 import org.springframework.stereotype.Service;
 
-import com.graphResearcher.model.GraphResearchInfo;
+import com.graphResearcher.model.graphInfo.GraphResearchInfo;
 import com.graphResearcher.repository.DataBaseManager;
 import com.graphResearcher.model.GraphModel;
 
