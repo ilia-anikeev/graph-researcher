@@ -12,13 +12,11 @@ code {
     monospace;
 }
 
-.title{
-  padding-top: 1rem;
-  margin: 0 auto;
-  text-align: center;
-  font-size: 30px;
+svg {
+  border: 1px solid black;
 }
 
-.button{
-  color: blue;
+.edge-input {
+  position: absolute;
+  transform: translate(-50%, -50%);
 }

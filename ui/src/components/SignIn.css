@@ -1,0 +1,38 @@
+.headderSignIn{
+    font-size: 18pt;
+    margin-top: 150px;
+    margin-left: 900px;
+}
+
+.dataSignIn{
+    margin-top: 50px;
+    margin-left: 850px;
+}
+
+.emailSignIn{
+    padding-bottom: 5px
+}
+
+.passwordSignIn{
+    padding-bottom: 5px
+}
+
+.signInButton{
+    margin-top: 30px;
+    margin-left: 60px;
+}
+
+.createAccountButton{
+    margin-top: 10px;
+    margin-left: 40px;
+    background: none;
+    border: none;
+    color: #069;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.errorTextSignIn{
+    color: red;
+    margin-top: 10px;   
+}

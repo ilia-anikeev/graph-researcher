@@ -1,29 +1,71 @@
-import React from "react"
-import Draggable from 'react-draggable'
+import React, { useRef, useState} from "react";
+import Draggable from 'react-draggable';
 import PropTypes from 'prop-types';
-import './Vertex.css'
+import './Vertex.css';
 
-function Vertex(props){
-    const noderef = React.useRef();
+function Vertex(props) {
+    const noderef = useRef();
+    const inputRef = useRef(null);
+    const [data, setData] = useState(props.index.toString()); 
+    const [oldData, setOldData] = useState(props.index.toString()); 
+    
+
+
+    const handleDataChange = (e) => {
+        const newData = e.target.value;
+        props.addVertex(props.vertices.map(vertex =>{
+            return (vertex.data === oldData) ? { ...vertex, data: newData } : vertex;
+        }
+        ));
+        setData(newData);
+        setOldData(newData);
+        updateInputWidth();
+    };
+
+
+    const updateInputWidth = () => {
+        if (inputRef.current) {
+            console.log(oldData.length, data.length);
+            const newWidth = data.length >= 6 ? data.length + 1 : 5;
+            inputRef.current.style.width = `${newWidth}ch`;
+        }
+    };
+
+
+    const setActualData = (e) => {
+        updateInputWidth();
+        setData(e.target.value)
+    }
+
 
     return (
-            <Draggable nodeRef={noderef}
-                axis="both"
-                defaultPosition={{x: 0, y: 0}}
-                position={null}
-                grid={[1,1]}
-                scale={1}
-            >
-                <div className='vertex' ref={noderef}>
-                    <div className='text'>{props.data}</div>
-                </div>
-                
-            </Draggable>
-    )
+        <Draggable
+            nodeRef={noderef}
+            axis="both"
+            defaultPosition={{ x: props.x - 25, y: props.y + 80}}
+            position={null}
+            grid={[1, 1]}
+            scale={1}>
+            <div className='vertex' ref={noderef}>
+                <input
+                    className='input'
+                    type='text'
+                    value={data} 
+                    ref={inputRef}
+                    onChange={setActualData}
+                    onBlur={handleDataChange} 
+                />
+            </div>
+        </Draggable>
+    );
 }
 
 Vertex.propTypes = {
-    data: PropTypes.number
-}
+    index: PropTypes.number,
+    vertices: PropTypes.array,
+    addVertex: PropTypes.func,
+    x: PropTypes.number,
+    y: PropTypes.number,
+};
 
-export default Vertex
+export default Vertex;

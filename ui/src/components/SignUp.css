@@ -1,0 +1,29 @@
+.headderSignUp{
+    font-size: 18pt;
+    margin-top: 200px;
+    margin-left: 900px;
+}
+
+.dataSignUp{
+    margin-top: 50px;
+    margin-left: 850px;
+    white-space: pre
+}
+
+.emailSignUp{
+    padding-bottom: 5px
+}
+
+.passwordSignUp{
+    padding-bottom: 5px
+}
+
+.signUpButton{
+    margin-top: 30px;
+    margin-left: 60px; 
+}
+
+.errorTextSignUp{
+    color: red;
+    margin-top: 10px;
+}
