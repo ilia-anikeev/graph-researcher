@@ -11,16 +11,9 @@ import java.util.List;
 import java.util.Map;
 
 public class GraphResearchInfo {
-    public Boolean isConnected;
-    public Boolean isBiconnected;
-    public List<Vertex> articulationPoints;
-    public List<Edge> bridges;
-    public List<List<Vertex>> connectedComponents;
-    public List<List<Vertex>> blocks;
+    public ConnectivityInfo connectivityInfo = new ConnectivityInfo();
 
-    public Boolean isPlanar;
-    public Map<Vertex, List<Edge>> embedding; //TODO
-    public GraphModel kuratowskiSubgraph;
+    public PlanarityInfo planarityInfo = new PlanarityInfo();
 
     public Boolean isChordal;
     public List<Vertex> perfectEliminationOrder;
@@ -38,15 +31,15 @@ public class GraphResearchInfo {
     public JsonNode toJson() throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
         ObjectNode json = objectMapper.createObjectNode();
-        json.put("isConnected", isConnected);
-        json.put("isBiconnected", isBiconnected);
-        json.set("articulationPoints", Converter.verticesListToJsonArray(articulationPoints));
-        json.set("bridges", Converter.edgesListToJsonArray(bridges));
-        json.set("connectedComponents", Converter.listListVerticesToJsonArray(connectedComponents));
-        json.set("blocks", Converter.listListVerticesToJsonArray(blocks));
-        if (isPlanar != null) json.put("isPlanar", isPlanar);
-        if (isPlanar != null && !isPlanar) {
-            json.set("kuratovskySubgraph", kuratowskiSubgraph.toJson());
+        json.put("isConnected", connectivityInfo.isConnected);
+        json.put("isBiconnected", connectivityInfo.isBiconnected);
+        json.set("articulationPoints", Converter.verticesListToJsonArray(connectivityInfo.articulationPoints));
+        json.set("bridges", Converter.edgesListToJsonArray(connectivityInfo.bridges));
+        json.set("connectedComponents", Converter.listListVerticesToJsonArray(connectivityInfo.connectedComponents));
+        json.set("blocks", Converter.listListVerticesToJsonArray(connectivityInfo.blocks));
+        if (planarityInfo.isPlanar != null) json.put("isPlanar", planarityInfo.isPlanar);
+        if (planarityInfo.isPlanar != null && !planarityInfo.isPlanar) {
+            json.set("kuratovskySubgraph", planarityInfo.kuratowskiSubgraph.toJson());
         }
 
         if (isChordal != null) json.put("isChordal", isChordal);
@@ -66,17 +59,11 @@ public class GraphResearchInfo {
             return false;
         }
         boolean equals = true;
-        equals &= bridges.equals(other.bridges);
-        equals &= isConnected.equals(other.isConnected);
-        equals &= isBiconnected.equals(other.isBiconnected);
-        equals &= bridges.equals(other.bridges);
-        equals &= articulationPoints.equals(other.articulationPoints);
-        equals &= connectedComponents.equals(other.connectedComponents);
-        equals &= blocks.equals(other.blocks);
+        equals &= connectivityInfo.equals(other.connectivityInfo);
 
-        equals &= isPlanar == other.isPlanar;
-        if (isPlanar != null && !isPlanar) {
-            equals &= kuratowskiSubgraph.equals(other.kuratowskiSubgraph);
+        equals &= planarityInfo.isPlanar == other.planarityInfo.isPlanar;
+        if (planarityInfo.isPlanar != null && !planarityInfo.isPlanar) {
+            equals &= planarityInfo.kuratowskiSubgraph.equals(other.planarityInfo.kuratowskiSubgraph);
         }
 
         equals &= isChordal == other.isChordal;

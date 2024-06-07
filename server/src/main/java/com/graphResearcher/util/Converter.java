@@ -107,17 +107,17 @@ public class Converter {
     public static GraphResearchInfo resultSetToGraphResearchInfo(ResultSet rs) throws SQLException, JsonProcessingException {
         rs.next();
         GraphResearchInfo info = new GraphResearchInfo();
-        info.isConnected = rs.getBoolean("is_connected");
+        info.connectivityInfo.isConnected = rs.getBoolean("is_connected");
         if (rs.wasNull()) {
-            info.isConnected = null;
+            info.connectivityInfo.isConnected = null;
         }
-        info.isBiconnected = rs.getBoolean("is_biconnected");
+        info.connectivityInfo.isBiconnected = rs.getBoolean("is_biconnected");
         if (rs.wasNull()) {
-            info.isBiconnected = null;
+            info.connectivityInfo.isBiconnected = null;
         }
-        info.isPlanar = rs.getBoolean("is_planar");
+        info.planarityInfo.isPlanar = rs.getBoolean("is_planar");
         if (rs.wasNull()) {
-            info.isPlanar = null;
+            info.planarityInfo.isPlanar = null;
         }
         info.isChordal = rs.getBoolean("is_chordal");
         if (rs.wasNull()) {
@@ -148,39 +148,39 @@ public class Converter {
 
         answer.append(graphID);
 
-        if (info.isConnected != null) {
+        if (info.connectivityInfo.isConnected != null) {
             answer.append(", '");
-            answer.append(info.isConnected);
+            answer.append(info.connectivityInfo.isConnected);
             answer.append("'");
         }
-        if (info.isBiconnected != null) {
+        if (info.connectivityInfo.isBiconnected != null) {
             answer.append(", '");
-            answer.append(info.isBiconnected);
+            answer.append(info.connectivityInfo.isBiconnected);
             answer.append("'");
         }
-        if (info.articulationPoints != null) {
+        if (info.connectivityInfo.articulationPoints != null) {
             answer.append(", '");
-            answer.append(info.articulationPoints.size());
+            answer.append(info.connectivityInfo.articulationPoints.size());
             answer.append("'");
         }
-        if (info.bridges != null) {
+        if (info.connectivityInfo.bridges != null) {
             answer.append(", '");
-            answer.append(info.bridges.size());
+            answer.append(info.connectivityInfo.bridges.size());
             answer.append("'");
         }
-        if (info.connectedComponents != null) {
+        if (info.connectivityInfo.connectedComponents != null) {
             answer.append(", '");
-            answer.append(info.connectedComponents.size());
+            answer.append(info.connectivityInfo.connectedComponents.size());
             answer.append("'");
         }
-        if (info.blocks != null) {
+        if (info.connectivityInfo.blocks != null) {
             answer.append(", '");
-            answer.append(info.blocks.size());
+            answer.append(info.connectivityInfo.blocks.size());
             answer.append("'");
         }
-        if (info.isPlanar != null) {
+        if (info.planarityInfo.isPlanar != null) {
             answer.append(", '");
-            answer.append(info.isPlanar);
+            answer.append(info.planarityInfo.isPlanar);
             answer.append("'");
         }
         if (info.isChordal != null) {
@@ -199,25 +199,25 @@ public class Converter {
     public static String getFieldsNames(GraphResearchInfo info) {
         List<String> notNullFields = new ArrayList<>();
         notNullFields.add("graph_id");
-        if (info.isConnected != null) {
+        if (info.connectivityInfo.isConnected != null) {
             notNullFields.add("is_connected");
         }
-        if (info.isBiconnected != null) {
+        if (info.connectivityInfo.isBiconnected != null) {
             notNullFields.add("is_biconnected");
         }
-        if (info.articulationPoints != null) {
+        if (info.connectivityInfo.articulationPoints != null) {
             notNullFields.add("articulation_points");
         }
-        if (info.bridges != null) {
+        if (info.connectivityInfo.bridges != null) {
             notNullFields.add("bridges");
         }
-        if (info.connectedComponents != null) {
+        if (info.connectivityInfo.connectedComponents != null) {
             notNullFields.add("connected_components");
         }
-        if (info.blocks != null) {
+        if (info.connectivityInfo.blocks != null) {
             notNullFields.add("blocks");
         }
-        if (info.isPlanar != null) {
+        if (info.planarityInfo.isPlanar != null) {
             notNullFields.add("is_planar");
         }
         if (info.isChordal != null) {

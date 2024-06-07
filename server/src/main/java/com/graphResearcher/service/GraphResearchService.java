@@ -17,11 +17,16 @@ import org.jgrapht.alg.spanning.KruskalMinimumSpanningTree;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
 public class GraphResearchService {
+    ExecutorService executor = Executors.newCachedThreadPool();
+
     public GraphResearchInfo research(GraphModel graphModel) {
         Graph<Vertex, WeightedEdge> graph = Converter.graphModelToGraph(graphModel);
         GraphResearchInfo info = new GraphResearchInfo();
@@ -50,35 +55,35 @@ public class GraphResearchService {
         BiconnectivityInspector<Vertex, WeightedEdge> biconnectivityInspector = new BiconnectivityInspector<>(graph);
         ConnectivityInspector<Vertex, WeightedEdge> connectivityInspector = new ConnectivityInspector<>(graph);
 
-        info.isConnected = biconnectivityInspector.isConnected();
+        info.connectivityInfo.isConnected = biconnectivityInspector.isConnected();
 
-        info.isBiconnected = biconnectivityInspector.isBiconnected();
+        info.connectivityInfo.isBiconnected = biconnectivityInspector.isBiconnected();
 
-        info.articulationPoints= new ArrayList<>(biconnectivityInspector.getCutpoints());
+        info.connectivityInfo.articulationPoints= new ArrayList<>(biconnectivityInspector.getCutpoints());
 
-        info.bridges = biconnectivityInspector.getBridges().stream()
+        info.connectivityInfo.bridges = biconnectivityInspector.getBridges().stream()
                 .map(WeightedEdge::toEdge)
                 .collect(Collectors.toList());
 
-        info.connectedComponents = connectivityInspector.connectedSets().stream().map(v -> (List<Vertex>)new ArrayList<>(v)).toList();
+        info.connectivityInfo.connectedComponents = connectivityInspector.connectedSets().stream().map(v -> (List<Vertex>)new ArrayList<>(v)).toList();
 
-        info.blocks = biconnectivityInspector.getBlocks().stream()
+        info.connectivityInfo.blocks = biconnectivityInspector.getBlocks().stream()
                 .map(block -> (List<Vertex>)new ArrayList<>(block.vertexSet())).toList();
 
     }
 
     private void planarityResearch(GraphResearchInfo info, Graph<Vertex, WeightedEdge> graph, GraphMetadata metadata) {
         BoyerMyrvoldPlanarityInspector<Vertex, WeightedEdge> planarityInspector = new BoyerMyrvoldPlanarityInspector<>(graph);
-        info.isPlanar = planarityInspector.isPlanar();
+        info.planarityInfo.isPlanar = planarityInspector.isPlanar();
 
-        if (info.isPlanar) {
+        if (info.planarityInfo.isPlanar) {
             Map<Vertex, List<Edge>> embedding = new HashMap<>();
             for (Vertex v: graph.vertexSet()) {
                 embedding.put(v, planarityInspector.getEmbedding().getEdgesAround(v).stream().map(WeightedEdge::toEdge).toList());
             }
-            info.embedding = embedding;
+            info.planarityInfo.embedding = embedding;
         } else {
-            info.kuratowskiSubgraph = Converter.graphToGraphModel(planarityInspector.getKuratowskiSubdivision(), metadata);
+            info.planarityInfo.kuratowskiSubgraph = Converter.graphToGraphModel(planarityInspector.getKuratowskiSubdivision(), metadata);
         }
     }
 

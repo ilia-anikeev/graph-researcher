@@ -140,12 +140,12 @@ public class DataBaseManager {
 
     public void saveResearchInfo(int userID, int graphID, GraphResearchInfo info) {
         try (Connection conn = dataSource.getConnection()) {
-            saveVertices(graphID, info.articulationPoints, "articulation_points", conn);
-            saveEdges(graphID, info.bridges, "bridges",conn);
-            saveComponents(graphID, info.connectedComponents, "connected_components", conn);
-            saveComponents(graphID, info.blocks, "blocks", conn);
-            if (info.isPlanar != null && !info.isPlanar) {
-                saveKuratowskiSubgraph(userID, graphID, info.kuratowskiSubgraph, conn);
+            saveVertices(graphID, info.connectivityInfo.articulationPoints, "articulation_points", conn);
+            saveEdges(graphID, info.connectivityInfo.bridges, "bridges",conn);
+            saveComponents(graphID, info.connectivityInfo.connectedComponents, "connected_components", conn);
+            saveComponents(graphID, info.connectivityInfo.blocks, "blocks", conn);
+            if (info.planarityInfo.isPlanar != null && !info.planarityInfo.isPlanar) {
+                saveKuratowskiSubgraph(userID, graphID, info.planarityInfo.kuratowskiSubgraph, conn);
             }
             if (info.isChordal != null && info.isChordal) {
                 savePerfectEliminationOrder(graphID, info.perfectEliminationOrder, conn);
@@ -183,12 +183,12 @@ public class DataBaseManager {
             ResultSet rs = preparedStatement.executeQuery();
             GraphResearchInfo researchInfo = Converter.resultSetToGraphResearchInfo(rs);
 
-            researchInfo.articulationPoints = getVertices(graphID, "articulation_points", conn);
-            researchInfo.bridges = getEdges(graphID, "bridges", conn);
-            researchInfo.connectedComponents = getComponents(graphID, "connected_components", conn);
-            researchInfo.blocks = getComponents(graphID, "blocks", conn);
-            if (researchInfo.isPlanar != null && !researchInfo.isPlanar) {
-                researchInfo.kuratowskiSubgraph = getKuratowskiSubgraph(graphID, conn);
+            researchInfo.connectivityInfo.articulationPoints = getVertices(graphID, "articulation_points", conn);
+            researchInfo.connectivityInfo.bridges = getEdges(graphID, "bridges", conn);
+            researchInfo.connectivityInfo.connectedComponents = getComponents(graphID, "connected_components", conn);
+            researchInfo.connectivityInfo.blocks = getComponents(graphID, "blocks", conn);
+            if (researchInfo.planarityInfo.isPlanar != null && !researchInfo.planarityInfo.isPlanar) {
+                researchInfo.planarityInfo.kuratowskiSubgraph = getKuratowskiSubgraph(graphID, conn);
             }
             if (researchInfo.isChordal != null && researchInfo.isChordal) {
                 researchInfo.perfectEliminationOrder = getPerfectEliminationOrder(graphID, conn);
