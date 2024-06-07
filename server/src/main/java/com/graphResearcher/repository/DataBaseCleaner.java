@@ -13,7 +13,7 @@ import java.sql.SQLException;
 
 public class DataBaseCleaner {
     private static final Logger log = LoggerFactory.getLogger(DataBaseManager.class);
-    DataSource dataSource;
+    private final DataSource dataSource;
 
     public DataBaseCleaner() {
         String name = PropertiesUtil.get("db.username");

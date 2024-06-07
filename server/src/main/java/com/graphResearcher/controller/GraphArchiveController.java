@@ -17,12 +17,10 @@ import org.slf4j.Logger;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.util.List;
 
 
 @RestController
-
 public class GraphArchiveController {
     private final GraphArchiveService graphArchiveService;
     private static final Logger log = LoggerFactory.getLogger(GraphResearchController.class);
@@ -50,8 +48,7 @@ public class GraphArchiveController {
         }
     }
 
-
-    @GetMapping("/get_all_user_graphs")
+    @GetMapping("/get_all_graphs")
     public ResponseEntity<String> getAllUserGraphs(String jsonString) {
         ObjectMapper mapper = new ObjectMapper();
         try {
@@ -74,8 +71,6 @@ public class GraphArchiveController {
             return ResponseEntity.internalServerError().body(e.getMessage());
         }
     }
-
-
 
     GraphArchiveController(GraphArchiveService graphArchiveService) {
         this.graphArchiveService = graphArchiveService;
