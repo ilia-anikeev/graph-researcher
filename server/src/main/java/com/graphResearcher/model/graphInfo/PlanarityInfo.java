@@ -16,7 +16,13 @@ public class PlanarityInfo {
         if (!(o instanceof PlanarityInfo other)) {
             return false;
         }
-        boolean equals = isPlanar.equals(other.isPlanar);
+        boolean equals = true;
+        if (isPlanar == other.isPlanar) {
+            return true;
+        }
+        if (isPlanar == null || other.isPlanar == null) {
+            return false;
+        }
         if (!isPlanar) {
             equals &= kuratowskiSubgraph.equals(other.kuratowskiSubgraph);
         }

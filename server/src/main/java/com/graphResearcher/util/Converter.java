@@ -128,7 +128,10 @@ public class Converter {
         if (rs.wasNull()) {
             info.chordalityInfo.chromaticNumber = null;
         }
-
+        info.bipartitePartitioningInfo.isBipartite = rs.getBoolean("is_bipartite");
+        if (rs.wasNull()) {
+            info.bipartitePartitioningInfo.isBipartite = null;
+        }
         return info;
     }
 
@@ -192,6 +195,11 @@ public class Converter {
         if (info.chordalityInfo.chromaticNumber != null) {
             answer.append(", '");
             answer.append(info.chordalityInfo.chromaticNumber);
+            answer.append("'");
+        }
+        if (info.bipartitePartitioningInfo.isBipartite != null) {
+            answer.append(", '");
+            answer.append(info.bipartitePartitioningInfo.isBipartite);
             answer.append("'");
         }
         return answer.toString();

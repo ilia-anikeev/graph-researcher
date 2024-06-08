@@ -16,6 +16,7 @@ import org.jgrapht.alg.interfaces.VertexColoringAlgorithm;
 import org.jgrapht.alg.partition.BipartitePartitioning;
 import org.jgrapht.alg.planar.BoyerMyrvoldPlanarityInspector;
 import org.jgrapht.alg.spanning.KruskalMinimumSpanningTree;
+import org.jgrapht.graph.AsUndirectedGraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -35,20 +36,20 @@ public class GraphResearchService {
             GraphResearchInfo info = new GraphResearchInfo();
 
             Future<ConnectivityInfo> connectivityInfoFuture = executor.submit(connectivityResearch(graph));
-            Future<PlanarityInfo> planarityInfoFuture = null;
-            Future<ChordalityInfo> chordalityInfoFuture = null;
-            if (graph.getType().isUndirected()) {
-                planarityInfoFuture = executor.submit(planarityResearch(graph, graphModel.getMetadata()));
-                chordalityInfoFuture = executor.submit(chordalityResearch(graph));
-            } else {
-                // flowResearch
-            }
+        Future<PlanarityInfo> planarityInfoFuture = null;
+        Future<ChordalityInfo> chordalityInfoFuture = null;
+        Future<BipartitePartitioningInfo> bipartitePartitioningInfoFuture = null;
+        if (graph.getType().isUndirected()) {
+            planarityInfoFuture = executor.submit(planarityResearch(graph, graphModel.getMetadata()));
+            chordalityInfoFuture = executor.submit(chordalityResearch(graph));
+            bipartitePartitioningInfoFuture = executor.submit(bipartitePartitioningResearch(graph));
+        } else {
 
-            Future<BipartitePartitioningInfo> bipartitePartitioningInfoFuture = executor.submit(bipartitePartitioningResearch(graph));
-
+            // flowResearch
+        }
             //cycleResearch
 
-            spanningResearch(info, graph);
+        spanningResearch(info, graph);
 
             //VertexCover
 
@@ -60,7 +61,9 @@ public class GraphResearchService {
             if (chordalityInfoFuture != null) {
                 info.chordalityInfo = chordalityInfoFuture.get();
             }
-            info.bipartitePartitioningInfo = bipartitePartitioningInfoFuture.get();
+            if (bipartitePartitioningInfoFuture != null) {
+                info.bipartitePartitioningInfo = bipartitePartitioningInfoFuture.get();
+            }
         } catch (ExecutionException | InterruptedException e) {
             log.error("research error");
         }

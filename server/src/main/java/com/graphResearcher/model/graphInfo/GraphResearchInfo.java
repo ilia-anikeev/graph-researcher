@@ -52,8 +52,8 @@ public class GraphResearchInfo {
             return false;
         }
         boolean equals = true;
-        equals &= connectivityInfo.equals(other.connectivityInfo);
 
+        equals &= connectivityInfo.equals(other.connectivityInfo);
         if (planarityInfo != null) {
             equals &= planarityInfo.equals(other.planarityInfo);
         }
@@ -61,7 +61,6 @@ public class GraphResearchInfo {
             equals &= chordalityInfo.equals(other.chordalityInfo);
         }
         equals &= bipartitePartitioningInfo.equals(other.bipartitePartitioningInfo);
-
         return equals;
     }
 }

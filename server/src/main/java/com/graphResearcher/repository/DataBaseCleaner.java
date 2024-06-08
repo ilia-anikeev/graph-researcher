@@ -167,7 +167,7 @@ public class DataBaseCleaner {
         String sql = "CREATE TABLE graph_research_info(id SERIAL PRIMARY KEY, " +
                 "graph_id INT, user_id INT, is_connected BOOLEAN, is_biconnected BOOLEAN, " +
                 "articulation_points INT, bridges INT, connected_components INT, " +
-                "blocks INT, is_planar BOOLEAN, is_chordal BOOLEAN, chromatic_number INT)";
+                "blocks INT, is_planar BOOLEAN, is_chordal BOOLEAN, chromatic_number INT, is_bipartite BOOLEAN)";
         try (PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
             preparedStatement.execute();
         } catch (SQLException e) {
@@ -216,32 +216,12 @@ public class DataBaseCleaner {
         }
     }
 
-    private void initIsChordalTable(Connection conn) {
-        String sql = "CREATE TABLE is_chordal(id SERIAL PRIMARY KEY, graph_id INT, is_chordal BOOLEAN)";
-        try (PreparedStatement preparedStatement = conn.prepareStatement(sql)){
-            preparedStatement.execute();
-        } catch (SQLException e) {
-            log.error("Init is_chordal table error", e);
-            throw new RuntimeException(e);
-        }
-    }
-
     private void initPerfectEliminationOrderTable(Connection conn) {
         String sql = "CREATE TABLE perfect_elimination_order(id SERIAL PRIMARY KEY, graph_id INT, sequence_number INT, index INT, data TEXT)";
         try (PreparedStatement preparedStatement = conn.prepareStatement(sql)){
             preparedStatement.execute();
         } catch (SQLException e) {
             log.error("Init perfectEliminationOrder table error", e);
-            throw new RuntimeException(e);
-        }
-    }
-
-    private void initIsPlanarTable(Connection conn) {
-        String sql = "CREATE TABLE is_planar(id SERIAL PRIMARY KEY, graph_id INT, is_planar BOOLEAN)";
-        try (PreparedStatement preparedStatement = conn.prepareStatement(sql)){
-            preparedStatement.execute();
-        } catch (SQLException e) {
-            log.error("Init is_planar table error", e);
             throw new RuntimeException(e);
         }
     }
@@ -317,9 +297,7 @@ public class DataBaseCleaner {
             initBridgesTable(conn);
             initConnectedComponentsTable(conn);
             initBlocksTable(conn);
-            initIsChordalTable(conn);
             initPerfectEliminationOrderTable(conn);
-            initIsPlanarTable(conn);
             initKuratowskiSubgraphTable(conn);
             initColoringTable(conn);
             initMaxCliqueTable(conn);

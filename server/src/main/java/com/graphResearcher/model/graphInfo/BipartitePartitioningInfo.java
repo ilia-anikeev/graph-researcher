@@ -18,13 +18,24 @@ public class BipartitePartitioningInfo {
         if (!(o instanceof BipartitePartitioningInfo other)) {
             return false;
         }
+        System.err.println(isBipartite);
+        System.err.println(other.isBipartite);
+
+        if (isBipartite == other.isBipartite) {
+            return true;
+        }
+        if (isBipartite == null || other.isBipartite == null) {
+            return false;
+        }
+
         boolean equals = isBipartite.equals(other.isBipartite);
-        equals &= partitions.equals(other.partitions);
+        if (isBipartite) {
+            equals &= partitions.equals(other.partitions);
 
-        equals &= chromaticNumber.equals(other.chromaticNumber);
-        equals &= coloring.equals(other.coloring);
-        equals &= independentSet.equals(other.independentSet);
-
+            equals &= chromaticNumber.equals(other.chromaticNumber);
+            equals &= coloring.equals(other.coloring);
+            equals &= independentSet.equals(other.independentSet);
+        }
         return equals;
     }
 }

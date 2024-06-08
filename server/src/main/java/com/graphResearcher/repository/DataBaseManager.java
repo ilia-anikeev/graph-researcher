@@ -151,7 +151,7 @@ public class DataBaseManager {
     }
 
     public void saveChordalityInfo(int graphID, ChordalityInfo chordalityInfo, Connection conn) {
-        if (chordalityInfo != null && chordalityInfo.isChordal) {
+        if (chordalityInfo.isChordal != null && chordalityInfo.isChordal) {
             savePerfectEliminationOrder(graphID, chordalityInfo.perfectEliminationOrder, conn);
             saveComponents(graphID, chordalityInfo.coloring, "coloring", conn);
             saveVertices(graphID, chordalityInfo.maxClique, "max_clique", conn);
@@ -161,14 +161,14 @@ public class DataBaseManager {
     }
 
     public void savePlanarityInfo(int userID, int graphID, PlanarityInfo planarityInfo, Connection conn) {
-        if (!planarityInfo.isPlanar) {
+        if (planarityInfo.isPlanar != null && !planarityInfo.isPlanar) {
             saveKuratowskiSubgraph(userID, graphID, planarityInfo.kuratowskiSubgraph, conn);
         }
     }
 
     public void saveBipartitePartitioningInfo(int graphID, BipartitePartitioningInfo
             bipartitePartitioningInfo, Connection conn) {
-        if (bipartitePartitioningInfo.isBipartite) {
+        if (bipartitePartitioningInfo.isBipartite != null && bipartitePartitioningInfo.isBipartite) {
             saveComponents(graphID, bipartitePartitioningInfo.coloring, "coloring", conn);
             saveComponents(graphID, bipartitePartitioningInfo.partitions, "partitions", conn);
             saveVertices(graphID, bipartitePartitioningInfo.independentSet, "independent_set", conn);
@@ -202,8 +202,10 @@ public class DataBaseManager {
         }
     }
 
-    public ConnectivityInfo getConnectivityInfo(int graphID, Connection conn) {
+    public ConnectivityInfo getConnectivityInfo(int graphID, boolean isConnected,boolean isBiconnected, Connection conn) {
         ConnectivityInfo connectivityInfo = new ConnectivityInfo();
+        connectivityInfo.isConnected = isConnected;
+        connectivityInfo.isBiconnected = isBiconnected;
         connectivityInfo.articulationPoints = getVertices(graphID, "articulation_points", conn);
         connectivityInfo.bridges = getEdges(graphID, "bridges", conn);
         connectivityInfo.connectedComponents = getComponents(graphID, "connected_components", conn);
@@ -211,19 +213,20 @@ public class DataBaseManager {
         return connectivityInfo;
     }
 
-    public PlanarityInfo getPlanarityInfo(int graphID, boolean isPlanar, Connection conn) {
+    public PlanarityInfo getPlanarityInfo(int graphID, Boolean isPlanar, Connection conn) {
         PlanarityInfo planarityInfo = new PlanarityInfo();
         planarityInfo.isPlanar = isPlanar;
-        if (!planarityInfo.isPlanar) {
+        if (isPlanar != null && !planarityInfo.isPlanar) {
             planarityInfo.kuratowskiSubgraph = getKuratowskiSubgraph(graphID, conn);
         }
         return planarityInfo;
     }
 
-    public ChordalityInfo getChordalityInfo(int graphID, boolean isChordal, Connection conn) {
+    public ChordalityInfo getChordalityInfo(int graphID, Boolean isChordal, Integer chromaticNumber, Connection conn) {
         ChordalityInfo chordalityInfo = new ChordalityInfo();
-        chordalityInfo.isChordal = isChordal;
-        if (isChordal) {
+        if (isChordal != null && isChordal) {
+            chordalityInfo.isChordal = isChordal;
+            chordalityInfo.chromaticNumber = chromaticNumber;
             chordalityInfo.perfectEliminationOrder = getPerfectEliminationOrder(graphID, conn);
             chordalityInfo.coloring = getComponents(graphID, "coloring", conn);
             chordalityInfo.maxClique = getVertices(graphID, "max_clique", conn);
@@ -233,11 +236,11 @@ public class DataBaseManager {
         return chordalityInfo;
     }
 
-    public BipartitePartitioningInfo getBipartitePartitioningInfo(int graphID, boolean isBipartite, int chromaticNumber, Connection conn) {
+    public BipartitePartitioningInfo getBipartitePartitioningInfo(int graphID, Boolean isBipartite, Integer chromaticNumber, Connection conn) {
         BipartitePartitioningInfo bipartitePartitioningInfo = new BipartitePartitioningInfo();
-        bipartitePartitioningInfo.isBipartite = isBipartite;
-        bipartitePartitioningInfo.chromaticNumber = chromaticNumber;
-        if (isBipartite) {
+        if (isBipartite != null && isBipartite) {
+            bipartitePartitioningInfo.isBipartite = isBipartite;
+            bipartitePartitioningInfo.chromaticNumber = chromaticNumber;
             bipartitePartitioningInfo.partitions = getComponents(graphID, "partitions", conn);
             bipartitePartitioningInfo.independentSet = getVertices(graphID, "independent_set", conn);
             bipartitePartitioningInfo.coloring = getComponents(graphID, "coloring", conn);
@@ -253,13 +256,14 @@ public class DataBaseManager {
 
             ResultSet rs = preparedStatement.executeQuery();
             GraphResearchInfo researchInfo = Converter.resultSetToGraphResearchInfo(rs);
-            boolean isPlanar = researchInfo.planarityInfo.isPlanar;
-            boolean isChordal = researchInfo.chordalityInfo.isChordal;
-            boolean isBipartite = researchInfo.bipartitePartitioningInfo.isBipartite;
-            int chromaticNumber = researchInfo.chordalityInfo.chromaticNumber;
-            researchInfo.connectivityInfo = getConnectivityInfo(graphID, conn);
+            Boolean isPlanar = researchInfo.planarityInfo.isPlanar;
+            Boolean isChordal = researchInfo.chordalityInfo.isChordal;
+            Boolean isBipartite = researchInfo.bipartitePartitioningInfo.isBipartite;
+            Integer chromaticNumber = researchInfo.chordalityInfo.chromaticNumber;
+
+            researchInfo.connectivityInfo = getConnectivityInfo(graphID, researchInfo.connectivityInfo.isConnected, researchInfo.connectivityInfo.isBiconnected, conn);
             researchInfo.planarityInfo = getPlanarityInfo(graphID, isPlanar, conn);
-            researchInfo.chordalityInfo = getChordalityInfo(graphID, isChordal, conn);
+            researchInfo.chordalityInfo = getChordalityInfo(graphID, isChordal, chromaticNumber, conn);
             researchInfo.bipartitePartitioningInfo = getBipartitePartitioningInfo(graphID, isBipartite, chromaticNumber, conn);
             log.info("ID {}: research info have been received", graphID);
             return researchInfo;
@@ -404,7 +408,6 @@ public class DataBaseManager {
         try (PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
             preparedStatement.setInt(1, graphID);
             ResultSet rs = preparedStatement.executeQuery();
-            rs.next();
             return getGraph(rs.getInt("subgraph_id"));
         } catch (SQLException e) {
             log.error("ID {}: subgraph haven't been received", graphID, e);

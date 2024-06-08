@@ -82,8 +82,8 @@ class GraphResearcherApplicationTests {
 
         int graphID = db.saveGraph(userID, graph2);
         GraphResearchInfo info = service.research(graph2);
-
         db.saveResearchInfo(userID, graphID, info);
+//        return;
 
         GraphResearchInfo receivedInfo = db.getResearchInfo(graphID);
 
