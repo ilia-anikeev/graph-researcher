@@ -2,7 +2,7 @@ import React, {useRef, useEffect, useState} from 'react';
 import './Researcher.css'
 import Researcher from "./Researcher"
 import Vertex from "./Vertex";
-import Edges from './Edges';
+import Edge from './Edge';
 
 function Graph() {
     const [vertices, addVertex] = useState([]);
@@ -65,7 +65,7 @@ function Graph() {
                             target: index,
                             id: edgeCounter,
                             data: '',
-                            weight: 1.0}]
+                            weight: 1}]
                     )
                     setDrawEdge(false);
             }else{
@@ -217,16 +217,30 @@ function Graph() {
                                 ref={ref => verticesRef.current[vertex.index] = ref}
                                 onMouseDown={handleMouseMove(vertex.index)}
                             >
-                                <Vertex index={vertex.index} x={vertex.x} y={vertex.y} vertices={vertices} addVertex={addVertex} data={vertex.data}/>
+                                <Vertex index={vertex.index} 
+                                        x={vertex.x} 
+                                        y={vertex.y} 
+                                        vertices={vertices} 
+                                        addVertex={addVertex} 
+                                        data={vertex.data}/>
                             </div>
                         );
                     }) : null}
                 </div>
                 <div>
-                <Edges isWeighted={isWeighted}
-                       vertices={vertices}
-                       edges={edges}
-                       isDirected={isDirected}/>
+                {edges ? edges.map(edge => {
+                    return(<div>
+                        <Edge isWeighted={isWeighted}
+                              isDirected={isDirected}
+                              vertices={vertices}
+                              edges={edges}
+                              addEdge={addEdge}
+                              weight={edge.weight}
+                              source={edge.source}
+                              target={edge.target}/>
+                    </div>
+                )   
+                }) : null}
                 </div>
                 <div>
                     <Researcher createVertex={createVertex}
