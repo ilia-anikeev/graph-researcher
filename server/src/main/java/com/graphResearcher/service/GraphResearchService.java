@@ -145,8 +145,12 @@ public class GraphResearchService {
             if (bipartitePartitioningInfo.isBipartite) {
                 bipartitePartitioningInfo.partitions = bipartitePartitioningInspector.getPartitioning().getPartitions().stream().map(s -> (List<Vertex>) new ArrayList<>(s)).toList();
 
-                if (!bipartitePartitioningInfo.partitions.get(0).isEmpty() && !bipartitePartitioningInfo.partitions.get(1).isEmpty()) {
-                    bipartitePartitioningInfo.chromaticNumber = 2;
+                bipartitePartitioningInfo.chromaticNumber = 2;
+                if (bipartitePartitioningInfo.partitions.get(0).isEmpty()) {
+                    bipartitePartitioningInfo.chromaticNumber--;
+                }
+                if (bipartitePartitioningInfo.partitions.get(1).isEmpty()) {
+                    bipartitePartitioningInfo.chromaticNumber--;
                 }
                 bipartitePartitioningInfo.coloring = bipartitePartitioningInfo.partitions;
 

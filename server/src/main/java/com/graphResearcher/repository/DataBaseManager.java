@@ -8,7 +8,7 @@ import java.sql.*;
 
 import java.util.*;
 
-import com.graphResearcher.model.graphInfo.GraphResearchInfo;
+import com.graphResearcher.model.graphInfo.*;
 import com.graphResearcher.util.Converter;
 import com.graphResearcher.util.PropertiesUtil;
 import org.slf4j.Logger;
@@ -25,6 +25,7 @@ import javax.sql.DataSource;
 public class DataBaseManager {
     private static final Logger log = LoggerFactory.getLogger(DataBaseManager.class);
     DataSource dataSource;
+
     public DataBaseManager() {
         String name = PropertiesUtil.get("db.username");
         String password = PropertiesUtil.get("db.password");
@@ -62,7 +63,7 @@ public class DataBaseManager {
     private void saveVertices(int graphID, List<Vertex> vertices, String tableName, Connection conn) {
         String sql = "INSERT INTO " + tableName + "(graph_id, index, data) VALUES(?, ?, ?)";
         try (PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
-            for (Vertex v: vertices) {
+            for (Vertex v : vertices) {
                 preparedStatement.setInt(1, graphID);
                 preparedStatement.setInt(2, v.getIndex());
                 preparedStatement.setString(3, v.getData());
@@ -77,7 +78,7 @@ public class DataBaseManager {
     private void saveEdges(int graphID, List<Edge> edges, String tableName, Connection conn) {
         String sql = "INSERT INTO " + tableName + "(graph_id, source, target, weight, data) VALUES(?, ?, ?, ?, ?)";
         try (PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
-            for (Edge e: edges) {
+            for (Edge e : edges) {
                 preparedStatement.setInt(1, graphID);
                 preparedStatement.setInt(2, e.source.getIndex());
                 preparedStatement.setInt(3, e.target.getIndex());
@@ -96,7 +97,7 @@ public class DataBaseManager {
 
         try (PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
             for (int i = 0; i < components.size(); ++i) {
-                for (Vertex v: components.get(i)) {
+                for (Vertex v : components.get(i)) {
                     preparedStatement.setInt(1, graphID);
                     preparedStatement.setInt(2, i);
                     preparedStatement.setInt(3, v.getIndex());
@@ -139,22 +140,48 @@ public class DataBaseManager {
         }
     }
 
+    public void saveConnectivityInfo(int graphID, ConnectivityInfo connectivityInfo, Connection conn) {
+        if (connectivityInfo == null) {
+            return;
+        }
+        saveVertices(graphID, connectivityInfo.articulationPoints, "articulation_points", conn);
+        saveEdges(graphID, connectivityInfo.bridges, "bridges", conn);
+        saveComponents(graphID, connectivityInfo.connectedComponents, "connected_components", conn);
+        saveComponents(graphID, connectivityInfo.blocks, "blocks", conn);
+    }
+
+    public void saveChordalityInfo(int graphID, ChordalityInfo chordalityInfo, Connection conn) {
+        if (chordalityInfo != null && chordalityInfo.isChordal) {
+            savePerfectEliminationOrder(graphID, chordalityInfo.perfectEliminationOrder, conn);
+            saveComponents(graphID, chordalityInfo.coloring, "coloring", conn);
+            saveVertices(graphID, chordalityInfo.maxClique, "max_clique", conn);
+            saveVertices(graphID, chordalityInfo.independentSet, "independent_set", conn);
+            saveComponents(graphID, chordalityInfo.minimalVertexSeparator, "minimal_vertex_separator", conn);
+        }
+    }
+
+    public void savePlanarityInfo(int userID, int graphID, PlanarityInfo planarityInfo, Connection conn) {
+        if (!planarityInfo.isPlanar) {
+            saveKuratowskiSubgraph(userID, graphID, planarityInfo.kuratowskiSubgraph, conn);
+        }
+    }
+
+    public void saveBipartitePartitioningInfo(int graphID, BipartitePartitioningInfo
+            bipartitePartitioningInfo, Connection conn) {
+        if (bipartitePartitioningInfo.isBipartite) {
+            saveComponents(graphID, bipartitePartitioningInfo.coloring, "coloring", conn);
+            saveComponents(graphID, bipartitePartitioningInfo.partitions, "partitions", conn);
+            saveVertices(graphID, bipartitePartitioningInfo.independentSet, "independent_set", conn);
+        }
+    }
+
+
     public void saveResearchInfo(int userID, int graphID, GraphResearchInfo info) {
         try (Connection conn = dataSource.getConnection()) {
-            saveVertices(graphID, info.connectivityInfo.articulationPoints, "articulation_points", conn);
-            saveEdges(graphID, info.connectivityInfo.bridges, "bridges",conn);
-            saveComponents(graphID, info.connectivityInfo.connectedComponents, "connected_components", conn);
-            saveComponents(graphID, info.connectivityInfo.blocks, "blocks", conn);
-            if (info.planarityInfo.isPlanar != null && !info.planarityInfo.isPlanar) {
-                saveKuratowskiSubgraph(userID, graphID, info.planarityInfo.kuratowskiSubgraph, conn);
-            }
-            if (info.chordalityInfo.isChordal != null && info.chordalityInfo.isChordal) {
-                savePerfectEliminationOrder(graphID, info.chordalityInfo.perfectEliminationOrder, conn);
-                saveComponents(graphID, info.chordalityInfo.coloring, "coloring", conn);
-                saveVertices(graphID, info.chordalityInfo.maxClique, "max_clique", conn);
-                saveVertices(graphID, info.chordalityInfo.independentSet, "independent_set", conn);
-                saveComponents(graphID, info.chordalityInfo.minimalVertexSeparator, "minimal_vertex_separator", conn);
-            }
+            saveConnectivityInfo(graphID, info.connectivityInfo, conn);
+            savePlanarityInfo(userID, graphID, info.planarityInfo, conn);
+            saveChordalityInfo(graphID, info.chordalityInfo, conn);
+            saveBipartitePartitioningInfo(graphID, info.bipartitePartitioningInfo, conn);
 
             String sql1 = "DELETE FROM graph_research_info WHERE graph_id = ?";
 
@@ -175,29 +202,65 @@ public class DataBaseManager {
         }
     }
 
+    public ConnectivityInfo getConnectivityInfo(int graphID, Connection conn) {
+        ConnectivityInfo connectivityInfo = new ConnectivityInfo();
+        connectivityInfo.articulationPoints = getVertices(graphID, "articulation_points", conn);
+        connectivityInfo.bridges = getEdges(graphID, "bridges", conn);
+        connectivityInfo.connectedComponents = getComponents(graphID, "connected_components", conn);
+        connectivityInfo.blocks = getComponents(graphID, "blocks", conn);
+        return connectivityInfo;
+    }
+
+    public PlanarityInfo getPlanarityInfo(int graphID, boolean isPlanar, Connection conn) {
+        PlanarityInfo planarityInfo = new PlanarityInfo();
+        planarityInfo.isPlanar = isPlanar;
+        if (!planarityInfo.isPlanar) {
+            planarityInfo.kuratowskiSubgraph = getKuratowskiSubgraph(graphID, conn);
+        }
+        return planarityInfo;
+    }
+
+    public ChordalityInfo getChordalityInfo(int graphID, boolean isChordal, Connection conn) {
+        ChordalityInfo chordalityInfo = new ChordalityInfo();
+        chordalityInfo.isChordal = isChordal;
+        if (isChordal) {
+            chordalityInfo.perfectEliminationOrder = getPerfectEliminationOrder(graphID, conn);
+            chordalityInfo.coloring = getComponents(graphID, "coloring", conn);
+            chordalityInfo.maxClique = getVertices(graphID, "max_clique", conn);
+            chordalityInfo.independentSet = getVertices(graphID, "independent_set", conn);
+            chordalityInfo.minimalVertexSeparator = getComponents(graphID, "minimal_vertex_separator", conn);
+        }
+        return chordalityInfo;
+    }
+
+    public BipartitePartitioningInfo getBipartitePartitioningInfo(int graphID, boolean isBipartite, int chromaticNumber, Connection conn) {
+        BipartitePartitioningInfo bipartitePartitioningInfo = new BipartitePartitioningInfo();
+        bipartitePartitioningInfo.isBipartite = isBipartite;
+        bipartitePartitioningInfo.chromaticNumber = chromaticNumber;
+        if (isBipartite) {
+            bipartitePartitioningInfo.partitions = getComponents(graphID, "partitions", conn);
+            bipartitePartitioningInfo.independentSet = getVertices(graphID, "independent_set", conn);
+            bipartitePartitioningInfo.coloring = getComponents(graphID, "coloring", conn);
+        }
+        return bipartitePartitioningInfo;
+    }
+
     public GraphResearchInfo getResearchInfo(int graphID) {
         String sql = "SELECT * FROM graph_research_info WHERE graph_id = ?";
         try (Connection conn = dataSource.getConnection();
-             PreparedStatement preparedStatement = conn.prepareStatement(sql)){
+             PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
             preparedStatement.setInt(1, graphID);
 
             ResultSet rs = preparedStatement.executeQuery();
             GraphResearchInfo researchInfo = Converter.resultSetToGraphResearchInfo(rs);
-
-            researchInfo.connectivityInfo.articulationPoints = getVertices(graphID, "articulation_points", conn);
-            researchInfo.connectivityInfo.bridges = getEdges(graphID, "bridges", conn);
-            researchInfo.connectivityInfo.connectedComponents = getComponents(graphID, "connected_components", conn);
-            researchInfo.connectivityInfo.blocks = getComponents(graphID, "blocks", conn);
-            if (researchInfo.planarityInfo.isPlanar != null && !researchInfo.planarityInfo.isPlanar) {
-                researchInfo.planarityInfo.kuratowskiSubgraph = getKuratowskiSubgraph(graphID, conn);
-            }
-            if (researchInfo.chordalityInfo.isChordal != null && researchInfo.chordalityInfo.isChordal) {
-                researchInfo.chordalityInfo.perfectEliminationOrder = getPerfectEliminationOrder(graphID, conn);
-                researchInfo.chordalityInfo.coloring = getComponents(graphID, "coloring", conn);
-                researchInfo.chordalityInfo.maxClique = getVertices(graphID, "max_clique", conn);
-                researchInfo.chordalityInfo.independentSet = getVertices(graphID, "independent_set", conn);
-                researchInfo.chordalityInfo.minimalVertexSeparator = getComponents(graphID, "minimal_vertex_separator", conn);
-            }
+            boolean isPlanar = researchInfo.planarityInfo.isPlanar;
+            boolean isChordal = researchInfo.chordalityInfo.isChordal;
+            boolean isBipartite = researchInfo.bipartitePartitioningInfo.isBipartite;
+            int chromaticNumber = researchInfo.chordalityInfo.chromaticNumber;
+            researchInfo.connectivityInfo = getConnectivityInfo(graphID, conn);
+            researchInfo.planarityInfo = getPlanarityInfo(graphID, isPlanar, conn);
+            researchInfo.chordalityInfo = getChordalityInfo(graphID, isChordal, conn);
+            researchInfo.bipartitePartitioningInfo = getBipartitePartitioningInfo(graphID, isBipartite, chromaticNumber, conn);
             log.info("ID {}: research info have been received", graphID);
             return researchInfo;
         } catch (SQLException e) {
@@ -224,7 +287,7 @@ public class DataBaseManager {
                 }
             }
             return componentsMap.values().stream().toList();
-        } catch(SQLException e) {
+        } catch (SQLException e) {
             log.error("ID {}: components haven't been received", graphID, e);
             throw new RuntimeException(e);
         }
@@ -232,7 +295,7 @@ public class DataBaseManager {
 
     private GraphMetadata getGraphMetadata(int graphID, Connection conn) {
         String sql = "SELECT graph_id, graph_name, is_directed, is_weighted, has_self_loops, has_multiple_edges FROM graph_metadata WHERE graph_id = ?";
-        try (PreparedStatement preparedStatement = conn.prepareStatement(sql)){
+        try (PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
             preparedStatement.setInt(1, graphID);
             ResultSet rs = preparedStatement.executeQuery();
             rs.next();
@@ -263,13 +326,13 @@ public class DataBaseManager {
         String sql = "SELECT graph_id FROM graph_metadata WHERE user_id = ?";
         try (Connection conn = dataSource.getConnection();
              PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
-                preparedStatement.setInt(1, userID);
-                ResultSet rs = preparedStatement.executeQuery();
-                while (rs.next()) {
-                    int graphID = rs.getInt("graph_id");
-                    GraphModel g = getGraph(graphID, conn);
-                    graphModelList.add(g);
-                }
+            preparedStatement.setInt(1, userID);
+            ResultSet rs = preparedStatement.executeQuery();
+            while (rs.next()) {
+                int graphID = rs.getInt("graph_id");
+                GraphModel g = getGraph(graphID, conn);
+                graphModelList.add(g);
+            }
         } catch (SQLException e) {
             log.error("userID {}: all user graphs haven't been received", userID);
             throw new RuntimeException(e);
@@ -278,7 +341,7 @@ public class DataBaseManager {
     }
 
     private List<Vertex> getVertices(int graphID, String tableName, Connection conn) {
-        String sql = "SELECT index, data FROM " + tableName  + " WHERE graph_id = ?";
+        String sql = "SELECT index, data FROM " + tableName + " WHERE graph_id = ?";
         try (PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
             preparedStatement.setInt(1, graphID);
             ResultSet rs = preparedStatement.executeQuery();
@@ -287,7 +350,7 @@ public class DataBaseManager {
                 vertices.add(new Vertex(rs.getInt("index"), rs.getString("data")));
             }
             return vertices;
-        } catch(SQLException e) {
+        } catch (SQLException e) {
             log.error("ID {}: vertices haven't been received", graphID, e);
             throw new RuntimeException(e);
         }
@@ -296,7 +359,7 @@ public class DataBaseManager {
     private List<Edge> getEdges(int graphID, String tableName, Connection conn) {
         List<Vertex> vertices = getVertices(graphID, "vertices", conn);
         Map<Integer, Vertex> verticesMap = new HashMap<>();
-        for (Vertex v: vertices) {
+        for (Vertex v : vertices) {
             verticesMap.put(v.getIndex(), v);
         }
         List<Edge> edges = new ArrayList<>();
@@ -330,7 +393,7 @@ public class DataBaseManager {
                 vertices.set(rs.getInt("sequence_number"), new Vertex(rs.getInt("index"), rs.getString("data")));
             }
             return vertices;
-        } catch(SQLException e) {
+        } catch (SQLException e) {
             log.error("ID {}: vertices haven't been received", graphID, e);
             throw new RuntimeException(e);
         }
@@ -343,7 +406,7 @@ public class DataBaseManager {
             ResultSet rs = preparedStatement.executeQuery();
             rs.next();
             return getGraph(rs.getInt("subgraph_id"));
-        } catch(SQLException e) {
+        } catch (SQLException e) {
             log.error("ID {}: subgraph haven't been received", graphID, e);
             throw new RuntimeException(e);
         }

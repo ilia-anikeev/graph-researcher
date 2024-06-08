@@ -216,12 +216,32 @@ public class DataBaseCleaner {
         }
     }
 
+    private void initIsChordalTable(Connection conn) {
+        String sql = "CREATE TABLE is_chordal(id SERIAL PRIMARY KEY, graph_id INT, is_chordal BOOLEAN)";
+        try (PreparedStatement preparedStatement = conn.prepareStatement(sql)){
+            preparedStatement.execute();
+        } catch (SQLException e) {
+            log.error("Init is_chordal table error", e);
+            throw new RuntimeException(e);
+        }
+    }
+
     private void initPerfectEliminationOrderTable(Connection conn) {
         String sql = "CREATE TABLE perfect_elimination_order(id SERIAL PRIMARY KEY, graph_id INT, sequence_number INT, index INT, data TEXT)";
         try (PreparedStatement preparedStatement = conn.prepareStatement(sql)){
             preparedStatement.execute();
         } catch (SQLException e) {
             log.error("Init perfectEliminationOrder table error", e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void initIsPlanarTable(Connection conn) {
+        String sql = "CREATE TABLE is_planar(id SERIAL PRIMARY KEY, graph_id INT, is_planar BOOLEAN)";
+        try (PreparedStatement preparedStatement = conn.prepareStatement(sql)){
+            preparedStatement.execute();
+        } catch (SQLException e) {
+            log.error("Init is_planar table error", e);
             throw new RuntimeException(e);
         }
     }
@@ -276,7 +296,17 @@ public class DataBaseCleaner {
         }
     }
 
-    private void initDB() {
+    private void initPartitionsTable(Connection conn) {
+        String sql = "CREATE TABLE partitions(id SERIAL PRIMARY KEY, graph_id INT, component_number INT, index INT, data TEXT)";
+        try (PreparedStatement preparedStatement = conn.prepareStatement(sql)){
+            preparedStatement.execute();
+        } catch (SQLException e) {
+            log.error("Init connected components table error", e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void initDB() {
         try (Connection conn = dataSource.getConnection()) {
             initEdgesTable(conn);
             initVerticesTable(conn);
@@ -287,12 +317,15 @@ public class DataBaseCleaner {
             initBridgesTable(conn);
             initConnectedComponentsTable(conn);
             initBlocksTable(conn);
+            initIsChordalTable(conn);
             initPerfectEliminationOrderTable(conn);
+            initIsPlanarTable(conn);
             initKuratowskiSubgraphTable(conn);
             initColoringTable(conn);
             initMaxCliqueTable(conn);
             initIndependentSetTable(conn);
             initMinimalVertexSeparatorTable(conn);
+            initPartitionsTable(conn);
             log.info("Database initialization was successful");
         } catch (SQLException e) {
             log.error("Database haven't been initialized", e);
@@ -300,7 +333,7 @@ public class DataBaseCleaner {
         }
     }
 
-    private void deleteDB() {
+    public void deleteDB() {
         try (Connection conn = dataSource.getConnection()){
             String sql = "DROP TABLE articulation_points";
             PreparedStatement preparedStatement = conn.prepareStatement(sql);
@@ -355,6 +388,10 @@ public class DataBaseCleaner {
             preparedStatement.execute();
 
             sql = "DROP TABLE minimal_vertex_separator";
+            preparedStatement = conn.prepareStatement(sql);
+            preparedStatement.execute();
+
+            sql = "DROP TABLE partitions";
             preparedStatement = conn.prepareStatement(sql);
             preparedStatement.execute();
         } catch (SQLException e) {

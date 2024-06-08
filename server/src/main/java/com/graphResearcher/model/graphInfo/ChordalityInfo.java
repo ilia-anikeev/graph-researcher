@@ -12,4 +12,21 @@ public class ChordalityInfo {
     public List<Vertex> maxClique;
     public List<Vertex> independentSet;
     public List<List<Vertex>> minimalVertexSeparator;
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof ChordalityInfo other)) {
+            return false;
+        }
+        boolean equals = isChordal.equals(other.isChordal);
+        if (isChordal) {
+            equals &= perfectEliminationOrder.equals(other.perfectEliminationOrder);
+            equals &= chromaticNumber.equals(other.chromaticNumber);
+            equals &= coloring.equals(other.coloring);
+            equals &= maxClique.equals(other.maxClique);
+            equals &= independentSet.equals(other.independentSet);
+            equals &= minimalVertexSeparator.equals(other.minimalVertexSeparator);
+        }
+        return equals;
+    }
 }

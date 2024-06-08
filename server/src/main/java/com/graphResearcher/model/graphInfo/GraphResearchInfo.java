@@ -54,20 +54,14 @@ public class GraphResearchInfo {
         boolean equals = true;
         equals &= connectivityInfo.equals(other.connectivityInfo);
 
-        equals &= planarityInfo.isPlanar == other.planarityInfo.isPlanar;
-        if (planarityInfo.isPlanar != null && !planarityInfo.isPlanar) {
-            equals &= planarityInfo.kuratowskiSubgraph.equals(other.planarityInfo.kuratowskiSubgraph);
+        if (planarityInfo != null) {
+            equals &= planarityInfo.equals(other.planarityInfo);
         }
+        if (chordalityInfo != null) {
+            equals &= chordalityInfo.equals(other.chordalityInfo);
+        }
+        equals &= bipartitePartitioningInfo.equals(other.bipartitePartitioningInfo);
 
-        equals &= chordalityInfo.isChordal == other.chordalityInfo.isChordal;
-        if (chordalityInfo.isChordal != null && chordalityInfo.isChordal) {
-            equals &= chordalityInfo.perfectEliminationOrder.equals(other.chordalityInfo.perfectEliminationOrder);
-            equals &= chordalityInfo.chromaticNumber.equals(other.chordalityInfo.chromaticNumber);
-            equals &= chordalityInfo.coloring.equals(other.chordalityInfo.coloring);
-            equals &= chordalityInfo.maxClique.equals(other.chordalityInfo.maxClique);
-            equals &= chordalityInfo.independentSet.equals(other.chordalityInfo.independentSet);
-            equals &= chordalityInfo.minimalVertexSeparator.equals(other.chordalityInfo.minimalVertexSeparator);
-        }
         return equals;
     }
 }

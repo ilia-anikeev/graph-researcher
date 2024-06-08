@@ -12,4 +12,19 @@ public class BipartitePartitioningInfo {
     public List<List<Vertex>> coloring;
 
     public List<Vertex> independentSet;
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof BipartitePartitioningInfo other)) {
+            return false;
+        }
+        boolean equals = isBipartite.equals(other.isBipartite);
+        equals &= partitions.equals(other.partitions);
+
+        equals &= chromaticNumber.equals(other.chromaticNumber);
+        equals &= coloring.equals(other.coloring);
+        equals &= independentSet.equals(other.independentSet);
+
+        return equals;
+    }
 }
