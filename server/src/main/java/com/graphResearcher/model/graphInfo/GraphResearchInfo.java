@@ -16,8 +16,8 @@ public class GraphResearchInfo {
 
     public ChordalityInfo chordalityInfo = new ChordalityInfo();
 
-    public Boolean isBipartite; //TODO
-    public List<List<Vertex>> partitions; //TODO
+    public BipartitePartitioningInfo bipartitePartitioningInfo = new BipartitePartitioningInfo();
+
     public List<Edge> minSpanningTree; //TODO
 
 

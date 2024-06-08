@@ -2,10 +2,7 @@ package com.graphResearcher.service;
 
 import com.graphResearcher.controller.GraphResearchController;
 import com.graphResearcher.model.*;
-import com.graphResearcher.model.graphInfo.ChordalityInfo;
-import com.graphResearcher.model.graphInfo.ConnectivityInfo;
-import com.graphResearcher.model.graphInfo.GraphResearchInfo;
-import com.graphResearcher.model.graphInfo.PlanarityInfo;
+import com.graphResearcher.model.graphInfo.*;
 import com.graphResearcher.util.Converter;
 import org.jgrapht.Graph;
 import org.jgrapht.alg.clique.ChordalGraphMaxCliqueFinder;
@@ -47,7 +44,7 @@ public class GraphResearchService {
                 // flowResearch
             }
 
-            bipartitePartitioningResearch(info, graph);
+            Future<BipartitePartitioningInfo> bipartitePartitioningInfoFuture = executor.submit(bipartitePartitioningResearch(graph));
 
             //cycleResearch
 
@@ -63,10 +60,10 @@ public class GraphResearchService {
             if (chordalityInfoFuture != null) {
                 info.chordalityInfo = chordalityInfoFuture.get();
             }
+            info.bipartitePartitioningInfo = bipartitePartitioningInfoFuture.get();
         } catch (ExecutionException | InterruptedException e) {
             log.error("research error");
         }
-
         return info;
     }
 
@@ -122,15 +119,15 @@ public class GraphResearchService {
             if (chordalityInfo.isChordal) {
                 chordalityInfo.perfectEliminationOrder = chordalityInspector.getPerfectEliminationOrder();
 
-                ChordalGraphColoring<Vertex, WeightedEdge> coloringResearcher = new ChordalGraphColoring<>(graph);
-                VertexColoringAlgorithm.Coloring<Vertex> coloring = coloringResearcher.getColoring();
-                chordalityInfo.chromaticNumber = coloring.getNumberColors();
-                chordalityInfo.coloring = coloring.getColorClasses().stream().map(st -> (List<Vertex>) new ArrayList<>(st)).toList();
-
                 ChordalGraphMaxCliqueFinder<Vertex, WeightedEdge> maxCliqueFinder = new ChordalGraphMaxCliqueFinder<>(graph);
                 chordalityInfo.maxClique = maxCliqueFinder.getClique().stream().toList();
                 ChordalGraphIndependentSetFinder<Vertex, WeightedEdge> independentSetFinder = new ChordalGraphIndependentSetFinder<>(graph);
                 chordalityInfo.independentSet = independentSetFinder.getIndependentSet().stream().toList();
+
+                ChordalGraphColoring<Vertex, WeightedEdge> coloringResearcher = new ChordalGraphColoring<>(graph);
+                VertexColoringAlgorithm.Coloring<Vertex> coloring = coloringResearcher.getColoring();
+                chordalityInfo.chromaticNumber = coloring.getNumberColors();
+                chordalityInfo.coloring = coloring.getColorClasses().stream().map(st -> (List<Vertex>) new ArrayList<>(st)).toList();
 
                 ChordalGraphMinimalVertexSeparatorFinder<Vertex, WeightedEdge> minimalVertexSeparatorFinder = new ChordalGraphMinimalVertexSeparatorFinder<>(graph);
                 chordalityInfo.minimalVertexSeparator = minimalVertexSeparatorFinder.getMinimalSeparators().stream().map(Set::stream).map(Stream::toList).toList();
@@ -139,21 +136,28 @@ public class GraphResearchService {
         };
     }
 
-    private void bipartitePartitioningResearch(GraphResearchInfo info, Graph<Vertex, WeightedEdge> graph) {
-        BipartitePartitioning<Vertex, WeightedEdge> bipartitePartitioningInspector = new BipartitePartitioning<>(graph);
-        info.isBipartite = bipartitePartitioningInspector.isBipartite();
-        if (info.isBipartite) {
-            info.partitions = bipartitePartitioningInspector.getPartitioning().getPartitions().stream().map(s -> (List<Vertex>)new ArrayList<>(s)).toList();
+    private Callable<BipartitePartitioningInfo> bipartitePartitioningResearch(Graph<Vertex, WeightedEdge> graph) {
+        return () -> {
+            BipartitePartitioningInfo bipartitePartitioningInfo = new BipartitePartitioningInfo();
 
-            info.chordalityInfo.chromaticNumber = 2; //TODO
-            info.chordalityInfo.coloring = info.partitions; //TODO
+            BipartitePartitioning<Vertex, WeightedEdge> bipartitePartitioningInspector = new BipartitePartitioning<>(graph);
+            bipartitePartitioningInfo.isBipartite = bipartitePartitioningInspector.isBipartite();
+            if (bipartitePartitioningInfo.isBipartite) {
+                bipartitePartitioningInfo.partitions = bipartitePartitioningInspector.getPartitioning().getPartitions().stream().map(s -> (List<Vertex>) new ArrayList<>(s)).toList();
 
-            if (info.partitions.get(0).size() < info.partitions.get(1).size()) {
-                info.chordalityInfo.independentSet = info.partitions.get(1);
-            } else {
-                info.chordalityInfo.independentSet = info.partitions.get(0);
+                if (!bipartitePartitioningInfo.partitions.get(0).isEmpty() && !bipartitePartitioningInfo.partitions.get(1).isEmpty()) {
+                    bipartitePartitioningInfo.chromaticNumber = 2;
+                }
+                bipartitePartitioningInfo.coloring = bipartitePartitioningInfo.partitions;
+
+                if (bipartitePartitioningInfo.partitions.get(0).size() < bipartitePartitioningInfo.partitions.get(1).size()) {
+                    bipartitePartitioningInfo.independentSet = bipartitePartitioningInfo.partitions.get(1);
+                } else {
+                    bipartitePartitioningInfo.independentSet = bipartitePartitioningInfo.partitions.get(0);
+                }
             }
-        }
+            return bipartitePartitioningInfo;
+        };
     }
 
     private void spanningResearch(GraphResearchInfo info, Graph<Vertex, WeightedEdge> graph) {
