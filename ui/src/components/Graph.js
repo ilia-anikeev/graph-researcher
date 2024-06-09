@@ -2,7 +2,7 @@ import React, {useRef, useEffect, useState} from 'react';
 import './Researcher.css'
 import Researcher from "./Researcher"
 import Vertex from "./Vertex";
-import Edges from './Edges';
+import Edge from './Edge';
 
 function Graph() {
     const [vertices, addVertex] = useState([]);
@@ -65,7 +65,7 @@ function Graph() {
                             target: index,
                             id: edgeCounter,
                             data: '',
-                            weight: 1.0}]
+                            weight: 1}]
                     )
                     setDrawEdge(false);
             }else{
@@ -145,6 +145,8 @@ function Graph() {
 
 
 
+
+
     useEffect(() => {                                                          //TODO
         const handleKeyPress = (event) => {
           if (event.key === 'd'){
@@ -208,28 +210,45 @@ function Graph() {
     })
 
         return (
-            <div >
+            <div>
               <div>
                     {vertices ? vertices.map(vertex => {
                         return (
                             <div 
-                                key={vertex.index} 
+                                key={'vertexContainer' + vertex.index.toString()} 
                                 ref={ref => verticesRef.current[vertex.index] = ref}
                                 onMouseDown={handleMouseMove(vertex.index)}
                             >
-                                <Vertex index={vertex.index} x={vertex.x} y={vertex.y} vertices={vertices} addVertex={addVertex} data={vertex.data}/>
+                                <Vertex key={'vertex' + vertex.index.toString()} 
+                                        index={vertex.index} 
+                                        x={vertex.x} 
+                                        y={vertex.y} 
+                                        vertices={vertices} 
+                                        addVertex={addVertex} 
+                                        data={vertex.data}/>
                             </div>
                         );
                     }) : null}
                 </div>
                 <div>
-                <Edges isWeighted={isWeighted}
-                       vertices={vertices}
-                       edges={edges}
-                       isDirected={isDirected}/>
+                {edges ? edges.map(edge => {
+                    return(<div key={'edgeContainer' + edge.id.toString()}>
+                        <Edge key={'edge' + edge.id.toString()}
+                              isWeighted={isWeighted}
+                              isDirected={isDirected}
+                              vertices={vertices}
+                              edges={edges}
+                              addEdge={addEdge}
+                              weight={edge.weight}
+                              source={edge.source}
+                              target={edge.target}/>
+                    </div>
+                )   
+                }) : null}
                 </div>
                 <div>
-                    <Researcher createVertex={createVertex}
+                    <Researcher key={'researcher'}
+                                createVertex={createVertex}
                                 setVertexRemoveMode={setVertexRemoveMode}
                                 setEdgeRemoveMode={setEdgeRemoveMode}
                                 setEdgeCreateMode={setEdgeCreateMode}
@@ -240,7 +259,9 @@ function Graph() {
                                 hasSelfLoops={hasSelfLoops}
                                 hasMultipleEdges={hasMultipleEdges}
                                 vertices={vertices}
-                                edges={edges}/>
+                                edges={edges}
+                                addVertex={addVertex}
+                                addEdge={addEdge}/>
                 </div>
             </div>
           );
