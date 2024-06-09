@@ -262,7 +262,8 @@ function Graph() {
                                 edges={edges}
                                 addVertex={addVertex}
                                 addEdge={addEdge}
-                                updateVertexCount={updateVertexCount}/>
+                                updateVertexCount={updateVertexCount}
+                                setEdgeCounter={setEdgeCounter}/>
                 </div>
             </div>
           );

@@ -14,8 +14,8 @@ function GraphArchive(props) {
     }
 
     const displayGraph = (graph) => {
-        var vertices = graph['vertices'];
-        var edges = graph['edges'];
+        var vertices = graph['graph']['vertices'];
+        var edges = graph['graph']['edges'];
 
         const radius = 300;
         const centerX = 800;
@@ -23,24 +23,35 @@ function GraphArchive(props) {
         const angle = Math.PI * 2 / vertices.length;
         for (var i = 0; i < vertices.length; ++i){
             vertices[i].x = centerX + radius * Math.cos(angle * i);
-            vertices[i].y = centerY + radius * Math.sin(angle * i); 
+            vertices[i].y = centerY + radius * Math.sin(angle * i);
+            ++vertices[i].index;
+            vertices[i].data = vertices[i].index.toString(); 
         }
         for (var j = 0; j < edges.length; ++j){
-            edges[j] = {source: edges[j].source.index,
-                        target: edges[j].target.index,
+            edges[j] = {source: edges[j].source.index + 1,
+                        target: edges[j].target.index + 1,
+                        id: j + 1,
                         weight: edges[j].weight,
                         data: edges[j].data
                         } 
         }
+        
         props.addVertex(vertices);
         props.addEdge(edges);
         props.updateVertexCount(vertices.length + 1);
-        document.querySelectorAll('.vertex').forEach(element => element.remove());
+        props.setEdgeCounter(edges.length + 1);
+        // document.querySelectorAll('.vertex').forEach(element => element.remove());
         setIsOpen(false);
     }
 
     const getGraph = (name) => {
-        fetch('http://localhost:8080/get_famous_graph?graph_name=' + name)
+        fetch('http://localhost:8080/get_famous_graph?graph_name=' + name, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Connection': 'keep-alive'
+            }
+        })
         .then(response => response.json())
         .then(graph => displayGraph(graph))
         .catch(error => console.log(error));
@@ -110,4 +121,5 @@ GraphArchive.propTypes = {
     addVertex: PropTypes.func,
     addEdge: PropTypes.func,
     updateVertexCount: PropTypes.func,
+    setEdgeCounter: PropTypes.func,
 }

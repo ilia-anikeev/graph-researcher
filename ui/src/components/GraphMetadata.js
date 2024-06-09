@@ -38,11 +38,13 @@ function GraphMetadata(props){
                     vertices: props.vertices,
                     edges: edges,
                     info: {
+                        graphName: 'graphName',
                         isDirected: props.isDirected,
                         isWeighted: props.isWeighted,
                         hasSelfLoops: hasSelfLoops,
                         hasMultipleEdges: hasMultipleEdges
                     }
+
                 }
             }),
         })
@@ -78,7 +80,6 @@ function GraphMetadata(props){
 
     const getStringData = (data) => {
         if (Array.isArray(data)) {
-            console.log(getString(data));
             return getString(data) === '' ? 'no' : getString(data);
         }
         if (typeof data === 'number') {
@@ -125,7 +126,7 @@ function GraphMetadata(props){
                 return 'Bipartite';    
             case 'partitions':
                 return 'Partitions';
-            case 'minSpanningTree':
+            case 'min_spanning_tree':
                 return 'Min Spanning Tree';
             default :
                 return '';    

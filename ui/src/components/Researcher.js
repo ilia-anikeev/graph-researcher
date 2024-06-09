@@ -81,7 +81,8 @@ function Researcher(props) {
         <div style={{paddingTop: '2.7rem'}}>
             <GraphArchive addVertex={props.addVertex}
                           addEdge={props.addEdge}
-                          updateVertexCount={props.updateVertexCount}/>
+                          updateVertexCount={props.updateVertexCount}
+                          setEdgeCounter={props.setEdgeCounter}/>
         </div> 
       </div>   
       <div className='canvas'>
@@ -111,6 +112,7 @@ Researcher.propTypes = {
   addVertex: PropTypes.func,
   addEdge: PropTypes.func,
   updateVertexCount: PropTypes.func,
+  setEdgeCounter: PropTypes.func,
   vertices: PropTypes.array,
   edges: PropTypes.array
 };
