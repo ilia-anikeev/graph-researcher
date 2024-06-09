@@ -44,6 +44,13 @@ public class GraphResearchInfo {
             json.set("independentSet", Converter.verticesListToJsonArray(chordalityInfo.independentSet));
             json.set("minimal_vertex_separator", Converter.listListVerticesToJsonArray(chordalityInfo.minimalVertexSeparator));
         }
+        if (bipartitePartitioningInfo.isBipartite != null) json.put("isBipartite", bipartitePartitioningInfo.isBipartite);
+        if (bipartitePartitioningInfo.isBipartite != null && bipartitePartitioningInfo.isBipartite) {
+            json.set("partitions", Converter.listListVerticesToJsonArray(bipartitePartitioningInfo.partitions));
+            json.put("chromaticNumber", bipartitePartitioningInfo.chromaticNumber);
+            json.set("coloring", Converter.listListVerticesToJsonArray(bipartitePartitioningInfo.coloring));
+            json.set("independentSet", Converter.verticesListToJsonArray(bipartitePartitioningInfo.independentSet));
+        }
         return json;
     }
     @Override

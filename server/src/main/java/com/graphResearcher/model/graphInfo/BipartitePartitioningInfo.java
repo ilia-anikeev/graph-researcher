@@ -5,12 +5,10 @@ import com.graphResearcher.model.Vertex;
 import java.util.List;
 
 public class BipartitePartitioningInfo {
-    public Boolean isBipartite; //TODO
-    public List<List<Vertex>> partitions; //TODO
-
+    public Boolean isBipartite;
+    public List<List<Vertex>> partitions;
     public Integer chromaticNumber;
     public List<List<Vertex>> coloring;
-
     public List<Vertex> independentSet;
 
     @Override
@@ -29,7 +27,6 @@ public class BipartitePartitioningInfo {
         boolean equals = isBipartite.equals(other.isBipartite);
         if (isBipartite) {
             equals &= partitions.equals(other.partitions);
-
             equals &= chromaticNumber.equals(other.chromaticNumber);
             equals &= coloring.equals(other.coloring);
             equals &= independentSet.equals(other.independentSet);
