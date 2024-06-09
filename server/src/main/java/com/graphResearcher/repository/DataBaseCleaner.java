@@ -226,6 +226,16 @@ public class DataBaseCleaner {
         }
     }
 
+    private void initEmbeddingTable(Connection conn) {
+        String sql = "CREATE TABLE embedding(id SERIAL PRIMARY KEY, graph_id INT, index INT, sequence_number INT, source INT, target INT, weight DOUBLE PRECISION, data TEXT)";
+        try (PreparedStatement preparedStatement = conn.prepareStatement(sql)){
+            preparedStatement.execute();
+        } catch (SQLException e) {
+            log.error("Init embedding table error", e);
+            throw new RuntimeException(e);
+        }
+    }
+
     private void initKuratowskiSubgraphTable(Connection conn) {
         String sql = "CREATE TABLE kuratowski_subgraph(id SERIAL PRIMARY KEY, graph_id INT, subgraph_id INT)";
         try (PreparedStatement preparedStatement = conn.prepareStatement(sql)){
@@ -297,8 +307,11 @@ public class DataBaseCleaner {
             initBridgesTable(conn);
             initConnectedComponentsTable(conn);
             initBlocksTable(conn);
-            initPerfectEliminationOrderTable(conn);
+
+            initEmbeddingTable(conn);
             initKuratowskiSubgraphTable(conn);
+
+            initPerfectEliminationOrderTable(conn);
             initColoringTable(conn);
             initMaxCliqueTable(conn);
             initIndependentSetTable(conn);
@@ -346,6 +359,10 @@ public class DataBaseCleaner {
             preparedStatement.execute();
 
             sql = "DROP TABLE vertices";
+            preparedStatement = conn.prepareStatement(sql);
+            preparedStatement.execute();
+
+            sql = "DROP TABLE embedding";
             preparedStatement = conn.prepareStatement(sql);
             preparedStatement.execute();
 

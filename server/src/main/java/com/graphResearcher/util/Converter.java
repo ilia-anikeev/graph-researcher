@@ -1,8 +1,10 @@
 package com.graphResearcher.util;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.graphResearcher.model.*;
 import com.graphResearcher.model.graphInfo.GraphResearchInfo;
 import org.jgrapht.Graph;
@@ -99,6 +101,15 @@ public class Converter {
                 ArrayNode::add,
                 ArrayNode::addAll
         );
+    }
+
+    public static JsonNode mapOfVertexAndListEdgesToJsonArray(Map<Vertex, List<Edge>> map) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        ObjectNode json = objectMapper.createObjectNode();
+        for (Map.Entry<Vertex, List<Edge>> entry: map.entrySet()) {
+            json.set(entry.getKey().getIndex() + "", Converter.edgesListToJsonArray(entry.getValue()));
+        }
+        return json;
     }
 
     public static GraphModel graphToGraphModel(Graph<Vertex, WeightedEdge> graph, GraphMetadata metadata) {

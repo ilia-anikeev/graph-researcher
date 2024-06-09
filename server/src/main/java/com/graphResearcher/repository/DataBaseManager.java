@@ -13,6 +13,7 @@ import com.graphResearcher.util.Converter;
 import com.graphResearcher.util.PropertiesUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.support.ManagedMap;
 import org.springframework.stereotype.Repository;
 
 
@@ -111,6 +112,29 @@ public class DataBaseManager {
         }
     }
 
+    private void saveEmbedding(int graphID, Map<Vertex, List<Edge>> embedding, Connection conn) {
+        String sql = "INSERT INTO embedding(graph_id, index, sequence_number, source, target, weight, data) VALUES(?, ?, ?, ?, ?, ?, ?)";
+        try (PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
+            for (var entry: embedding.entrySet()) {
+                for (int i = 0; i < entry.getValue().size(); ++i) {
+                    Edge e = entry.getValue().get(i);
+                    preparedStatement.setInt(1, graphID);
+                    preparedStatement.setInt(2, entry.getKey().getIndex());
+                    preparedStatement.setInt(3, i);
+                    preparedStatement.setInt(4, e.source.getIndex());
+                    preparedStatement.setInt(5, e.target.getIndex());
+                    preparedStatement.setDouble(6, e.weight);
+                    preparedStatement.setString(7, e.data);
+                    preparedStatement.executeUpdate();
+                }
+            }
+        } catch (SQLException e) {
+            log.error("ID {}: embedding haven't been saved", graphID, e);
+            throw new RuntimeException(e);
+        }
+    }
+
+
     private void saveKuratowskiSubgraph(int userID, int graphID, GraphModel graphModel, Connection conn) {
         int subgraph_id = saveGraph(userID, graphModel);
         String sql = "INSERT INTO kuratowski_subgraph(graph_id, subgraph_id) VALUES(?, ?)";
@@ -151,7 +175,10 @@ public class DataBaseManager {
     }
 
     public void saveChordalityInfo(int graphID, ChordalityInfo chordalityInfo, Connection conn) {
-        if (chordalityInfo.isChordal != null && chordalityInfo.isChordal) {
+        if (chordalityInfo.isChordal == null) {
+            return;
+        }
+        if (chordalityInfo.isChordal) {
             savePerfectEliminationOrder(graphID, chordalityInfo.perfectEliminationOrder, conn);
             saveComponents(graphID, chordalityInfo.coloring, "coloring", conn);
             saveVertices(graphID, chordalityInfo.maxClique, "max_clique", conn);
@@ -161,14 +188,22 @@ public class DataBaseManager {
     }
 
     public void savePlanarityInfo(int userID, int graphID, PlanarityInfo planarityInfo, Connection conn) {
-        if (planarityInfo.isPlanar != null && !planarityInfo.isPlanar) {
+        if (planarityInfo.isPlanar == null) {
+            return;
+        }
+        if (planarityInfo.isPlanar) {
+            saveEmbedding(graphID, planarityInfo.embedding, conn);
+        } else {
             saveKuratowskiSubgraph(userID, graphID, planarityInfo.kuratowskiSubgraph, conn);
         }
     }
 
     public void saveBipartitePartitioningInfo(int graphID, BipartitePartitioningInfo
             bipartitePartitioningInfo, Connection conn) {
-        if (bipartitePartitioningInfo.isBipartite != null && bipartitePartitioningInfo.isBipartite) {
+        if (bipartitePartitioningInfo.isBipartite == null) {
+            return;
+        }
+        if (bipartitePartitioningInfo.isBipartite) {
             saveComponents(graphID, bipartitePartitioningInfo.coloring, "coloring", conn);
             saveComponents(graphID, bipartitePartitioningInfo.partitions, "partitions", conn);
             saveVertices(graphID, bipartitePartitioningInfo.independentSet, "independent_set", conn);
@@ -216,7 +251,12 @@ public class DataBaseManager {
     public PlanarityInfo getPlanarityInfo(int graphID, Boolean isPlanar, Connection conn) {
         PlanarityInfo planarityInfo = new PlanarityInfo();
         planarityInfo.isPlanar = isPlanar;
-        if (isPlanar != null && !planarityInfo.isPlanar) {
+        if (isPlanar == null){
+            return planarityInfo;
+        }
+        if (planarityInfo.isPlanar) {
+            planarityInfo.embedding = getEmbedding(graphID, conn);
+        } else {
             planarityInfo.kuratowskiSubgraph = getKuratowskiSubgraph(graphID, conn);
         }
         return planarityInfo;
@@ -399,6 +439,43 @@ public class DataBaseManager {
             return vertices;
         } catch (SQLException e) {
             log.error("ID {}: vertices haven't been received", graphID, e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    private Map<Vertex, List<Edge>> getEmbedding(int graphID, Connection conn) {
+        Map<Vertex, List<Edge>> embedding = new HashMap<>();
+        List<Vertex> vertices = getVertices(graphID, "vertices", conn);
+        Map<Integer, Vertex> verticesMap = new HashMap<>();
+        for (Vertex v : vertices) {
+            verticesMap.put(v.getIndex(), v);
+        }
+
+        String sql = "SELECT index, sequence_number, source, target, weight, data FROM embedding WHERE graph_id = ? AND index = ?";
+        try (PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
+            for (Vertex v: vertices) {
+                preparedStatement.setInt(1, graphID);
+                preparedStatement.setInt(2, v.getIndex());
+                ResultSet rs = preparedStatement.executeQuery();
+                Map<Integer, Edge> sequence_edges = new HashMap<>();
+                while (rs.next()) {
+                    Vertex source = verticesMap.get(rs.getInt("source"));
+                    Vertex target = verticesMap.get(rs.getInt("target"));
+                    Edge e = new Edge(source, target, rs.getDouble("weight"), rs.getString("data"));
+                    sequence_edges.put(rs.getInt("sequence_number"), e);
+                }
+                List<Edge> listEdges = new ArrayList<>();
+                for (int i = 0; i < sequence_edges.size(); ++i) {
+                    listEdges.add(null);
+                }
+                for (Map.Entry<Integer, Edge> entry: sequence_edges.entrySet()) {
+                    listEdges.set(entry.getKey(), entry.getValue());
+                }
+                embedding.put(v, listEdges);
+            }
+            return embedding;
+        } catch (SQLException e) {
+            log.error("ID {}: embedding haven't been received", graphID, e);
             throw new RuntimeException(e);
         }
     }

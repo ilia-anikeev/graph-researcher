@@ -9,7 +9,7 @@ import java.util.Map;
 
 public class PlanarityInfo {
     public Boolean isPlanar;
-    public Map<Vertex, List<Edge>> embedding; //TODO
+    public Map<Vertex, List<Edge>> embedding;
     public GraphModel kuratowskiSubgraph;
 
     public boolean equals(Object o) {
@@ -23,7 +23,9 @@ public class PlanarityInfo {
         if (isPlanar == null || other.isPlanar == null) {
             return false;
         }
-        if (!isPlanar) {
+        if (isPlanar) {
+            equals &= embedding.equals(other.embedding);
+        } else {
             equals &= kuratowskiSubgraph.equals(other.kuratowskiSubgraph);
         }
         return equals;

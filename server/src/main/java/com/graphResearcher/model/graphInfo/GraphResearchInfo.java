@@ -30,26 +30,34 @@ public class GraphResearchInfo {
         json.set("bridges", Converter.edgesListToJsonArray(connectivityInfo.bridges));
         json.set("connectedComponents", Converter.listListVerticesToJsonArray(connectivityInfo.connectedComponents));
         json.set("blocks", Converter.listListVerticesToJsonArray(connectivityInfo.blocks));
-        if (planarityInfo.isPlanar != null) json.put("isPlanar", planarityInfo.isPlanar);
-        if (planarityInfo.isPlanar != null && !planarityInfo.isPlanar) {
-            json.set("kuratovskySubgraph", planarityInfo.kuratowskiSubgraph.toJson());
+        if (planarityInfo.isPlanar != null) {
+            json.put("isPlanar", planarityInfo.isPlanar);
+            if (planarityInfo.isPlanar) {
+                json.set("embedding", Converter.mapOfVertexAndListEdgesToJsonArray(planarityInfo.embedding));
+            } else {
+                json.set("kuratovskySubgraph", planarityInfo.kuratowskiSubgraph.toJson());
+            }
         }
 
-        if (chordalityInfo.isChordal != null) json.put("isChordal", chordalityInfo.isChordal);
-        if (chordalityInfo.isChordal != null && chordalityInfo.isChordal) {
-            json.set("perfectEliminationOrder", Converter.verticesListToJsonArray(chordalityInfo.perfectEliminationOrder));
-            json.put("chromaticNumber", chordalityInfo.chromaticNumber);
-            json.set("coloring", Converter.listListVerticesToJsonArray(chordalityInfo.coloring));
-            json.set("maxClique", Converter.verticesListToJsonArray(chordalityInfo.maxClique));
-            json.set("independentSet", Converter.verticesListToJsonArray(chordalityInfo.independentSet));
-            json.set("minimal_vertex_separator", Converter.listListVerticesToJsonArray(chordalityInfo.minimalVertexSeparator));
+        if (chordalityInfo.isChordal != null) {
+            json.put("isChordal", chordalityInfo.isChordal);
+            if (chordalityInfo.isChordal) {
+                json.set("perfectEliminationOrder", Converter.verticesListToJsonArray(chordalityInfo.perfectEliminationOrder));
+                json.put("chromaticNumber", chordalityInfo.chromaticNumber);
+                json.set("coloring", Converter.listListVerticesToJsonArray(chordalityInfo.coloring));
+                json.set("maxClique", Converter.verticesListToJsonArray(chordalityInfo.maxClique));
+                json.set("independentSet", Converter.verticesListToJsonArray(chordalityInfo.independentSet));
+                json.set("minimal_vertex_separator", Converter.listListVerticesToJsonArray(chordalityInfo.minimalVertexSeparator));
+            }
         }
-        if (bipartitePartitioningInfo.isBipartite != null) json.put("isBipartite", bipartitePartitioningInfo.isBipartite);
-        if (bipartitePartitioningInfo.isBipartite != null && bipartitePartitioningInfo.isBipartite) {
-            json.set("partitions", Converter.listListVerticesToJsonArray(bipartitePartitioningInfo.partitions));
-            json.put("chromaticNumber", bipartitePartitioningInfo.chromaticNumber);
-            json.set("coloring", Converter.listListVerticesToJsonArray(bipartitePartitioningInfo.coloring));
-            json.set("independentSet", Converter.verticesListToJsonArray(bipartitePartitioningInfo.independentSet));
+        if (bipartitePartitioningInfo.isBipartite != null) {
+            json.put("isBipartite", bipartitePartitioningInfo.isBipartite);
+            if (bipartitePartitioningInfo.isBipartite) {
+                json.set("partitions", Converter.listListVerticesToJsonArray(bipartitePartitioningInfo.partitions));
+                json.put("chromaticNumber", bipartitePartitioningInfo.chromaticNumber);
+                json.set("coloring", Converter.listListVerticesToJsonArray(bipartitePartitioningInfo.coloring));
+                json.set("independentSet", Converter.verticesListToJsonArray(bipartitePartitioningInfo.independentSet));
+            }
         }
         return json;
     }
