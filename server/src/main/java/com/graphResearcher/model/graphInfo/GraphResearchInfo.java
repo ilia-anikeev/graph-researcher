@@ -59,6 +59,7 @@ public class GraphResearchInfo {
                 json.set("independentSet", Converter.verticesListToJsonArray(bipartitePartitioningInfo.independentSet));
             }
         }
+        json.set("min_spanning_tree", Converter.edgesListToJsonArray(minSpanningTree));
         return json;
     }
     @Override
@@ -75,6 +76,7 @@ public class GraphResearchInfo {
             equals &= chordalityInfo.equals(other.chordalityInfo);
         }
         equals &= bipartitePartitioningInfo.equals(other.bipartitePartitioningInfo);
+        equals &= minSpanningTree.equals(other.minSpanningTree);
         return equals;
     }
 }

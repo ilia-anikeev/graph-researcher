@@ -216,6 +216,7 @@ public class DataBaseManager {
             savePlanarityInfo(userID, graphID, info.planarityInfo, conn);
             saveChordalityInfo(graphID, info.chordalityInfo, conn);
             saveBipartitePartitioningInfo(graphID, info.bipartitePartitioningInfo, conn);
+            saveEdges(graphID, info.minSpanningTree, "min_spanning_tree", conn);
 
             String sql1 = "DELETE FROM graph_research_info WHERE graph_id = ?";
 
@@ -290,6 +291,7 @@ public class DataBaseManager {
             researchInfo.planarityInfo = getPlanarityInfo(graphID, researchInfo.planarityInfo, conn);
             researchInfo.chordalityInfo = getChordalityInfo(graphID, researchInfo.chordalityInfo, conn);
             researchInfo.bipartitePartitioningInfo = getBipartitePartitioningInfo(graphID, researchInfo.bipartitePartitioningInfo, researchInfo.chordalityInfo, conn);
+            researchInfo.minSpanningTree = getEdges(graphID, "min_spanning_tree", conn);
             log.info("ID {}: research info have been received", graphID);
             return researchInfo;
         } catch (SQLException e) {

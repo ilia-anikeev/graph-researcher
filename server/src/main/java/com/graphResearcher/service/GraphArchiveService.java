@@ -24,6 +24,10 @@ public class GraphArchiveService {
         return db.getAllUserGraphs(userID);
     }
 
+    public GraphModel getGraph(int graphID) {
+        return db.getGraph(graphID);
+    }
+
     public GraphArchiveService(DataBaseManager db) {
         this.db = db;
     }

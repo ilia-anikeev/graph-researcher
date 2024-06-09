@@ -68,8 +68,24 @@ public class GraphArchiveController {
         }
     }
 
+    @GetMapping("/get_graph")
+    public ResponseEntity<String> getGraph(@RequestParam int graph_id) {
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            GraphModel graphModel = graphArchiveService.getGraph(graph_id);
+
+            ObjectNode jsonResponse = mapper.createObjectNode();
+            jsonResponse.set("graph", graphModel.toJson());
+
+            log.info("Graph was received");
+            return ResponseEntity.ok(jsonResponse.toString());
+        } catch (Throwable e) {
+            return ResponseEntity.badRequest().body("graph doesn't exist");
+        }
+    }
+
     @GetMapping("/get_famous_graph")
-    public ResponseEntity<String> getPetersenGraph(@RequestParam String graph_name) {
+    public ResponseEntity<String> getFamousGraph(@RequestParam String graph_name) {
         ObjectMapper mapper = new ObjectMapper();
         try {
             ObjectNode jsonResponse = mapper.createObjectNode();
@@ -90,7 +106,7 @@ public class GraphArchiveController {
                     jsonResponse.set("graph", GraphArchive.getHerschelGraph().toJson());
             }
 
-            log.info("Petersen graph was received");
+            log.info("Graph {} was received", graph_name);
             return ResponseEntity.ok(jsonResponse.toString());
         } catch (Throwable e) {
             log.error("Server error", e);

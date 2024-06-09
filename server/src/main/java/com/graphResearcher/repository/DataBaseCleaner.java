@@ -296,6 +296,16 @@ public class DataBaseCleaner {
         }
     }
 
+    private void initMinSpanningTreeTable(Connection conn) {
+        String sql = "CREATE TABLE min_spanning_tree(id SERIAL PRIMARY KEY, graph_id INT, source INT, target INT, weight DOUBLE PRECISION, data TEXT)";
+        try (PreparedStatement preparedStatement = conn.prepareStatement(sql);){
+            preparedStatement.execute();
+        } catch (SQLException e) {
+            log.error("Init spanning_tree table error", e);
+            throw new RuntimeException(e);
+        }
+    }
+
     public void initDB() {
         try (Connection conn = dataSource.getConnection()) {
             initEdgesTable(conn);
@@ -317,6 +327,9 @@ public class DataBaseCleaner {
             initIndependentSetTable(conn);
             initMinimalVertexSeparatorTable(conn);
             initPartitionsTable(conn);
+
+            initMinSpanningTreeTable(conn);
+
             log.info("Database initialization was successful");
         } catch (SQLException e) {
             log.error("Database haven't been initialized", e);
@@ -387,6 +400,10 @@ public class DataBaseCleaner {
             preparedStatement.execute();
 
             sql = "DROP TABLE partitions";
+            preparedStatement = conn.prepareStatement(sql);
+            preparedStatement.execute();
+
+            sql = "DROP TABLE min_spanning_tree";
             preparedStatement = conn.prepareStatement(sql);
             preparedStatement.execute();
         } catch (SQLException e) {
