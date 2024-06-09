@@ -19,8 +19,7 @@ public class PlanarityInfo {
         boolean equals = true;
         if (isPlanar == other.isPlanar) {
             return true;
-        }
-        if (isPlanar == null || other.isPlanar == null) {
+        } else if (isPlanar == null || other.isPlanar == null) {
             return false;
         }
         if (isPlanar) {

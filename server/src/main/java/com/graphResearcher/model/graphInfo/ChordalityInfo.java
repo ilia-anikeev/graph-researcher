@@ -20,12 +20,10 @@ public class ChordalityInfo {
         }
         if (isChordal == other.isChordal) {
             return true;
-        }
-        if (isChordal == null || other.isChordal == null) {
+        } else if (isChordal == null || other.isChordal == null) {
             return false;
         }
         boolean equals = isChordal.equals(other.isChordal);
-
         if (isChordal) {
             equals &= perfectEliminationOrder.equals(other.perfectEliminationOrder);
             equals &= chromaticNumber.equals(other.chromaticNumber);

@@ -19,11 +19,9 @@ public class ConnectivityInfo {
         }
         boolean equals = true;
         equals &= bridges.equals(other.bridges);
-
         equals &= isConnected.equals(other.isConnected);
         equals &= isBiconnected.equals(other.isBiconnected);
         equals &= bridges.equals(other.bridges);
-
         equals &= articulationPoints.equals(other.articulationPoints);
         equals &= connectedComponents.equals(other.connectedComponents);
         equals &= blocks.equals(other.blocks);

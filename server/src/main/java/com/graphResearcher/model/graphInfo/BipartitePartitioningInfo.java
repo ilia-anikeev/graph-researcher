@@ -19,8 +19,7 @@ public class BipartitePartitioningInfo {
 
         if (isBipartite == other.isBipartite) {
             return true;
-        }
-        if (isBipartite == null || other.isBipartite == null) {
+        } else if (isBipartite == null || other.isBipartite == null) {
             return false;
         }
 
