@@ -1,34 +1,41 @@
 package com.graphResearcher.service;
 
+import com.graphResearcher.repository.GraphManager;
 import org.springframework.stereotype.Service;
 
 import com.graphResearcher.model.graphInfo.GraphResearchInfo;
-import com.graphResearcher.repository.DataBaseManager;
+import com.graphResearcher.repository.InfoManager;
 import com.graphResearcher.model.GraphModel;
 
 import java.util.List;
 
 @Service
 public class GraphArchiveService {
-    private final DataBaseManager db;
+    private final GraphManager graphManager;
+    private final InfoManager infoManager;
 
     public int saveGraph(int userID, GraphModel graphModel) {
-        return db.saveGraph(userID, graphModel);
+        return graphManager.saveGraph(userID, graphModel);
     }
 
     public void saveResearchResult(int userID, int graphID, GraphResearchInfo researchResult) {
-        db.saveResearchInfo(userID, graphID, researchResult);
+        infoManager.saveResearchInfo(userID, graphID, researchResult);
     }
 
     public List<GraphModel> getAllUserGraphs(int userID) {
-        return db.getAllUserGraphs(userID);
+        return graphManager.getAllUserGraphs(userID);
     }
 
     public GraphModel getGraph(int graphID) {
-        return db.getGraph(graphID);
+        return graphManager.getGraph(graphID);
     }
 
-    public GraphArchiveService(DataBaseManager db) {
-        this.db = db;
+    public void removeGraph(int graphID) {
+        graphManager.deleteGraph(graphID);
+    }
+
+    public GraphArchiveService(InfoManager infoManager, GraphManager graphManager) {
+        this.infoManager = infoManager;
+        this.graphManager = graphManager;
     }
 }

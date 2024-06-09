@@ -84,6 +84,18 @@ public class GraphArchiveController {
         }
     }
 
+    @PostMapping("/remove_graph")
+    public ResponseEntity<String> removeGraph(@RequestParam int graph_id) {
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            graphArchiveService.removeGraph(graph_id);
+            log.info("Graph was removed");
+            return ResponseEntity.ok("Graph " + graph_id + " was removed");
+        } catch (Throwable e) {
+            return ResponseEntity.badRequest().body("graph doesn't exist");
+        }
+    }
+
     @GetMapping("/get_famous_graph")
     public ResponseEntity<String> getFamousGraph(@RequestParam String graph_name) {
         ObjectMapper mapper = new ObjectMapper();

@@ -8,126 +8,46 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class DataBaseCleaner {
-    private static final Logger log = LoggerFactory.getLogger(DataBaseManager.class);
+public class DatabaseInitializer {
+    private static final Logger log = LoggerFactory.getLogger(InfoManager.class);
     private final DataSource dataSource;
 
-    public DataBaseCleaner() {
+    public DatabaseInitializer() {
         String name = PropertiesUtil.get("db.username");
         String password = PropertiesUtil.get("db.password");
         String url = PropertiesUtil.get("db.url");
         dataSource = new DriverManagerDataSource(url, name, password);
     }
 
-    public void createUser(int userID) {
-        //TODO
-    }
-
-    public void deleteUser(int userID) {
+    public void initDB() {
         try (Connection conn = dataSource.getConnection()) {
-            deleteAllUserGraphs(userID, conn);
+            initEdgesTable(conn);
+            initVerticesTable(conn);
+            initMetadataTable(conn);
+
+            initGraphResearchInfoTable(conn);
+            initArticulationPointsTable(conn);
+            initBridgesTable(conn);
+            initConnectedComponentsTable(conn);
+            initBlocksTable(conn);
+
+            initEmbeddingTable(conn);
+            initKuratowskiSubgraphTable(conn);
+
+            initPerfectEliminationOrderTable(conn);
+            initColoringTable(conn);
+            initMaxCliqueTable(conn);
+            initIndependentSetTable(conn);
+            initMinimalVertexSeparatorTable(conn);
+            initPartitionsTable(conn);
+
+            initMinSpanningTreeTable(conn);
+
+            log.info("Database initialization was successful");
         } catch (SQLException e) {
-            log.error("User{} have been deleted", userID, e);
-            throw new RuntimeException(e);
-        }
-    }
-
-    private void deleteAllUserGraphs(int userID, Connection conn) {
-        String sql1 = "SELECT graph_id FROM graph_metadata WHERE user_id = ?";
-        try (PreparedStatement preparedStatement = conn.prepareStatement(sql1)) {
-            preparedStatement.setInt(1, userID);
-            ResultSet rs = preparedStatement.executeQuery();
-            while (rs.next()) {
-                int graphID = rs.getInt("graph_id");
-                deleteGraph(graphID);
-            }
-        } catch (SQLException e) {
-            log.error("All user{} graphs haven't been deleted", userID, e);
-            throw new RuntimeException(e);
-        }
-
-        String sql2 = "DELETE FROM graph_metadata WHERE user_id = ?";
-        try (PreparedStatement preparedStatement = conn.prepareStatement(sql2)) {
-            preparedStatement.setInt(1, userID);
-            preparedStatement.execute();
-        } catch (SQLException e) {
-            log.error("All user{} graphs haven't been deleted", userID, e);
-            throw new RuntimeException(e);
-        }
-
-        String sql3 = "DELETE FROM graph_research_info WHERE user_id = ?";
-        try (PreparedStatement preparedStatement = conn.prepareStatement(sql3)) {
-            preparedStatement.setInt(1, userID);
-            preparedStatement.execute();
-        } catch (SQLException e) {
-            log.error("User{} researches haven't been deleted", userID, e);
-            throw new RuntimeException(e);
-        }
-        log.info("All user{} graphs have been deleted", userID);
-    }
-
-    public void deleteGraph(int graphID) {
-        String sql = "DELETE FROM graph_metadata WHERE graph_id = ?";
-        try (Connection conn = dataSource.getConnection();
-             PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
-            preparedStatement.setInt(1, graphID);
-            preparedStatement.execute();
-            deleteVertices(graphID, "vertices", conn);
-            deleteEdges(graphID, "edges", conn);
-            deleteVertices(graphID, "articulation_points", conn);
-            deleteEdges(graphID, "bridges", conn);
-            deleteVertices(graphID, "connected_components", conn);
-            deleteVertices(graphID, "blocks", conn);
-            deletePerfectEliminationOrder(graphID, conn);
-            deleteKuratowskiSubgraph(graphID, conn);
-            deleteVertices(graphID, "coloring", conn);
-            deleteVertices(graphID, "max_clique", conn);
-            deleteVertices(graphID, "independent_set", conn);
-            deleteVertices(graphID, "minimal_vertex_separator", conn);
-            log.info("ID {}: graph have been deleted", graphID);
-        } catch (SQLException e) {
-            log.error("ID {}: graph haven't been deleted", graphID, e);
-            throw new RuntimeException(e);
-        }
-    }
-
-
-    private void deleteVertices(int graphID, String tableName, Connection conn) {
-        String sql = "DELETE FROM " + tableName + " WHERE graph_id = ?";
-        try (PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
-            preparedStatement.setInt(1, graphID);
-            preparedStatement.execute();
-        } catch (SQLException e) {
-            log.error("ID {}: vertices from {} haven't been deleted", graphID, tableName, e);
-            throw new RuntimeException(e);
-        }
-    }
-
-    private void deleteEdges(int graphID, String tableName, Connection conn) {
-        String sql = "DELETE FROM " + tableName + " WHERE graph_id = ?";
-        try (PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
-            preparedStatement.setInt(1, graphID);
-            preparedStatement.execute();
-        } catch (SQLException e) {
-            log.error("ID {}: edges from {} haven't been deleted", graphID, tableName, e);
-            throw new RuntimeException(e);
-        }
-    }
-
-    private void deletePerfectEliminationOrder(int graphID, Connection conn) {
-        deleteVertices(graphID, "perfect_elimination_order", conn);
-    }
-
-    private void deleteKuratowskiSubgraph(int graphID, Connection conn) {
-        String sql = "DELETE FROM kuratowski_subgraph WHERE graph_id = ?";
-        try (PreparedStatement preparedStatement = conn.prepareStatement(sql)){
-            preparedStatement.setInt(1, graphID);
-            preparedStatement.execute();
-        } catch (SQLException e) {
-            log.error("ID {}: subgraph hasn't been deleted", graphID, e);
+            log.error("Database haven't been initialized", e);
             throw new RuntimeException(e);
         }
     }
@@ -304,116 +224,5 @@ public class DataBaseCleaner {
             log.error("Init spanning_tree table error", e);
             throw new RuntimeException(e);
         }
-    }
-
-    public void initDB() {
-        try (Connection conn = dataSource.getConnection()) {
-            initEdgesTable(conn);
-            initVerticesTable(conn);
-            initMetadataTable(conn);
-
-            initGraphResearchInfoTable(conn);
-            initArticulationPointsTable(conn);
-            initBridgesTable(conn);
-            initConnectedComponentsTable(conn);
-            initBlocksTable(conn);
-
-            initEmbeddingTable(conn);
-            initKuratowskiSubgraphTable(conn);
-
-            initPerfectEliminationOrderTable(conn);
-            initColoringTable(conn);
-            initMaxCliqueTable(conn);
-            initIndependentSetTable(conn);
-            initMinimalVertexSeparatorTable(conn);
-            initPartitionsTable(conn);
-
-            initMinSpanningTreeTable(conn);
-
-            log.info("Database initialization was successful");
-        } catch (SQLException e) {
-            log.error("Database haven't been initialized", e);
-            throw new RuntimeException(e);
-        }
-    }
-
-    public void deleteDB() {
-        try (Connection conn = dataSource.getConnection()){
-            String sql = "DROP TABLE articulation_points";
-            PreparedStatement preparedStatement = conn.prepareStatement(sql);
-            preparedStatement.execute();
-
-            sql = "DROP TABLE blocks";
-            preparedStatement = conn.prepareStatement(sql);
-            preparedStatement.execute();
-
-            sql = "DROP TABLE bridges";
-            preparedStatement = conn.prepareStatement(sql);
-            preparedStatement.execute();
-
-            sql = "DROP TABLE connected_components";
-            preparedStatement = conn.prepareStatement(sql);
-            preparedStatement.execute();
-
-            sql = "DROP TABLE edges";
-            preparedStatement = conn.prepareStatement(sql);
-            preparedStatement.execute();
-
-            sql = "DROP TABLE graph_metadata";
-            preparedStatement = conn.prepareStatement(sql);
-            preparedStatement.execute();
-
-            sql = "DROP TABLE graph_research_info";
-            preparedStatement = conn.prepareStatement(sql);
-            preparedStatement.execute();
-
-            sql = "DROP TABLE perfect_elimination_order";
-            preparedStatement = conn.prepareStatement(sql);
-            preparedStatement.execute();
-
-            sql = "DROP TABLE vertices";
-            preparedStatement = conn.prepareStatement(sql);
-            preparedStatement.execute();
-
-            sql = "DROP TABLE embedding";
-            preparedStatement = conn.prepareStatement(sql);
-            preparedStatement.execute();
-
-            sql = "DROP TABLE kuratowski_subgraph";
-            preparedStatement = conn.prepareStatement(sql);
-            preparedStatement.execute();
-
-            sql = "DROP TABLE coloring";
-            preparedStatement = conn.prepareStatement(sql);
-            preparedStatement.execute();
-
-            sql = "DROP TABLE max_clique";
-            preparedStatement = conn.prepareStatement(sql);
-            preparedStatement.execute();
-
-            sql = "DROP TABLE independent_set";
-            preparedStatement = conn.prepareStatement(sql);
-            preparedStatement.execute();
-
-            sql = "DROP TABLE minimal_vertex_separator";
-            preparedStatement = conn.prepareStatement(sql);
-            preparedStatement.execute();
-
-            sql = "DROP TABLE partitions";
-            preparedStatement = conn.prepareStatement(sql);
-            preparedStatement.execute();
-
-            sql = "DROP TABLE min_spanning_tree";
-            preparedStatement = conn.prepareStatement(sql);
-            preparedStatement.execute();
-        } catch (SQLException e) {
-            log.error("Delete database error", e);
-            throw new RuntimeException(e);
-        }
-    }
-
-    public void reloadDB() {
-        deleteDB();
-        initDB();
     }
 }

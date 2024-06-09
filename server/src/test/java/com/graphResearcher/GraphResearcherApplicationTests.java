@@ -2,8 +2,9 @@ package com.graphResearcher;
 
 import com.graphResearcher.model.*;
 import com.graphResearcher.model.graphInfo.GraphResearchInfo;
-import com.graphResearcher.repository.DataBaseCleaner;
-import com.graphResearcher.repository.DataBaseManager;
+import com.graphResearcher.repository.InfoManager;
+import com.graphResearcher.repository.GraphManager;
+import com.graphResearcher.repository.UserManager;
 import com.graphResearcher.service.GraphResearchService;
 import org.junit.jupiter.api.Test;
 
@@ -16,6 +17,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class GraphResearcherApplicationTests {
     private GraphModel graph1;
     private GraphModel graph2;
+    private final GraphManager graphManager = new GraphManager();
+    private final InfoManager infoManager = new InfoManager(graphManager);
+
+    private final UserManager userManager = new UserManager(graphManager, infoManager);
+
     GraphResearcherApplicationTests() {
         buildGraph1();
         buildGraph2();
@@ -23,103 +29,87 @@ class GraphResearcherApplicationTests {
     @Test
     void saveGraphTest1() {
         int userID = 1;
-        DataBaseManager db = new DataBaseManager();
-        DataBaseCleaner cleaner = new DataBaseCleaner();
-        cleaner.reloadDB();
-        cleaner.createUser(userID);
+        userManager.createUser(userID);
 
-        int graphID = db.saveGraph(userID, graph1);
-        GraphModel receivedGraph = db.getGraph(graphID);
+        int graphID = graphManager.saveGraph(userID, graph1);
+        GraphModel receivedGraph = graphManager.getGraph(graphID);
         assertEquals(graph1, receivedGraph);
 
-        cleaner.deleteUser(userID);
+        userManager.deleteUser(userID);
     }
 
     @Test
     void saveGraphTest2() {
         int userID = 2;
-        DataBaseManager db = new DataBaseManager();
-        DataBaseCleaner cleaner = new DataBaseCleaner();
-        cleaner.reloadDB();
-        cleaner.createUser(userID);
+        userManager.createUser(userID);
 
-        int graphID = db.saveGraph(userID, graph2);
-        GraphModel receivedGraph = db.getGraph(graphID);
+        int graphID = graphManager.saveGraph(userID, graph2);
+        GraphModel receivedGraph = graphManager.getGraph(graphID);
         assertEquals(graph2, receivedGraph);
 
-        cleaner.deleteUser(userID);
+        userManager.deleteUser(userID);
     }
 
     @Test
     void researchAndSave1() {
         int userID = 1;
         GraphResearchService service = new GraphResearchService();
-        DataBaseManager db = new DataBaseManager();
-        DataBaseCleaner cleaner = new DataBaseCleaner();
-        cleaner.reloadDB();
-        cleaner.createUser(userID);
+        userManager.createUser(userID);
 
-        int graphID = db.saveGraph(userID, graph1);
+        int graphID = graphManager.saveGraph(userID, graph1);
         GraphResearchInfo info = service.research(graph1);
 
-        db.saveResearchInfo(userID, graphID, info);
+        infoManager.saveResearchInfo(userID, graphID, info);
 
-        GraphResearchInfo receivedInfo = db.getResearchInfo(graphID);
+        GraphResearchInfo receivedInfo = infoManager.getResearchInfo(graphID);
 
         assertEquals(info, receivedInfo);
 
-        cleaner.deleteUser(userID);
+        userManager.deleteUser(userID);
     }
 
     @Test
     void researchAndSave2() {
         int userID = 2;
         GraphResearchService service = new GraphResearchService();
-        DataBaseManager db = new DataBaseManager();
-        DataBaseCleaner cleaner = new DataBaseCleaner();
-        cleaner.reloadDB();
-        cleaner.createUser(userID);
+        userManager.createUser(userID);
 
-        int graphID = db.saveGraph(userID, graph2);
+        int graphID = graphManager.saveGraph(userID, graph2);
         GraphResearchInfo info = service.research(graph2);
-        db.saveResearchInfo(userID, graphID, info);
-//        return;
+        infoManager.saveResearchInfo(userID, graphID, info);
 
-        GraphResearchInfo receivedInfo = db.getResearchInfo(graphID);
+        GraphResearchInfo receivedInfo = infoManager.getResearchInfo(graphID);
 
         assertEquals(info, receivedInfo);
 
-        cleaner.deleteUser(userID);
+        userManager.deleteUser(userID);
     }
 
     @Test
     void researchAndSave3() {
         int userID = 3;
         GraphResearchService service = new GraphResearchService();
-        DataBaseManager db = new DataBaseManager();
-        DataBaseCleaner cleaner = new DataBaseCleaner();
-        cleaner.reloadDB();
-        cleaner.createUser(userID);
+        userManager.createUser(userID);
 
-        int graphID1 = db.saveGraph(userID, graph1);
+        int graphID1 = graphManager.saveGraph(userID, graph1);
         GraphResearchInfo info1 = service.research(graph1);
 
-        db.saveResearchInfo(userID, graphID1, info1);
+        infoManager.saveResearchInfo(userID, graphID1, info1);
 
-        GraphResearchInfo receivedInfo1 = db.getResearchInfo(graphID1);
+        GraphResearchInfo receivedInfo1 = infoManager.getResearchInfo(graphID1);
 
         assertEquals(info1, receivedInfo1);
 
-        int graphID2 = db.saveGraph(userID, graph2);
+        int graphID2 = graphManager.saveGraph(userID, graph2);
         GraphResearchInfo info2 = service.research(graph2);
 
-        db.saveResearchInfo(userID, graphID2, info2);
+        infoManager.saveResearchInfo(userID, graphID2, info2);
 
-        GraphResearchInfo receivedInfo2 = db.getResearchInfo(graphID2);
+        GraphResearchInfo receivedInfo2 = infoManager.getResearchInfo(graphID2);
 
         assertEquals(info2, receivedInfo2);
 
-        cleaner.deleteUser(userID);
+        userManager.deleteUser(userID);
     }
 
 
