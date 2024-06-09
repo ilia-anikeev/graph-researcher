@@ -4,13 +4,20 @@
     height: 50px;
     background-color: #ADD8E6;
     border-radius: 50%;
-    border: 3px solid black; 
+    border: 2px solid black; 
     text-align: center;
 }
 
-.text{
-    position: relative;
+.input{
+    box-sizing: content-box;
     text-align: center;
     top: 26%;
+    left: 48%;
     font-size: 20px;
+    background: none;
+    border: none;
+    outline: none;
+    width: 45px;
+    position: relative;
+    transform: translateX(-50%)
 }
