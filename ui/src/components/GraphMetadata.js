@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import "./GraphMetadata.css";
-import "../index.css";
+import './GraphMetadata.css';
+import '../index.css';
 
 function GraphMetadata(props){
     const [isOpen, setState] = useState(false);
@@ -135,16 +135,16 @@ function GraphMetadata(props){
 
     return (
         <div>
-            <button className="button" onClick={() => {
+            <button className='button' onClick={() => {
                     setRequestSent(true);
                     setState(true);
                 }
             }>      
                     Research      
             </button>
-            {isOpen && <div className="GraphMetadata">
-                <div className="GraphMetadata-body" >
-                    <h1 style={{textAlign: "center"}}>Info</h1>
+            {isOpen && <div className='GraphMetadata'>
+                <div className='GraphMetadata-body' >
+                    <h1 style={{textAlign: 'center'}}>Info</h1>
                     {graphMetaData ? Object.keys(graphMetaData).map(key => {
                         return (
                             <div>
@@ -156,15 +156,13 @@ function GraphMetadata(props){
                             {errorMessage}
                         </p>
                     }
-                     <button style={{alignSelf: 'right'}} onClick={() => setState(false)}>Close</button>
+                    <button style={{alignSelf: 'right'}} onClick={() => setState(false)}>Close</button>
                 </div>
             </div>
             }
         </div>
     )
 }
-
-export default GraphMetadata;
 
 GraphMetadata.propTypes = {
     vertices: PropTypes.array,
@@ -174,3 +172,5 @@ GraphMetadata.propTypes = {
     hasSelfLoops: PropTypes.number,
     hasMultipleEdges: PropTypes.number,
 }
+
+export default GraphMetadata;

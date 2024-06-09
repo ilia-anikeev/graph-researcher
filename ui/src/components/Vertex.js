@@ -25,7 +25,6 @@ function Vertex(props) {
 
     const updateInputWidth = () => {
         if (inputRef.current) {
-            console.log(oldData.length, data.length);
             const newWidth = data.length >= 6 ? data.length + 1 : 5;
             inputRef.current.style.width = `${newWidth}ch`;
         }

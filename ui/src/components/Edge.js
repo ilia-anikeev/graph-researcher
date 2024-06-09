@@ -66,7 +66,6 @@ function Edge(props) {
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext("2d");
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        console.log(props.edges)
         props.edges.forEach(edge => {
             draw(edge.source, edge.target);
         })
