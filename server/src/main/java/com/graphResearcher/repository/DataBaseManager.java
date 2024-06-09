@@ -238,8 +238,8 @@ public class DataBaseManager {
 
     public BipartitePartitioningInfo getBipartitePartitioningInfo(int graphID, Boolean isBipartite, Integer chromaticNumber, Connection conn) {
         BipartitePartitioningInfo bipartitePartitioningInfo = new BipartitePartitioningInfo();
+        bipartitePartitioningInfo.isBipartite = isBipartite;
         if (isBipartite != null && isBipartite) {
-            bipartitePartitioningInfo.isBipartite = isBipartite;
             bipartitePartitioningInfo.chromaticNumber = chromaticNumber;
             bipartitePartitioningInfo.partitions = getComponents(graphID, "partitions", conn);
             bipartitePartitioningInfo.independentSet = getVertices(graphID, "independent_set", conn);

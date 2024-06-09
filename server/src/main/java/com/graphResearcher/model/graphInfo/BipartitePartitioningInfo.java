@@ -18,8 +18,6 @@ public class BipartitePartitioningInfo {
         if (!(o instanceof BipartitePartitioningInfo other)) {
             return false;
         }
-        System.err.println(isBipartite);
-        System.err.println(other.isBipartite);
 
         if (isBipartite == other.isBipartite) {
             return true;

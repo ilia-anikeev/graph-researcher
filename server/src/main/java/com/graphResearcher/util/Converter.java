@@ -235,6 +235,9 @@ public class Converter {
         if (info.chordalityInfo.chromaticNumber != null) {
             notNullFields.add("chromatic_number");
         }
+        if (info.bipartitePartitioningInfo.isBipartite != null) {
+            notNullFields.add("is_bipartite");
+        }
         StringBuilder fields = new StringBuilder();
         for (int i = 0; i < notNullFields.size(); ++i) {
             if (i == 0) {
