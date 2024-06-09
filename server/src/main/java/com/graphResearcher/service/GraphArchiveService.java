@@ -1,6 +1,7 @@
 package com.graphResearcher.service;
 
 import com.graphResearcher.repository.GraphManager;
+import com.graphResearcher.repository.UserManager;
 import org.springframework.stereotype.Service;
 
 import com.graphResearcher.model.graphInfo.GraphResearchInfo;
@@ -13,6 +14,8 @@ import java.util.List;
 public class GraphArchiveService {
     private final GraphManager graphManager;
     private final InfoManager infoManager;
+    private final UserManager userManager;
+
 
     public int saveGraph(int userID, GraphModel graphModel) {
         return graphManager.saveGraph(userID, graphModel);
@@ -23,19 +26,21 @@ public class GraphArchiveService {
     }
 
     public List<GraphModel> getAllUserGraphs(int userID) {
-        return graphManager.getAllUserGraphs(userID);
+        return userManager.getAllUserGraphs(userID);
     }
 
     public GraphModel getGraph(int graphID) {
         return graphManager.getGraph(graphID);
     }
 
-    public void removeGraph(int graphID) {
+    public void deleteGraph(int graphID) {
         graphManager.deleteGraph(graphID);
+        infoManager.deleteResearchInfo(graphID);
     }
 
-    public GraphArchiveService(InfoManager infoManager, GraphManager graphManager) {
+    public GraphArchiveService(InfoManager infoManager, GraphManager graphManager, UserManager userManager) {
         this.infoManager = infoManager;
         this.graphManager = graphManager;
+        this.userManager = userManager;
     }
 }

@@ -1,7 +1,6 @@
 package com.graphResearcher.controller;
 
 
-
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.graphResearcher.service.GraphArchiveService;
@@ -84,11 +83,10 @@ public class GraphArchiveController {
         }
     }
 
-    @PostMapping("/remove_graph")
-    public ResponseEntity<String> removeGraph(@RequestParam int graph_id) {
-        ObjectMapper mapper = new ObjectMapper();
+    @PostMapping("/delete_graph")
+    public ResponseEntity<String> deleteGraph(@RequestParam int graph_id) {
         try {
-            graphArchiveService.removeGraph(graph_id);
+            graphArchiveService.deleteGraph(graph_id);
             log.info("Graph was removed");
             return ResponseEntity.ok("Graph " + graph_id + " was removed");
         } catch (Throwable e) {

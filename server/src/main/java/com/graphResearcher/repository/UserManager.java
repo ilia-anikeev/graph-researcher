@@ -1,7 +1,7 @@
 package com.graphResearcher.repository;
 
+import com.graphResearcher.model.GraphModel;
 import com.graphResearcher.util.PropertiesUtil;
-import org.apache.catalina.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
@@ -12,6 +12,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 @Repository
 public class UserManager {
@@ -28,6 +30,25 @@ public class UserManager {
         String password = PropertiesUtil.get("db.password");
         String url = PropertiesUtil.get("db.url");
         dataSource = new DriverManagerDataSource(url, name, password);
+    }
+
+    public List<GraphModel> getAllUserGraphs(int userID) {
+        List<GraphModel> graphModelList = new ArrayList<>();
+        String sql = "SELECT graph_id FROM graph_metadata WHERE user_id = ?";
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
+            preparedStatement.setInt(1, userID);
+            ResultSet rs = preparedStatement.executeQuery();
+            while (rs.next()) {
+                int graphID = rs.getInt("graph_id");
+                GraphModel g = graphManager.getGraph(graphID, conn);
+                graphModelList.add(g);
+            }
+        } catch (SQLException e) {
+            log.error("userID {}: all user graphs haven't been received", userID);
+            throw new RuntimeException(e);
+        }
+        return graphModelList;
     }
 
     void deleteAllUserGraphs(int userID, Connection conn) {
