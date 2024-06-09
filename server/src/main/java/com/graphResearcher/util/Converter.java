@@ -1,9 +1,12 @@
 package com.graphResearcher.util;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.graphResearcher.model.*;
+import com.graphResearcher.model.graphInfo.GraphResearchInfo;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.*;
 
@@ -58,9 +61,9 @@ public class Converter {
             g.addVertex(v);
         }
         for (Edge e : graphModel.getEdges()) {
-            g.addEdge(e.getSource(), e.getTarget());
+            g.addEdge(e.source, e.target);
             if (graphModel.getMetadata().isWeighted) {
-                g.setEdgeWeight(e.getSource(), e.getTarget(), e.getWeight());
+                g.setEdgeWeight(e.source, e.target, e.weight);
             }
         }
         return g;
@@ -92,6 +95,23 @@ public class Converter {
         );
     }
 
+    public static ArrayNode GraphModelListToJsonArray(List<GraphModel> list) {
+        return list.stream().map(GraphModel::toJson).collect(
+                mapper::createArrayNode,
+                ArrayNode::add,
+                ArrayNode::addAll
+        );
+    }
+
+    public static JsonNode mapOfVertexAndListEdgesToJsonArray(Map<Vertex, List<Edge>> map) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        ObjectNode json = objectMapper.createObjectNode();
+        for (Map.Entry<Vertex, List<Edge>> entry: map.entrySet()) {
+            json.set(entry.getKey().getIndex() + "", Converter.edgesListToJsonArray(entry.getValue()));
+        }
+        return json;
+    }
+
     public static GraphModel graphToGraphModel(Graph<Vertex, WeightedEdge> graph, GraphMetadata metadata) {
         return new GraphModel(new ArrayList<>(graph.vertexSet()), graph.edgeSet().stream().map(WeightedEdge::toEdge).toList(), metadata);
     }
@@ -99,27 +119,30 @@ public class Converter {
     public static GraphResearchInfo resultSetToGraphResearchInfo(ResultSet rs) throws SQLException, JsonProcessingException {
         rs.next();
         GraphResearchInfo info = new GraphResearchInfo();
-        info.isConnected = rs.getBoolean("is_connected");
+        info.connectivityInfo.isConnected = rs.getBoolean("is_connected");
         if (rs.wasNull()) {
-            info.isConnected = null;
+            info.connectivityInfo.isConnected = null;
         }
-        info.isBiconnected = rs.getBoolean("is_biconnected");
+        info.connectivityInfo.isBiconnected = rs.getBoolean("is_biconnected");
         if (rs.wasNull()) {
-            info.isBiconnected = null;
+            info.connectivityInfo.isBiconnected = null;
         }
-        info.isPlanar = rs.getBoolean("is_planar");
+        info.planarityInfo.isPlanar = rs.getBoolean("is_planar");
         if (rs.wasNull()) {
-            info.isPlanar = null;
+            info.planarityInfo.isPlanar = null;
         }
-        info.isChordal = rs.getBoolean("is_chordal");
+        info.chordalityInfo.isChordal = rs.getBoolean("is_chordal");
         if (rs.wasNull()) {
-            info.isChordal = null;
+            info.chordalityInfo.isChordal = null;
         }
-        info.chromaticNumber = rs.getInt("chromatic_number");
+        info.chordalityInfo.chromaticNumber = rs.getInt("chromatic_number");
         if (rs.wasNull()) {
-            info.chromaticNumber = null;
+            info.chordalityInfo.chromaticNumber = null;
         }
-
+        info.bipartitePartitioningInfo.isBipartite = rs.getBoolean("is_bipartite");
+        if (rs.wasNull()) {
+            info.bipartitePartitioningInfo.isBipartite = null;
+        }
         return info;
     }
 
@@ -128,7 +151,7 @@ public class Converter {
 
         List<Edge> edges = new ArrayList<>();
         for (Edge e : graph.getEdges()) {
-            if (vertexSet.contains(e.getSource()) && vertexSet.contains(e.getTarget())) {
+            if (vertexSet.contains(e.source) && vertexSet.contains(e.target)) {
                 edges.add(e);
             }
         }
@@ -140,49 +163,54 @@ public class Converter {
 
         answer.append(graphID);
 
-        if (info.isConnected != null) {
+        if (info.connectivityInfo.isConnected != null) {
             answer.append(", '");
-            answer.append(info.isConnected);
+            answer.append(info.connectivityInfo.isConnected);
             answer.append("'");
         }
-        if (info.isBiconnected != null) {
+        if (info.connectivityInfo.isBiconnected != null) {
             answer.append(", '");
-            answer.append(info.isBiconnected);
+            answer.append(info.connectivityInfo.isBiconnected);
             answer.append("'");
         }
-        if (info.articulationPoints != null) {
+        if (info.connectivityInfo.articulationPoints != null) {
             answer.append(", '");
-            answer.append(info.articulationPoints.size());
+            answer.append(info.connectivityInfo.articulationPoints.size());
             answer.append("'");
         }
-        if (info.bridges != null) {
+        if (info.connectivityInfo.bridges != null) {
             answer.append(", '");
-            answer.append(info.bridges.size());
+            answer.append(info.connectivityInfo.bridges.size());
             answer.append("'");
         }
-        if (info.connectedComponents != null) {
+        if (info.connectivityInfo.connectedComponents != null) {
             answer.append(", '");
-            answer.append(info.connectedComponents.size());
+            answer.append(info.connectivityInfo.connectedComponents.size());
             answer.append("'");
         }
-        if (info.blocks != null) {
+        if (info.connectivityInfo.blocks != null) {
             answer.append(", '");
-            answer.append(info.blocks.size());
+            answer.append(info.connectivityInfo.blocks.size());
             answer.append("'");
         }
-        if (info.isPlanar != null) {
+        if (info.planarityInfo.isPlanar != null) {
             answer.append(", '");
-            answer.append(info.isPlanar);
+            answer.append(info.planarityInfo.isPlanar);
             answer.append("'");
         }
-        if (info.isChordal != null) {
+        if (info.chordalityInfo.isChordal != null) {
             answer.append(", '");
-            answer.append(info.isChordal);
+            answer.append(info.chordalityInfo.isChordal);
             answer.append("'");
         }
-        if (info.chromaticNumber != null) {
+        if (info.chordalityInfo.chromaticNumber != null) {
             answer.append(", '");
-            answer.append(info.chromaticNumber);
+            answer.append(info.chordalityInfo.chromaticNumber);
+            answer.append("'");
+        }
+        if (info.bipartitePartitioningInfo.isBipartite != null) {
+            answer.append(", '");
+            answer.append(info.bipartitePartitioningInfo.isBipartite);
             answer.append("'");
         }
         return answer.toString();
@@ -191,32 +219,35 @@ public class Converter {
     public static String getFieldsNames(GraphResearchInfo info) {
         List<String> notNullFields = new ArrayList<>();
         notNullFields.add("graph_id");
-        if (info.isConnected != null) {
+        if (info.connectivityInfo.isConnected != null) {
             notNullFields.add("is_connected");
         }
-        if (info.isBiconnected != null) {
+        if (info.connectivityInfo.isBiconnected != null) {
             notNullFields.add("is_biconnected");
         }
-        if (info.articulationPoints != null) {
+        if (info.connectivityInfo.articulationPoints != null) {
             notNullFields.add("articulation_points");
         }
-        if (info.bridges != null) {
+        if (info.connectivityInfo.bridges != null) {
             notNullFields.add("bridges");
         }
-        if (info.connectedComponents != null) {
+        if (info.connectivityInfo.connectedComponents != null) {
             notNullFields.add("connected_components");
         }
-        if (info.blocks != null) {
+        if (info.connectivityInfo.blocks != null) {
             notNullFields.add("blocks");
         }
-        if (info.isPlanar != null) {
+        if (info.planarityInfo.isPlanar != null) {
             notNullFields.add("is_planar");
         }
-        if (info.isChordal != null) {
+        if (info.chordalityInfo.isChordal != null) {
             notNullFields.add("is_chordal");
         }
-        if (info.chromaticNumber != null) {
+        if (info.chordalityInfo.chromaticNumber != null) {
             notNullFields.add("chromatic_number");
+        }
+        if (info.bipartitePartitioningInfo.isBipartite != null) {
+            notNullFields.add("is_bipartite");
         }
         StringBuilder fields = new StringBuilder();
         for (int i = 0; i < notNullFields.size(); ++i) {
@@ -227,5 +258,23 @@ public class Converter {
             }
         }
         return fields.toString();
+    }
+
+    public static GraphModel buildGraphFromMatrix(int[][] matrix, GraphMetadata metadata) {
+        int n = matrix.length;
+        Map<Integer, Vertex> vertexMap = new HashMap<>();
+        for (int i = 0; i < n; ++i) {
+            vertexMap.put(i, new Vertex(i, i + ""));
+        }
+        List<Edge> edges = new ArrayList<>();
+        for (int i = 0; i < n; ++i) {
+            for (int j = 0; j < i; ++j) {
+                if (matrix[i][j] == 1) {
+                    Edge e = new Edge(vertexMap.get(i), vertexMap.get(j), 1.0, "");
+                    edges.add(e);
+                }
+            }
+        }
+        return new GraphModel(vertexMap.values().stream().toList(), edges, metadata);
     }
 }

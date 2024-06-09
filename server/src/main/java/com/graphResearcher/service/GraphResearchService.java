@@ -1,6 +1,8 @@
 package com.graphResearcher.service;
 
+import com.graphResearcher.controller.GraphResearchController;
 import com.graphResearcher.model.*;
+import com.graphResearcher.model.graphInfo.*;
 import com.graphResearcher.util.Converter;
 import org.jgrapht.Graph;
 import org.jgrapht.alg.clique.ChordalGraphMaxCliqueFinder;
@@ -14,110 +16,155 @@ import org.jgrapht.alg.interfaces.VertexColoringAlgorithm;
 import org.jgrapht.alg.partition.BipartitePartitioning;
 import org.jgrapht.alg.planar.BoyerMyrvoldPlanarityInspector;
 import org.jgrapht.alg.spanning.KruskalMinimumSpanningTree;
+import org.jgrapht.graph.AsUndirectedGraph;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
 public class GraphResearchService {
+    private static final Logger log = LoggerFactory.getLogger(GraphResearchController.class);
+    ExecutorService executor = Executors.newCachedThreadPool();
+
     public GraphResearchInfo research(GraphModel graphModel) {
-        Graph<Vertex, WeightedEdge> graph = Converter.graphModelToGraph(graphModel);
-        GraphResearchInfo info = new GraphResearchInfo();
+            Graph<Vertex, WeightedEdge> graph = Converter.graphModelToGraph(graphModel);
+            GraphResearchInfo info = new GraphResearchInfo();
 
-        connectivityResearch(info, graph);
-
+            Future<ConnectivityInfo> connectivityInfoFuture = executor.submit(connectivityResearch(graph));
+        Future<PlanarityInfo> planarityInfoFuture = null;
+        Future<ChordalityInfo> chordalityInfoFuture = null;
+        Future<BipartitePartitioningInfo> bipartitePartitioningInfoFuture = null;
         if (graph.getType().isUndirected()) {
-            planarityResearch(info, graph, graphModel.getMetadata());
-            chordalityResearch(info, graph);
+            planarityInfoFuture = executor.submit(planarityResearch(graph, graphModel.getMetadata()));
+            chordalityInfoFuture = executor.submit(chordalityResearch(graph));
+            bipartitePartitioningInfoFuture = executor.submit(bipartitePartitioningResearch(graph));
         } else {
+
             // flowResearch
         }
-
-        bipartitePartitioningResearch(info, graph);
-
-        //cycleResearch
+            //cycleResearch
 
         spanningResearch(info, graph);
 
-        //VertexCover
+            //VertexCover
 
+        try {
+            info.connectivityInfo = connectivityInfoFuture.get();
+            if (planarityInfoFuture != null) {
+                info.planarityInfo = planarityInfoFuture.get();
+            }
+            if (chordalityInfoFuture != null) {
+                info.chordalityInfo = chordalityInfoFuture.get();
+            }
+            if (bipartitePartitioningInfoFuture != null) {
+                info.bipartitePartitioningInfo = bipartitePartitioningInfoFuture.get();
+            }
+        } catch (ExecutionException | InterruptedException e) {
+            log.error("research error");
+        }
         return info;
     }
 
-    private void connectivityResearch(GraphResearchInfo info, Graph<Vertex, WeightedEdge> graph) {
-        BiconnectivityInspector<Vertex, WeightedEdge> biconnectivityInspector = new BiconnectivityInspector<>(graph);
-        ConnectivityInspector<Vertex, WeightedEdge> connectivityInspector = new ConnectivityInspector<>(graph);
+    private Callable<ConnectivityInfo> connectivityResearch(Graph<Vertex, WeightedEdge> graph) {
+        return () -> {
+            ConnectivityInfo connectivityInfo = new ConnectivityInfo();
 
-        info.isConnected = biconnectivityInspector.isConnected();
+            BiconnectivityInspector<Vertex, WeightedEdge> biconnectivityInspector = new BiconnectivityInspector<>(graph);
+            ConnectivityInspector<Vertex, WeightedEdge> connectivityInspector = new ConnectivityInspector<>(graph);
 
-        info.isBiconnected = biconnectivityInspector.isBiconnected();
+            connectivityInfo.isConnected = biconnectivityInspector.isConnected();
 
-        info.articulationPoints= new ArrayList<>(biconnectivityInspector.getCutpoints());
+            connectivityInfo.isBiconnected = biconnectivityInspector.isBiconnected();
 
-        info.bridges = biconnectivityInspector.getBridges().stream()
-                .map(WeightedEdge::toEdge)
-                .collect(Collectors.toList());
+            connectivityInfo.articulationPoints = new ArrayList<>(biconnectivityInspector.getCutpoints());
 
-        info.connectedComponents = connectivityInspector.connectedSets().stream().map(v -> (List<Vertex>)new ArrayList<>(v)).toList();
+            connectivityInfo.bridges = biconnectivityInspector.getBridges().stream()
+                    .map(WeightedEdge::toEdge)
+                    .collect(Collectors.toList());
 
-        info.blocks = biconnectivityInspector.getBlocks().stream()
-                .map(block -> (List<Vertex>)new ArrayList<>(block.vertexSet())).toList();
+            connectivityInfo.connectedComponents = connectivityInspector.connectedSets().stream().map(v -> (List<Vertex>) new ArrayList<>(v)).toList();
 
+            connectivityInfo.blocks = biconnectivityInspector.getBlocks().stream()
+                    .map(block -> (List<Vertex>) new ArrayList<>(block.vertexSet())).toList();
+            return connectivityInfo;
+        };
     }
 
-    private void planarityResearch(GraphResearchInfo info, Graph<Vertex, WeightedEdge> graph, GraphMetadata metadata) {
-        BoyerMyrvoldPlanarityInspector<Vertex, WeightedEdge> planarityInspector = new BoyerMyrvoldPlanarityInspector<>(graph);
-        info.isPlanar = planarityInspector.isPlanar();
+    private Callable<PlanarityInfo> planarityResearch(Graph<Vertex, WeightedEdge> graph, GraphMetadata metadata) {
+        return () -> {
+            PlanarityInfo planarityInfo = new PlanarityInfo();
+            BoyerMyrvoldPlanarityInspector<Vertex, WeightedEdge> planarityInspector = new BoyerMyrvoldPlanarityInspector<>(graph);
+            planarityInfo.isPlanar = planarityInspector.isPlanar();
 
-        if (info.isPlanar) {
-            Map<Vertex, List<Edge>> embedding = new HashMap<>();
-            for (Vertex v: graph.vertexSet()) {
-                embedding.put(v, planarityInspector.getEmbedding().getEdgesAround(v).stream().map(WeightedEdge::toEdge).toList());
-            }
-            info.embedding = embedding;
-        } else {
-            info.kuratowskiSubgraph = Converter.graphToGraphModel(planarityInspector.getKuratowskiSubdivision(), metadata);
-        }
-    }
-
-    private void chordalityResearch(GraphResearchInfo info, Graph<Vertex, WeightedEdge> graph) {
-        ChordalityInspector<Vertex, WeightedEdge> chordalityInspector = new ChordalityInspector<>(graph);
-        info.isChordal = chordalityInspector.isChordal();
-        if (info.isChordal) {
-            info.perfectEliminationOrder = chordalityInspector.getPerfectEliminationOrder();
-
-            ChordalGraphColoring<Vertex, WeightedEdge> coloringResearcher = new ChordalGraphColoring<>(graph);
-            VertexColoringAlgorithm.Coloring<Vertex> coloring = coloringResearcher.getColoring();
-            info.chromaticNumber = coloring.getNumberColors();
-            info.coloring = coloring.getColorClasses().stream().map(st -> (List<Vertex>)new ArrayList<>(st)).toList();
-
-            ChordalGraphMaxCliqueFinder<Vertex, WeightedEdge> maxCliqueFinder = new ChordalGraphMaxCliqueFinder<>(graph);
-            info.maxClique = maxCliqueFinder.getClique().stream().toList();
-            ChordalGraphIndependentSetFinder<Vertex, WeightedEdge> independentSetFinder = new ChordalGraphIndependentSetFinder<>(graph);
-            info.independentSet = independentSetFinder.getIndependentSet().stream().toList();
-
-            ChordalGraphMinimalVertexSeparatorFinder<Vertex, WeightedEdge> minimalVertexSeparatorFinder = new ChordalGraphMinimalVertexSeparatorFinder<>(graph);
-            info.minimalVertexSeparator = minimalVertexSeparatorFinder.getMinimalSeparators().stream().map(Set::stream).map(Stream::toList).toList();
-        }
-    }
-
-    private void bipartitePartitioningResearch(GraphResearchInfo info, Graph<Vertex, WeightedEdge> graph) {
-        BipartitePartitioning<Vertex, WeightedEdge> bipartitePartitioningInspector = new BipartitePartitioning<>(graph);
-        info.isBipartite = bipartitePartitioningInspector.isBipartite();
-        if (info.isBipartite) {
-            info.partitions = bipartitePartitioningInspector.getPartitioning().getPartitions().stream().map(s -> (List<Vertex>)new ArrayList<>(s)).toList();
-
-            info.chromaticNumber = 2; //TODO
-            info.coloring = info.partitions; //TODO
-
-            if (info.partitions.get(0).size() < info.partitions.get(1).size()) {
-                info.independentSet = info.partitions.get(1);
+            if (planarityInfo.isPlanar) {
+                Map<Vertex, List<Edge>> embedding = new HashMap<>();
+                for (Vertex v : graph.vertexSet()) {
+                    embedding.put(v, planarityInspector.getEmbedding().getEdgesAround(v).stream().map(WeightedEdge::toEdge).toList());
+                }
+                planarityInfo.embedding = embedding;
             } else {
-                info.independentSet = info.partitions.get(0);
+                planarityInfo.kuratowskiSubgraph = Converter.graphToGraphModel(planarityInspector.getKuratowskiSubdivision(), metadata);
             }
-        }
+            return planarityInfo;
+        };
+    }
+
+    private Callable<ChordalityInfo> chordalityResearch(Graph<Vertex, WeightedEdge> graph) {
+        return () -> {
+            ChordalityInfo chordalityInfo = new ChordalityInfo();
+            ChordalityInspector<Vertex, WeightedEdge> chordalityInspector = new ChordalityInspector<>(graph);
+            chordalityInfo.isChordal = chordalityInspector.isChordal();
+            if (chordalityInfo.isChordal) {
+                chordalityInfo.perfectEliminationOrder = chordalityInspector.getPerfectEliminationOrder();
+
+                ChordalGraphMaxCliqueFinder<Vertex, WeightedEdge> maxCliqueFinder = new ChordalGraphMaxCliqueFinder<>(graph);
+                chordalityInfo.maxClique = maxCliqueFinder.getClique().stream().toList();
+                ChordalGraphIndependentSetFinder<Vertex, WeightedEdge> independentSetFinder = new ChordalGraphIndependentSetFinder<>(graph);
+                chordalityInfo.independentSet = independentSetFinder.getIndependentSet().stream().toList();
+
+                ChordalGraphColoring<Vertex, WeightedEdge> coloringResearcher = new ChordalGraphColoring<>(graph);
+                VertexColoringAlgorithm.Coloring<Vertex> coloring = coloringResearcher.getColoring();
+                chordalityInfo.chromaticNumber = coloring.getNumberColors();
+                chordalityInfo.coloring = coloring.getColorClasses().stream().map(st -> (List<Vertex>) new ArrayList<>(st)).toList();
+
+                ChordalGraphMinimalVertexSeparatorFinder<Vertex, WeightedEdge> minimalVertexSeparatorFinder = new ChordalGraphMinimalVertexSeparatorFinder<>(graph);
+                chordalityInfo.minimalVertexSeparator = minimalVertexSeparatorFinder.getMinimalSeparators().stream().map(Set::stream).map(Stream::toList).toList();
+            }
+            return chordalityInfo;
+        };
+    }
+
+    private Callable<BipartitePartitioningInfo> bipartitePartitioningResearch(Graph<Vertex, WeightedEdge> graph) {
+        return () -> {
+            BipartitePartitioningInfo bipartitePartitioningInfo = new BipartitePartitioningInfo();
+
+            BipartitePartitioning<Vertex, WeightedEdge> bipartitePartitioningInspector = new BipartitePartitioning<>(graph);
+            bipartitePartitioningInfo.isBipartite = bipartitePartitioningInspector.isBipartite();
+            if (bipartitePartitioningInfo.isBipartite) {
+                bipartitePartitioningInfo.partitions = bipartitePartitioningInspector.getPartitioning().getPartitions().stream().map(s -> (List<Vertex>) new ArrayList<>(s)).toList();
+
+                bipartitePartitioningInfo.chromaticNumber = 2;
+                if (bipartitePartitioningInfo.partitions.get(0).isEmpty()) {
+                    bipartitePartitioningInfo.chromaticNumber--;
+                }
+                if (bipartitePartitioningInfo.partitions.get(1).isEmpty()) {
+                    bipartitePartitioningInfo.chromaticNumber--;
+                }
+                bipartitePartitioningInfo.coloring = bipartitePartitioningInfo.partitions;
+
+                if (bipartitePartitioningInfo.partitions.get(0).size() < bipartitePartitioningInfo.partitions.get(1).size()) {
+                    bipartitePartitioningInfo.independentSet = bipartitePartitioningInfo.partitions.get(1);
+                } else {
+                    bipartitePartitioningInfo.independentSet = bipartitePartitioningInfo.partitions.get(0);
+                }
+            }
+            return bipartitePartitioningInfo;
+        };
     }
 
     private void spanningResearch(GraphResearchInfo info, Graph<Vertex, WeightedEdge> graph) {
