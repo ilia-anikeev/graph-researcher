@@ -157,8 +157,8 @@ function GraphMetadata(props){
                         isWeighted: props.isWeighted,
                         hasSelfLoops: hasSelfLoops,
                         hasMultipleEdges: hasMultipleEdges
-                    }
-
+                    },
+                    researchInfo: graphMetaData
                 }
             }),
         })
