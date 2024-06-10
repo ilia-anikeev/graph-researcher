@@ -1,18 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useContext } from 'react';
 import PropTypes from 'prop-types';
 import './GraphMetadata.css';
+import { UserContext } from './UserContex';
 import '../index.css';
 
 function GraphMetadata(props){
     const [isOpen, setState] = useState(false);
-    const [isRequestSent, setRequestSent] = useState(true);
     const [graphMetaData, setGraphMetaData] = useState(null);
     const [errorMessage, setErrorMessage] = useState('');
+    const { userID } = useContext(UserContext);
 
-    useEffect(() => {
-        if (!isRequestSent) {
-            return;
-        }
+    const getGraphMetadata = () => {
+        setState(true);
+        
         const hasMultipleEdges = props.hasMultipleEdges > 0 ? true : false;
         const hasSelfLoops = props.hasSelfLoops > 0 ? true : false;
         const edges = props.edges.map(edge => {
@@ -25,7 +25,7 @@ function GraphMetadata(props){
                 data: edge.data
             }
         })
-        setRequestSent(false);
+
         fetch('http://localhost:8080/research', {
             method: 'POST',
             headers: {
@@ -33,7 +33,7 @@ function GraphMetadata(props){
                 'Connection': 'keep-alive'
             },
             body: JSON.stringify({
-                userID: 0,
+                userID: userID,
                 graph: {
                     vertices: props.vertices,
                     edges: edges,
@@ -49,13 +49,12 @@ function GraphMetadata(props){
             }),
         })
         .then(response => response.json())
-        .then(metaData => {setGraphMetaData(metaData); console.log(metaData)})
+        .then(metaData => {setGraphMetaData(metaData)})
         .catch(error => {
             setErrorMessage('Something went wrong, try again'); 
             setGraphMetaData(null);
         });
-    }, [isRequestSent, props.hasMultipleEdges, props.hasSelfLoops, 
-        props.edges, props.vertices, props.isDirected, props.isWeighted]);
+    }
 
     const getString = (data) => {
         var stringData = '';
@@ -136,11 +135,7 @@ function GraphMetadata(props){
 
     return (
         <div>
-            <button className='button' onClick={() => {
-                    setRequestSent(true);
-                    setState(true);
-                }
-            }>      
+            <button className='button' onClick={getGraphMetadata}>      
                     Research      
             </button>
             {isOpen && <div className='GraphMetadata'>

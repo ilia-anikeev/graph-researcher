@@ -127,8 +127,6 @@ function GraphArchive(props) {
 export default GraphArchive;
 
 GraphArchive.propTypes = {
-    vertices:PropTypes.array,
-    edges:PropTypes.array,
     addVertex: PropTypes.func,
     addEdge: PropTypes.func,
     updateVertexCount: PropTypes.func,

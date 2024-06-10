@@ -40,7 +40,7 @@ function Vertex(props) {
             nodeRef={noderef}
             axis="both"
             defaultPosition={{ x: props.x - 25, y: props.y + 80}}
-            position={props.isGraphArchiveMode ? {x: props.x - 25, y:props.y + 80}  : null}
+            position={props.isGraphArchiveMode || props.isUserGraphMode ? {x: props.x - 25, y:props.y + 80}  : null}
             grid={[1, 1]}
             scale={1}>
             <div className='vertex' ref={noderef}>
@@ -64,6 +64,7 @@ Vertex.propTypes = {
     x: PropTypes.number,
     y: PropTypes.number,
     isGraphArchiveMode: PropTypes.bool,
+    isUserGraphMode: PropTypes.bool
 };
 
 export default Vertex;

@@ -1,21 +1,27 @@
-import React from 'react';
+import React, { useState, useContext } from 'react';
 import './SignIn.css'
 import { useNavigate } from "react-router-dom";
+import { UserContext } from './UserContex';
 
 function SignIn(){
-    const [email, setEmail] = React.useState('');
-    const [password, setPassword] = React.useState('');
-    const [isEmailEmpty, setIsEmailEmpty] = React.useState(false);
-    const [isPasswordEmpty, setIsPasswordEmpty] = React.useState(false);
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [errorMessage, setErrorMessage] = useState('');
+    const [isEmailEmpty, setIsEmailEmpty] = useState(false);
+    const [isPasswordEmpty, setIsPasswordEmpty] = useState(false);
 
+    const { updateUserID} = useContext(UserContext);
     const navigate = useNavigate();
 
     const signIn = () => {
-        console.log(email);
-        console.log(password);
         if (isEmpty()) {
              return;
         }
+        if (email !== '1' || password !== '1'){
+            setErrorMessage('Invalid email or password');
+            return;
+        }
+        updateUserID(0);
         navigate('/');
     }
 
@@ -50,12 +56,13 @@ function SignIn(){
                 Password
                 <div className='passwordSignIn'>
                     <label>
-                        <input  onChange={e => setPassword(e.target.value)} type={'password'}/>
+                        <input  onChange={e => {setPassword(e.target.value); setErrorMessage('')}} type={'password'}/>
                     </label>
                 </div>
                 <button className='signInButton' onClick={signIn}>Sign in</button> <br/>
                 <div className='errorTextSignIn'>
                     {(isEmailEmpty && <text>        Please, enter email</text>) || (isPasswordEmpty && <text>Please, enter password</text>)}
+                    {(errorMessage !== '' && <text> {errorMessage} </text>)}
                 </div>
                 <button className='createAccountButton' onClick={goToSignUpPage}>Create account</button>            
             </div>

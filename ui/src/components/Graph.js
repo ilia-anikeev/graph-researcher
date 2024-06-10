@@ -18,6 +18,7 @@ function Graph() {
     const [createEdgeMode, setEdgeCreateMode] = useState(false);
     const [vertexRemoveMode, setVertexRemoveMode] = useState(false);
     const [isGraphArchiveMode, setIsGraphArchiveMode] = useState(false);
+    const [isUserGraphMode, setIsUserGraphMode] = useState(false);
     const [coordinates, updateCoordinates] = useState([]);
     const [drawEdgeMode, setDrawEdge] = useState(false);
     const [source, setSource] = useState(1);
@@ -227,7 +228,8 @@ function Graph() {
                                         vertices={vertices} 
                                         addVertex={addVertex} 
                                         data={vertex.data}
-                                        isGraphArchiveMode={isGraphArchiveMode}/>
+                                        isGraphArchiveMode={isGraphArchiveMode}
+                                        isUserGraphMode={isUserGraphMode}/>
                             </div>
                         );
                     }): null}
@@ -268,7 +270,8 @@ function Graph() {
                                 setEdgeCounter={setEdgeCounter}
                                 setHasSelfLoops={setHasSelfLoops}
                                 sethasMultipleEdges={sethasMultipleEdges}
-                                setIsGraphArchiveMode={setIsGraphArchiveMode}/>
+                                setIsGraphArchiveMode={setIsGraphArchiveMode}
+                                setIsUserGraphMode={setIsUserGraphMode}/>
                 </div>
                 
             </div>
