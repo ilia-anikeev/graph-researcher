@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import '../index.css';
 import './GraphArchive.css';
@@ -7,11 +7,16 @@ import './GraphArchive.css';
 function GraphArchive(props) {
     const [isOpen, setIsOpen] = useState(false);
 
-
-
     const openGraphArchive = () => {
         setIsOpen(true);
+        props.setIsGraphArchiveMode(true);
     }
+
+    useEffect (() => {
+        if (!isOpen){
+            props.setIsGraphArchiveMode(false);
+        }
+    })
 
     const displayGraph = (graph) => {
         var vertices = graph['graph']['vertices'];
@@ -25,7 +30,7 @@ function GraphArchive(props) {
             vertices[i].x = centerX + radius * Math.cos(angle * i);
             vertices[i].y = centerY + radius * Math.sin(angle * i);
             ++vertices[i].index;
-            vertices[i].data = vertices[i].index.toString(); 
+            vertices[i].data = vertices[i].index.toString();
         }
         for (var j = 0; j < edges.length; ++j){
             edges[j] = {source: edges[j].source.index + 1,
@@ -35,12 +40,16 @@ function GraphArchive(props) {
                         data: edges[j].data
                         } 
         }
-        
+
         props.addVertex(vertices);
         props.addEdge(edges);
         props.updateVertexCount(vertices.length + 1);
         props.setEdgeCounter(edges.length + 1);
-        // document.querySelectorAll('.vertex').forEach(element => element.remove());
+        props.setIsDirected(graph['graph']['info']['isDirected']);
+        props.setIsWeighted(graph['graph']['info']['isWeighted']);
+        props.setHasSelfLoops(graph['graph']['info']['hasSelfLoops'] | 0);
+        props.sethasMultipleEdges(graph['graph']['info']['hasMultipleEdges'] | 0); 
+
         setIsOpen(false);
     }
 
@@ -118,8 +127,15 @@ function GraphArchive(props) {
 export default GraphArchive;
 
 GraphArchive.propTypes = {
+    vertices:PropTypes.array,
+    edges:PropTypes.array,
     addVertex: PropTypes.func,
     addEdge: PropTypes.func,
     updateVertexCount: PropTypes.func,
     setEdgeCounter: PropTypes.func,
+    setIsDirected: PropTypes.func,
+    setIsWeighted: PropTypes.func, 
+    setHasSelfLoops: PropTypes.func,
+    sethasMultipleEdges: PropTypes.func,
+    setIsGraphArchiveMode: PropTypes.func
 }

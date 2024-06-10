@@ -82,7 +82,15 @@ function Researcher(props) {
             <GraphArchive addVertex={props.addVertex}
                           addEdge={props.addEdge}
                           updateVertexCount={props.updateVertexCount}
-                          setEdgeCounter={props.setEdgeCounter}/>
+                          setEdgeCounter={props.setEdgeCounter}
+                          setIsDirected={props.setIsDirected}
+                          setIsWeighted={props.setIsWeighted}
+                          setHasSelfLoops={props.setHasSelfLoops}
+                          sethasMultipleEdges={props.sethasMultipleEdges}
+                          vertices={props.vertices}
+                          edges={props.edges}
+                          setIsGraphArchiveMode={props.setIsGraphArchiveMode}
+                          />
         </div> 
       </div>   
       <div className='canvas'>
@@ -113,8 +121,11 @@ Researcher.propTypes = {
   addEdge: PropTypes.func,
   updateVertexCount: PropTypes.func,
   setEdgeCounter: PropTypes.func,
+  setHasSelfLoops: PropTypes.func,
+  sethasMultipleEdges: PropTypes.func,
   vertices: PropTypes.array,
-  edges: PropTypes.array
+  edges: PropTypes.array,
+  setIsGraphArchiveMode: PropTypes.func
 };
 
 export default Researcher;

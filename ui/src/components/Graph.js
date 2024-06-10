@@ -17,6 +17,7 @@ function Graph() {
     const [removeEdgeMode, setEdgeRemoveMode] = useState(false);
     const [createEdgeMode, setEdgeCreateMode] = useState(false);
     const [vertexRemoveMode, setVertexRemoveMode] = useState(false);
+    const [isGraphArchiveMode, setIsGraphArchiveMode] = useState(false);
     const [coordinates, updateCoordinates] = useState([]);
     const [drawEdgeMode, setDrawEdge] = useState(false);
     const [source, setSource] = useState(1);
@@ -225,10 +226,11 @@ function Graph() {
                                         y={vertex.y} 
                                         vertices={vertices} 
                                         addVertex={addVertex} 
-                                        data={vertex.data}/>
+                                        data={vertex.data}
+                                        isGraphArchiveMode={isGraphArchiveMode}/>
                             </div>
                         );
-                    }) : null}
+                    }): null}
                 </div>
                 <div>
                 {edges ? edges.map(edge => {
@@ -263,8 +265,12 @@ function Graph() {
                                 addVertex={addVertex}
                                 addEdge={addEdge}
                                 updateVertexCount={updateVertexCount}
-                                setEdgeCounter={setEdgeCounter}/>
+                                setEdgeCounter={setEdgeCounter}
+                                setHasSelfLoops={setHasSelfLoops}
+                                sethasMultipleEdges={sethasMultipleEdges}
+                                setIsGraphArchiveMode={setIsGraphArchiveMode}/>
                 </div>
+                
             </div>
           );
         }
