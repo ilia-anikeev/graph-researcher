@@ -82,14 +82,8 @@ function Researcher(props) {
               }
         }),
     })
-    .then(response => {
-      if (!response.ok) {
-        throw new Error("HTTP status" + response.status);
-      }
-    })
     .catch(error => console.log(error));
   }
-
 
 
   return (
@@ -108,7 +102,8 @@ function Researcher(props) {
                                                   setIsWeighted={props.setIsWeighted}
                                                   setHasSelfLoops={props.setHasSelfLoops}
                                                   sethasMultipleEdges={props.sethasMultipleEdges}
-                                                  setIsUserGraphMode={props.setIsUserGraphMode}/>
+                                                  setIsUserGraphMode={props.setIsUserGraphMode}
+                                                  setGraphName={setGraphName}/>
                                 <div style={{paddingTop: '2.5rem'}}>
                                   <button className='button' onClick={handleCreateVertexButton}> Create vertex</button>
                                 </div>
@@ -133,7 +128,9 @@ function Researcher(props) {
                            isWeighted={props.isWeighted}
                            isDirected={props.isDirected}
                            hasMultipleEdges={props.hasMultipleEdges}
-                           hasSelfLoops={props.hasSelfLoops}/>  
+                           hasSelfLoops={props.hasSelfLoops}
+                           graphName={graphName}
+                           setGraphName={setGraphName}/>  
         </div>  
         <div style={{paddingTop: '2.5rem'}}>
           <div>
@@ -164,27 +161,28 @@ function Researcher(props) {
                           setHasSelfLoops={props.setHasSelfLoops}
                           sethasMultipleEdges={props.sethasMultipleEdges}
                           setIsGraphArchiveMode={props.setIsGraphArchiveMode}
-                          />
+                          setGraphName={setGraphName}/>
         </div> 
         {
           userID !== -1 && <div style={{paddingTop: '1.5rem'}}>
-                            <button onClick={() => setIsGraphSaveMode(true)}> Save Graph</button>
+                            <button onClick={() => {isGraphSaveMode ? setIsGraphSaveMode(false) 
+                                                   : setIsGraphSaveMode(true)}}> Save Graph</button>
                            </div>
         }
       </div>   
       {
         isGraphSaveMode && <div className='background'> 
         <div className='body'>
-          <input type='text' onChange={e => setGraphName(e.target.value)}/>  
-          <button onClick={saveGraph}>Save</button>
+          <input type='text' onChange={e => {setGraphName(e.target.value)}} placeholder='enter graph name'/>  
+          <button onClick={saveGraph}>Submit</button>
         </div>
         </div>
       }
       <div className='canvas'>
         <canvas 
                 id='canvas'
-                width={window.innerWidth-2}
-                height={window.innerHeight-112}>
+                width={window.innerWidth-10}
+                height={window.innerHeight-114}>
                 Canvas
         </canvas>
       </div>

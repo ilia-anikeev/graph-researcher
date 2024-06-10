@@ -64,6 +64,7 @@ function UserGraphs(props) {
         props.setIsWeighted(graph['info']['isWeighted']);
         props.setHasSelfLoops(graph['info']['hasSelfLoops'] | 0);
         props.sethasMultipleEdges(graph['info']['hasMultipleEdges'] | 0); 
+        props.setGraphName(graph['info']['graphName']);
         
         clear();
         setIsOpen(false);
@@ -106,4 +107,5 @@ UserGraphs.propTypes = {
     setHasSelfLoops: PropTypes.func,
     sethasMultipleEdges: PropTypes.func,
     setIsUserGraphMode: PropTypes.func,
+    setGraphName: PropTypes.func
 }

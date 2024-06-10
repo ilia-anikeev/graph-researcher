@@ -49,6 +49,7 @@ function GraphArchive(props) {
         props.setIsWeighted(graph['graph']['info']['isWeighted']);
         props.setHasSelfLoops(graph['graph']['info']['hasSelfLoops'] | 0);
         props.sethasMultipleEdges(graph['graph']['info']['hasMultipleEdges'] | 0); 
+        props.setGraphName(graph['graph']['info']['graphName']);
 
         setIsOpen(false);
     }
@@ -135,5 +136,6 @@ GraphArchive.propTypes = {
     setIsWeighted: PropTypes.func, 
     setHasSelfLoops: PropTypes.func,
     sethasMultipleEdges: PropTypes.func,
-    setIsGraphArchiveMode: PropTypes.func
+    setIsGraphArchiveMode: PropTypes.func,
+    setGraphName: PropTypes.func
 }
