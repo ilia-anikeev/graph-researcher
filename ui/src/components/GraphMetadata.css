@@ -1,25 +1,22 @@
 .GraphMetadata {
-    position: absolute;
+    position: fixed;
     top: 0;
     right: 0;
     bottom: 0;
-    left: 104.3rem;
+    left: 1300px;
     display: flex;
-    padding-top: -2rem;
-    justify-content: center;
-    border-color: coral;
-    border-width: 1em;
-    background: black;
+    padding-top: 6.9rem;
+    justify-content: right;
+    background: none;
 }
 
 .GraphMetadata-body{
-    position: relative;
-    background: white;
+    position: fixed;
+    background: none;
     padding: 2rem;
     padding-left: 3.5rem;
-    left: 100;
-    width: 400px;
-    height: 733px;
+    left: 200;
+    height: 755px;
     border: 6px ;
     border-left-style: solid;
     border-color: transparent transparent transparent rgba(0, 0, 0, 0.2);

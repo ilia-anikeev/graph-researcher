@@ -1,18 +1,17 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useContext } from 'react';
 import PropTypes from 'prop-types';
-import "./GraphMetadata.css";
-import "../index.css";
+import './GraphMetadata.css';
+import { UserContext } from './UserContex';
+import '../index.css';
 
 function GraphMetadata(props){
     const [isOpen, setState] = useState(false);
-    const [isRequestSent, setRequestSent] = useState(true);
     const [graphMetaData, setGraphMetaData] = useState(null);
     const [errorMessage, setErrorMessage] = useState('');
+    const [isGraphSaveMode, setIsGraphSaveMode] = useState(false);
+    const { userID } = useContext(UserContext);
 
-    useEffect(() => {
-        if (!isRequestSent) {
-            return;
-        }
+    const getCorrectData = () => {
         const hasMultipleEdges = props.hasMultipleEdges > 0 ? true : false;
         const hasSelfLoops = props.hasSelfLoops > 0 ? true : false;
         const edges = props.edges.map(edge => {
@@ -25,7 +24,14 @@ function GraphMetadata(props){
                 data: edge.data
             }
         })
-        setRequestSent(false);
+        return {hasMultipleEdges, hasSelfLoops, edges}
+    }
+
+    const getGraphMetadata = () => {
+        setState(true);
+        
+        const {hasMultipleEdges, hasSelfLoops, edges} = getCorrectData();
+
         fetch('http://localhost:8080/research', {
             method: 'POST',
             headers: {
@@ -33,27 +39,28 @@ function GraphMetadata(props){
                 'Connection': 'keep-alive'
             },
             body: JSON.stringify({
-                userID: 0,
+                userID: userID,
                 graph: {
                     vertices: props.vertices,
                     edges: edges,
                     info: {
+                        graphName: 'graphName',
                         isDirected: props.isDirected,
                         isWeighted: props.isWeighted,
                         hasSelfLoops: hasSelfLoops,
                         hasMultipleEdges: hasMultipleEdges
                     }
+
                 }
             }),
         })
         .then(response => response.json())
-        .then(metaData => {setGraphMetaData(metaData); console.log(metaData)})
+        .then(metaData => {setGraphMetaData(metaData)})
         .catch(error => {
             setErrorMessage('Something went wrong, try again'); 
             setGraphMetaData(null);
         });
-    }, [isRequestSent, props.hasMultipleEdges, props.hasSelfLoops, 
-        props.edges, props.vertices, props.isDirected, props.isWeighted]);
+    }
 
     const getString = (data) => {
         var stringData = '';
@@ -78,7 +85,6 @@ function GraphMetadata(props){
 
     const getStringData = (data) => {
         if (Array.isArray(data)) {
-            console.log(getString(data));
             return getString(data) === '' ? 'no' : getString(data);
         }
         if (typeof data === 'number') {
@@ -125,26 +131,50 @@ function GraphMetadata(props){
                 return 'Bipartite';    
             case 'partitions':
                 return 'Partitions';
-            case 'minSpanningTree':
+            case 'min_spanning_tree':
                 return 'Min Spanning Tree';
             default :
                 return '';    
         }
     }    
 
+    const saveGraph = () => {
+        const {hasMultipleEdges, hasSelfLoops, edges} = getCorrectData();
+        fetch('http://localhost:8080/save', {                              //TODO
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Connection': 'keep-alive'
+            },
+            body: JSON.stringify({
+                userID: userID,
+                graph: {
+                    vertices: props.vertices,
+                    edges: edges,
+                    info: {
+                        graphName: props.graphName,
+                        isDirected: props.isDirected,
+                        isWeighted: props.isWeighted,
+                        hasSelfLoops: hasSelfLoops,
+                        hasMultipleEdges: hasMultipleEdges
+                    },
+                    researchInfo: graphMetaData
+                }
+            }),
+        })
+        .catch(error => console.log(error));
+        setIsGraphSaveMode(false);
+    }
+
 
     return (
         <div>
-            <button className="button" onClick={() => {
-                    setRequestSent(true);
-                    setState(true);
-                }
-            }>      
+            <button className='button' onClick={getGraphMetadata}>      
                     Research      
             </button>
-            {isOpen && <div className="GraphMetadata">
-                <div className="GraphMetadata-body" >
-                    <h1 style={{textAlign: "center"}}>Info</h1>
+            {isOpen && <div className='GraphMetadata'>
+                <div className='GraphMetadata-body'>
+                    <h1 style={{textAlign: 'center'}}>Info</h1>
                     {graphMetaData ? Object.keys(graphMetaData).map(key => {
                         return (
                             <div>
@@ -156,15 +186,28 @@ function GraphMetadata(props){
                             {errorMessage}
                         </p>
                     }
-                     <button style={{alignSelf: 'right'}} onClick={() => setState(false)}>Close</button>
+                    <div>
+                        {
+                         userID !== -1 && <button style={{alignSelf: 'left'}} 
+                                onClick={() => setIsGraphSaveMode(true)}> Save </button>
+                        }
+                        {
+                            isGraphSaveMode && 
+                            <input type='text'placeholder='enter graph name' onChange={(e) => props.setGraphName(e.target.value)}/>
+                        }
+                        {
+                            isGraphSaveMode && <button onClick={saveGraph}>Submit</button>
+                        }
+                    </div>
+                    <div style={{paddingTop: '1rem'}}>
+                        <button onClick={() => setState(false)}>Close</button>
+                    </div>
                 </div>
             </div>
             }
         </div>
     )
 }
-
-export default GraphMetadata;
 
 GraphMetadata.propTypes = {
     vertices: PropTypes.array,
@@ -173,4 +216,8 @@ GraphMetadata.propTypes = {
     isDirected: PropTypes.bool,
     hasSelfLoops: PropTypes.number,
     hasMultipleEdges: PropTypes.number,
+    graphName: PropTypes.string,
+    setGraphName: PropTypes.func
 }
+
+export default GraphMetadata;

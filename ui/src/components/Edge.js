@@ -1,8 +1,9 @@
-import './Edges.css'
+import './Edge.css'
 import PropTypes from 'prop-types';
-import React, {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 
-function Edges(props) {
+function Edge(props) {
+    const [weight, setWeight] = useState(props.weight.toString());
 
     const drawDirectedEdge = (source, target, newX, newY, headlen, ctx) => {
         var angle = Math.atan2(target.y - source.y, target.x - source.x);
@@ -66,46 +67,69 @@ function Edges(props) {
         const ctx = canvas.getContext("2d");
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         props.edges.forEach(edge => {
-          draw(edge.source, edge.target);
+            draw(edge.source, edge.target);
         })
       });
 
+    const handleWeightChange = (e) => {
+        const newWeight = e.target.value;
+        props.addEdge(props.edges.map(edge =>{
+            return ((edge.source === props.source & edge.target === props.target 
+                  || edge.source === props.target & edge.target === props.source)) ? { ...edge, weight: parseInt(newWeight) } : edge;
+        }
+        ));
+        setWeight(newWeight);
+}
+
+    const setActualWeight = (e) => {
+        setWeight(e.target.value);
+    }
+
+
     return (
-        <div>
-            {props.isWeighted &&
-                props.edges.map(edge => {
-                    const source = props.vertices.find(vertex => vertex.index === edge.source);
-                    const target = props.vertices.find(vertex => vertex.index === edge.target);
+        <div className='weightedEdge'>
+            {props.isWeighted && (() => { 
+                    const source = props.vertices.find(vertex => vertex.index === props.source);
+                    const target = props.vertices.find(vertex => vertex.index === props.target);
                     const midX = (target.x + source.x) / 2;
                     const midY = (target.y + source.y) / 2;
                     if (source.x > target.x) {
                       const angle = Math.atan2(source.y - target.y, source.x - target.x) * 180 / Math.PI;
                       return (
                         <div >
-                          <input type='text' value={edge.weight} style={{position:"absolute", left:`${midX}px`, top: `${midY + 95}px`, 
+                          <input type='text' value={weight} style={{position:"absolute", left:`${midX}px`, top: `${midY + 95}px`, 
                                  transform:`translate(-50%, -50%) rotate(${angle}deg)`, textAlign: "center", transformOrigin:'center', 
-                                 background: 'none', border: 'none', outline: 'none'}}/>
+                                 background: 'none', border: 'none', outline: 'none'}}
+                                 onChange={setActualWeight}
+                                 onBlur={handleWeightChange} />
                         </div>
-                      )
+                      );
                     } else {
                       const angle = Math.atan2(target.y - source.y, target.x - source.x) * 180 / Math.PI;
                       return (
                         <div >
-                          <input type='text' value={edge.weight} style={{position:"absolute", left:`${midX}px`, top: `${midY + 95}px`, 
+                          <input type='text' value={weight} style={{position:"absolute", left:`${midX}px`, top: `${midY + 95}px`, 
                                  transform:`translate(-50%, -50%) rotate(${angle}deg)`, textAlign: "center", transformOrigin:'center', 
-                                 background: 'none', border: 'none', outline: 'none'}}/>
-                        </div>)
+                                 background: 'none', border: 'none', outline: 'none'}}
+                                 onChange={setActualWeight}
+                                 onBlur={handleWeightChange}/>
+                        </div>);
                     }
-                })}
+                })()
+                }
         </div>
     )
 }
 
-Edges.propTypes = {
+Edge.propTypes = {
     isWeighted: PropTypes.bool,
     isDirected: PropTypes.bool,
     vertices: PropTypes.array,
-    edges: PropTypes.array
+    addEdge: PropTypes.func,
+    edges: PropTypes.array,
+    weight: PropTypes.number,
+    source: PropTypes.number,
+    target: PropTypes.number,
   };
 
-export default Edges;
+export default Edge;

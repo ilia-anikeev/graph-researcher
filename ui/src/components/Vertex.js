@@ -7,9 +7,7 @@ function Vertex(props) {
     const noderef = useRef();
     const inputRef = useRef(null);
     const [data, setData] = useState(props.index.toString()); 
-    const [oldData, setOldData] = useState(props.index.toString()); 
-    
-
+    const [oldData, setOldData] = useState(props.index.toString());
 
     const handleDataChange = (e) => {
         const newData = e.target.value;
@@ -25,7 +23,6 @@ function Vertex(props) {
 
     const updateInputWidth = () => {
         if (inputRef.current) {
-            console.log(oldData.length, data.length);
             const newWidth = data.length >= 6 ? data.length + 1 : 5;
             inputRef.current.style.width = `${newWidth}ch`;
         }
@@ -43,7 +40,7 @@ function Vertex(props) {
             nodeRef={noderef}
             axis="both"
             defaultPosition={{ x: props.x - 25, y: props.y + 80}}
-            position={null}
+            position={props.isGraphArchiveMode || props.isUserGraphMode ? {x: props.x - 25, y:props.y + 80}  : null}
             grid={[1, 1]}
             scale={1}>
             <div className='vertex' ref={noderef}>
@@ -66,6 +63,8 @@ Vertex.propTypes = {
     addVertex: PropTypes.func,
     x: PropTypes.number,
     y: PropTypes.number,
+    isGraphArchiveMode: PropTypes.bool,
+    isUserGraphMode: PropTypes.bool
 };
 
 export default Vertex;

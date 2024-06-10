@@ -1,9 +1,18 @@
 import './Researcher.css'
-import GraphMetadata from "./GraphMetadata"
-import { useNavigate } from "react-router-dom";
 import PropTypes from 'prop-types';
+import React, { useContext, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import GraphMetadata from './GraphMetadata';
+import GraphArchive from './GraphArchive';
+import UserGraphs from './UserGraphs';
+import { UserContext } from './UserContex';
+
 
 function Researcher(props) {
+  const {userID} = useContext(UserContext);
+  const [graphName, setGraphName] = useState('');
+  const [isGraphSaveMode, setIsGraphSaveMode] = useState(false);
+  
   const navigate = useNavigate();
 
   const goToSignInPage = () => {
@@ -34,54 +43,146 @@ function Researcher(props) {
     props.setIsWeighted(!props.isWeighted);
   }
 
+  const saveGraph = () => {
+    setIsGraphSaveMode(false);
+    if (props.vertices.length === 0) {
+      return;
+    }
+    const hasMultipleEdges = props.hasMultipleEdges > 0 ? true : false;
+    const hasSelfLoops = props.hasSelfLoops > 0 ? true : false;
+    const edges = props.edges.map(edge => {
+        const source = props.vertices.find(vertex => vertex.index === edge.source);
+        const target = props.vertices.find(vertex => vertex.index === edge.target);
+        return {
+            source: {index: source.index, data: source.data},
+            target: {index: target.index, data: target.data},
+            weight: edge.weight,
+            data: edge.data
+        }
+    });
+
+    fetch('http://localhost:8080/save', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Connection': 'keep-alive'
+        },
+        body: JSON.stringify({
+            userID: userID,
+            graph: {
+                vertices: props.vertices,
+                edges: edges,
+                info: {
+                    graphName: graphName,
+                    isDirected: props.isDirected,
+                    isWeighted: props.isWeighted,
+                    hasSelfLoops: hasSelfLoops,
+                    hasMultipleEdges: hasMultipleEdges
+                }
+              }
+        }),
+    })
+    .catch(error => console.log(error));
+  }
+
+
   return (
     <div >
       <div>
         <p className='title'>Graph Researcher</p>
         </div>
-      <div className="menu">
-        <div ><button className='button' onClick={handleCreateVertexButton}> Create vertex</button>
+      <div className='menu'>
+        <div>
+            {
+              userID !== -1 ? <div>  <UserGraphs  addVertex={props.addVertex}
+                                                  addEdge={props.addEdge}
+                                                  updateVertexCount={props.updateVertexCount}
+                                                  setEdgeCounter={props.setEdgeCounter}
+                                                  setIsDirected={props.setIsDirected}
+                                                  setIsWeighted={props.setIsWeighted}
+                                                  setHasSelfLoops={props.setHasSelfLoops}
+                                                  sethasMultipleEdges={props.sethasMultipleEdges}
+                                                  setIsUserGraphMode={props.setIsUserGraphMode}
+                                                  setGraphName={setGraphName}/>
+                                <div style={{paddingTop: '2.5rem'}}>
+                                  <button className='button' onClick={handleCreateVertexButton}> Create vertex</button>
+                                </div>
+                              </div>
+                            : <div>
+                                <button className='button' onClick={handleCreateVertexButton}> Create vertex</button>
+                              </div>
+            }
         </div>
-        <div style={{paddingTop: "3rem"}}>
+        <div style={{paddingTop: '2.5rem'}}>
           <button className='button' onClick={handleCreateEdgeButton}> Create edge</button>
         </div>
-        <div style={{paddingTop: "3rem"}}>
+        <div style={{paddingTop: '2.5rem'}}>
           <button className='button' onClick={handleRemoveVertexButton}> Remove vertex</button>
         </div>
-        <div style={{paddingTop: "3rem"}}>
+        <div style={{paddingTop: '2.5rem'}}>
         <button className='button' onClick={handleRemoveEdgeButton}> Remove edge</button>
         </div>
-        <div style={{paddingTop: "3rem"}}>
+        <div style={{paddingTop: '2.5rem'}}>
             <GraphMetadata vertices={props.vertices}
                            edges={props.edges}
                            isWeighted={props.isWeighted}
                            isDirected={props.isDirected}
                            hasMultipleEdges={props.hasMultipleEdges}
-                           hasSelfLoops={props.hasSelfLoops}/>  
+                           hasSelfLoops={props.hasSelfLoops}
+                           graphName={graphName}
+                           setGraphName={setGraphName}/>  
         </div>  
-        <div style={{paddingTop: "3rem"}}>
+        <div style={{paddingTop: '2.5rem'}}>
           <div>
-            <label> <input type="checkbox" onChange={handleIsDirectedCheckbox}/>  
+            <label> <input type='checkbox' onChange={handleIsDirectedCheckbox}/>  
                 Directed
             </label>
           </div>
         </div>
-        <div style={{paddingTop: "3rem"}}>
+        <div style={{paddingTop: '2.5rem'}}>
           <div>
-            <label> <input type="checkbox" onChange={handleIsWeightedCheckbox}/>  
+            <label> <input type='checkbox' onChange={handleIsWeightedCheckbox}/>  
                 Weighted
             </label>
           </div>
         </div>
-        <div style={{paddingTop: "3rem"}}>
-            <button className='button' onClick={goToSignInPage}> SignIn</button>
-        </div>
+          {
+            userID === -1 &&  <div style={{paddingTop: '2.5rem'}}>
+                                <button className='button' onClick={goToSignInPage}> Sign In</button>
+                              </div>
+          }
+        <div style={{paddingTop: '2.5rem'}}>
+            <GraphArchive addVertex={props.addVertex}
+                          addEdge={props.addEdge}
+                          updateVertexCount={props.updateVertexCount}
+                          setEdgeCounter={props.setEdgeCounter}
+                          setIsDirected={props.setIsDirected}
+                          setIsWeighted={props.setIsWeighted}
+                          setHasSelfLoops={props.setHasSelfLoops}
+                          sethasMultipleEdges={props.sethasMultipleEdges}
+                          setIsGraphArchiveMode={props.setIsGraphArchiveMode}
+                          setGraphName={setGraphName}/>
+        </div> 
+        {
+          userID !== -1 && <div style={{paddingTop: '1.5rem'}}>
+                            <button onClick={() => {isGraphSaveMode ? setIsGraphSaveMode(false) 
+                                                   : setIsGraphSaveMode(true)}}> Save Graph</button>
+                           </div>
+        }
       </div>   
-      <div className="canvas">
+      {
+        isGraphSaveMode && <div className='background'> 
+        <div className='body'>
+          <input type='text' onChange={e => {setGraphName(e.target.value)}} placeholder='enter graph name'/>  
+          <button onClick={saveGraph}>Submit</button>
+        </div>
+        </div>
+      }
+      <div className='canvas'>
         <canvas 
-                id="canvas"
-                width={window.innerWidth-2}
-                height={window.innerHeight-112}>
+                id='canvas'
+                width={window.innerWidth-10}
+                height={window.innerHeight-114}>
                 Canvas
         </canvas>
       </div>
@@ -101,8 +202,16 @@ Researcher.propTypes = {
   isDirected: PropTypes.bool,
   hasSelfLoops: PropTypes.number,
   hasMultipleEdges: PropTypes.number,
+  addVertex: PropTypes.func,
+  addEdge: PropTypes.func,
+  updateVertexCount: PropTypes.func,
+  setEdgeCounter: PropTypes.func,
+  setHasSelfLoops: PropTypes.func,
+  sethasMultipleEdges: PropTypes.func,
   vertices: PropTypes.array,
-  edges: PropTypes.array
+  edges: PropTypes.array,
+  setIsGraphArchiveMode: PropTypes.func,
+  setIsUserGraphMode: PropTypes.func
 };
 
 export default Researcher;
