@@ -304,6 +304,7 @@ public class GraphManager {
         try (PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
             preparedStatement.setInt(1, graphID);
             ResultSet rs = preparedStatement.executeQuery();
+            rs.next();
             return getGraph(rs.getInt("subgraph_id"));
         } catch (SQLException e) {
             log.error("ID {}: subgraph haven't been received", graphID, e);

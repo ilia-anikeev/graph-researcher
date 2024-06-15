@@ -1,119 +1,119 @@
 package com.graphResearcher;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.graphResearcher.model.*;
 import com.graphResearcher.model.graphInfo.GraphResearchInfo;
-import com.graphResearcher.repository.InfoManager;
-import com.graphResearcher.repository.GraphManager;
-import com.graphResearcher.repository.UserManager;
+import com.graphResearcher.repository.*;
 import com.graphResearcher.service.GraphResearchService;
+import com.graphResearcher.util.GraphArchive;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
-//@SpringBootTest
 class GraphResearcherApplicationTests {
-    private GraphModel graph1;
-    private GraphModel graph2;
+    private final GraphModel simpleGraph;
+    private final GraphModel directedWeighedGraphWithLoops;
+    private final GraphModel directedGraph;
+
     private final GraphManager graphManager = new GraphManager();
     private final InfoManager infoManager = new InfoManager(graphManager);
-
     private final UserManager userManager = new UserManager(graphManager, infoManager);
 
     GraphResearcherApplicationTests() {
-        buildGraph1();
-        buildGraph2();
+        simpleGraph = buildSimpleGraph();
+        directedWeighedGraphWithLoops = buildDirectedWeighedGraphWithLoops();
+        directedGraph = buildDirectedGraph();
     }
-    @Test
-    void saveGraphTest1() {
+
+    private void saveTest(GraphModel graph) {
         int userID = 1;
         userManager.createUser(userID);
 
-        int graphID = graphManager.saveGraph(userID, graph1);
+        int graphID = graphManager.saveGraph(userID, graph);
         GraphModel receivedGraph = graphManager.getGraph(graphID);
-        assertEquals(graph1, receivedGraph);
+        assertEquals(graph, receivedGraph);
 
         userManager.deleteUser(userID);
+    }
+
+    private void testResearch(GraphModel graph) {
+        int userID = 1;
+        GraphResearchService service = new GraphResearchService();
+        userManager.createUser(userID);
+
+        int graphID = graphManager.saveGraph(userID, graph);
+        GraphResearchInfo info = service.research(graph);
+
+        infoManager.saveResearchInfo(userID, graphID, info);
+
+        GraphResearchInfo receivedInfo = infoManager.getResearchInfo(graphID);
+
+        assertEquals(info, receivedInfo);
+
+        assertEquals(new GraphResearchInfo(receivedInfo.toJson(), graph), info);
+
+        userManager.deleteUser(userID);
+    }
+
+    @Test
+    void saveGraphTest1() {
+        saveTest(simpleGraph);
     }
 
     @Test
     void saveGraphTest2() {
-        int userID = 2;
-        userManager.createUser(userID);
-
-        int graphID = graphManager.saveGraph(userID, graph2);
-        GraphModel receivedGraph = graphManager.getGraph(graphID);
-        assertEquals(graph2, receivedGraph);
-
-        userManager.deleteUser(userID);
+        saveTest(directedGraph);
     }
 
     @Test
-    void researchAndSave1() {
-        int userID = 1;
-        GraphResearchService service = new GraphResearchService();
-        userManager.createUser(userID);
-
-        int graphID = graphManager.saveGraph(userID, graph1);
-        GraphResearchInfo info = service.research(graph1);
-
-        infoManager.saveResearchInfo(userID, graphID, info);
-
-        GraphResearchInfo receivedInfo = infoManager.getResearchInfo(graphID);
-
-        assertEquals(info, receivedInfo);
-
-        userManager.deleteUser(userID);
+    void research1() {
+        testResearch(simpleGraph);
     }
 
     @Test
-    void researchAndSave2() {
-        int userID = 2;
-        GraphResearchService service = new GraphResearchService();
-        userManager.createUser(userID);
-
-        int graphID = graphManager.saveGraph(userID, graph2);
-        GraphResearchInfo info = service.research(graph2);
-        infoManager.saveResearchInfo(userID, graphID, info);
-
-        GraphResearchInfo receivedInfo = infoManager.getResearchInfo(graphID);
-
-        assertEquals(info, receivedInfo);
-
-        userManager.deleteUser(userID);
+    void research2() {
+        testResearch(directedGraph);
     }
 
     @Test
-    void researchAndSave3() {
-        int userID = 3;
-        GraphResearchService service = new GraphResearchService();
-        userManager.createUser(userID);
+    void research3() {
+        testResearch(directedWeighedGraphWithLoops);
+    }
 
-        int graphID1 = graphManager.saveGraph(userID, graph1);
-        GraphResearchInfo info1 = service.research(graph1);
+    @Test
+    void research4() {
+        testResearch(GraphArchive.getApollonianGraph());
+    }
 
-        infoManager.saveResearchInfo(userID, graphID1, info1);
+    @Test
+    void research5() {
+        testResearch(GraphArchive.getPetersenGraph());
+    }
 
-        GraphResearchInfo receivedInfo1 = infoManager.getResearchInfo(graphID1);
+    @Test
+    void research6() {
+        testResearch(GraphArchive.getChvatalGraph());
+    }
 
-        assertEquals(info1, receivedInfo1);
+    @Test
+    void research7() {
+        testResearch(GraphArchive.getHerschelGraph());
+    }
 
-        int graphID2 = graphManager.saveGraph(userID, graph2);
-        GraphResearchInfo info2 = service.research(graph2);
+    @Test
+    void research8() {
+        testResearch(GraphArchive.getGrotzschGraph());
+    }
 
-        infoManager.saveResearchInfo(userID, graphID2, info2);
+    @Test
+    void testConverter() throws JsonProcessingException {
 
-        GraphResearchInfo receivedInfo2 = infoManager.getResearchInfo(graphID2);
-
-        assertEquals(info2, receivedInfo2);
-
-        userManager.deleteUser(userID);
     }
 
 
-    private void buildGraph1() {
+    private GraphModel buildSimpleGraph() {
         ArrayList<Vertex> vertices = new ArrayList<>();
         Vertex v1 = new Vertex(1, "hi");
         Vertex v2 = new Vertex(2, "hello");
@@ -127,10 +127,40 @@ class GraphResearcherApplicationTests {
         edges.add(new Edge(v2, v3, 1.0, "buenos noches"));
         edges.add(new Edge(v3, v1, 1.0, "guten morgen"));
 
-        GraphMetadata info = new GraphMetadata("graph1", false, false, false, false);
-        graph1 = new GraphModel(vertices, edges, info);
+        GraphMetadata info = new GraphMetadata("simpleGraph", false, false, false, false);
+        return new GraphModel(vertices, edges, info);
     }
-    private void buildGraph2() {
+
+    private GraphModel buildDirectedGraph() {
+        ArrayList<Vertex> vertices = new ArrayList<>();
+        Vertex v1 = new Vertex(1, "");
+        Vertex v2 = new Vertex(2, "");
+        Vertex v3 = new Vertex(3, "");
+        Vertex v4 = new Vertex(4, "");
+        Vertex v5 = new Vertex(5, "");
+        Vertex v6 = new Vertex(6, "");
+        vertices.add(v1);
+        vertices.add(v2);
+        vertices.add(v3);
+        vertices.add(v4);
+        vertices.add(v5);
+        vertices.add(v6);
+
+        ArrayList<Edge> edges = new ArrayList<>();
+        edges.add(new Edge(v1, v2, 1.0, ""));
+        edges.add(new Edge(v2, v3, 1.0, ""));
+        edges.add(new Edge(v3, v1, 1.0, ""));
+        edges.add(new Edge(v3, v4, 1.0, ""));
+
+        edges.add(new Edge(v4, v5, 1.0, ""));
+        edges.add(new Edge(v5, v6, 1.0, ""));
+        edges.add(new Edge(v6, v4, 1.0, ""));
+
+        GraphMetadata metadata = new GraphMetadata("directedGraph", true, false, false, false);
+        return new GraphModel(vertices, edges, metadata);
+    }
+
+    private GraphModel buildDirectedWeighedGraphWithLoops() {
         ArrayList<Vertex> vertices = new ArrayList<>();
         Vertex v1 = new Vertex(1, "pu1");
         Vertex v2 = new Vertex(2, "pu2");
@@ -147,7 +177,7 @@ class GraphResearcherApplicationTests {
         edges.add(new Edge(v2, v3, 1.0, "pupupu1"));
         edges.add(new Edge(v4, v3, 1.0, "pupupu2"));
 
-        GraphMetadata metadata = new GraphMetadata("graph2", true, true, true, false);
-        graph2 = new GraphModel(vertices, edges, metadata);
+        GraphMetadata metadata = new GraphMetadata("directedWeighedGraphWithLoops", true, true, true, false);
+        return new GraphModel(vertices, edges, metadata);
     }
 }

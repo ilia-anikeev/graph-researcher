@@ -277,4 +277,53 @@ public class Converter {
         }
         return new GraphModel(vertexMap.values().stream().toList(), edges, metadata);
     }
+
+    public static List<Vertex> jsonArrayToVerticesList(JsonNode jsonNode) {
+        List<Vertex> vertexList = new ArrayList<>();
+        for (var node: jsonNode) {
+            vertexList.add(new Vertex(node));
+        }
+        return vertexList;
+    }
+
+    public static List<Edge> jsonArrayToEdgesList(JsonNode jsonNode) {
+        List<Edge> edgesList = new ArrayList<>();
+        for (var node: jsonNode) {
+            edgesList.add(new Edge(node));
+        }
+        return edgesList;
+    }
+
+    public static List<List<Vertex>> jsonArrayToListListVertices(JsonNode jsonNode) {
+        List<List<Vertex>> verticesListList = new ArrayList<>();
+        for (var arrNode: jsonNode) {
+            List<Vertex> vertexList = new ArrayList<>();
+            for (var node: arrNode) {
+                vertexList.add(new Vertex(node));
+            }
+            verticesListList.add(vertexList);
+        }
+        return verticesListList;
+    }
+
+    public static Map<Vertex, List<Edge>> jsonArrayToMapOfVertexAndListEdges(JsonNode jsonNode, List<Vertex> vertices) {
+        Map<Vertex, List<Edge>> map = new HashMap<>();
+
+        Map<Integer, Vertex> vertexMap = new HashMap<>();
+        for (var v: vertices) {
+            vertexMap.put(v.getIndex(), v);
+        }
+        int n = 1;
+        while (jsonNode.has(n)) {
+            JsonNode arr = jsonNode.get(n);
+            List<Edge> listEdges = new ArrayList<>();
+            for (var node: arr) {
+                listEdges.add(new Edge(node));
+            }
+            Vertex v = vertexMap.get(n);
+            map.put(v, listEdges);
+            n++;
+        }
+        return map;
+    }
 }

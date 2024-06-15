@@ -52,6 +52,40 @@ public class GraphResearchController {
         }
     }
 
+//    @PostMapping("/flow_research")
+//    public ResponseEntity<String> flowResearch(HttpServletRequest request) {
+//        try {
+//            String jsonString = request.getReader().lines().collect(Collectors.joining());
+//            ObjectMapper mapper = new ObjectMapper();
+//            JsonNode json = mapper.readTree(jsonString);
+//
+//            GraphModel graphModel = new GraphModel(json.get("graph"));
+//
+//            int userID = json.get("userID").asInt();
+//            int graphID = graphArchiveService.saveGraph(userID, graphModel);
+//
+//            int source = json.get("source").asInt();
+//            int sink = json.get("sink").asInt();
+//
+//            GraphResearchFlowInfo flowInfo = researchService.flowResearch(researchResult);
+//
+//            graphArchiveService.saveFlowResearch(userID, graphID, flowInfo);
+//
+//
+//            log.info("Research was successfully completed");
+//            return ResponseEntity.ok(flowInfo.toJson().toString());
+//        } catch (JsonProcessingException e) {
+//            log.error("Json parsing error", e);
+//            return ResponseEntity.badRequest().body("Wrong json format");
+//        } catch (IOException e) {
+//            log.error("Request parsing error", e);
+//            return ResponseEntity.badRequest().body("Wrong json format");
+//        } catch (Throwable e) {
+//            log.error("Server error", e);
+//            return ResponseEntity.internalServerError().body(e.getMessage());
+//        }
+//    }
+
     GraphResearchController(GraphResearchService researchService, GraphArchiveService saveService) {
         this.researchService = researchService;
         this.graphArchiveService = saveService;

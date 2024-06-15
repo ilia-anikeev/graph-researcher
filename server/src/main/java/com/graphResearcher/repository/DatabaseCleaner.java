@@ -30,9 +30,8 @@ public class DatabaseCleaner {
                     "coloring", "max_clique", "independent_set", "minimal_vertex_separator",
                     "partitions", "min_spanning_tree");
             for (String tableName: tables) {
-                String sql = "DROP TABLE ?";
+                String sql = "DROP TABLE " + tableName;
                 PreparedStatement preparedStatement = conn.prepareStatement(sql);
-                preparedStatement.setString(1, tableName);
                 preparedStatement.execute();
             }
 
