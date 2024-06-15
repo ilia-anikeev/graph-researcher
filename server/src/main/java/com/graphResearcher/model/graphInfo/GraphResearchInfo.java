@@ -1,6 +1,5 @@
 package com.graphResearcher.model.graphInfo;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -18,7 +17,7 @@ public class GraphResearchInfo {
 
     public BipartitePartitioningInfo bipartitePartitioningInfo = new BipartitePartitioningInfo();
 
-    public List<Edge> minSpanningTree; //TODO
+    public List<Edge> minSpanningTree;
 
 
     public JsonNode toJson() {
@@ -103,14 +102,6 @@ public class GraphResearchInfo {
                 planarityInfo.kuratowskiSubgraph = new GraphModel(json.get("kuratovskySubgraph"));
             }
         }
-//        if (planarityInfo.isPlanar != null) {
-//            json.put("isPlanar", planarityInfo.isPlanar);
-//            if (planarityInfo.isPlanar) {
-//                json.set("embedding", Converter.mapOfVertexAndListEdgesToJsonArray(planarityInfo.embedding));
-//            } else {
-//                json.set("kuratovskySubgraph", planarityInfo.kuratowskiSubgraph.toJson());
-//            }
-//        }
 
         if (json.has("isChordal")) {
             chordalityInfo.isChordal = json.get("isChordal").asBoolean();

@@ -30,6 +30,11 @@ public class Edge {
     }
 
     @Override
+    public int hashCode() {
+        return source.getIndex() + 17 * target.getIndex();
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (!(o instanceof Edge other)) {
             return false;

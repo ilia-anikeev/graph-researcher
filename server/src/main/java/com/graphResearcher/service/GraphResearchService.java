@@ -11,7 +11,9 @@ import org.jgrapht.alg.connectivity.BiconnectivityInspector;
 import org.jgrapht.alg.connectivity.ConnectivityInspector;
 import org.jgrapht.alg.cycle.ChordalGraphMinimalVertexSeparatorFinder;
 import org.jgrapht.alg.cycle.ChordalityInspector;
+import org.jgrapht.alg.flow.DinicMFImpl;
 import org.jgrapht.alg.independentset.ChordalGraphIndependentSetFinder;
+import org.jgrapht.alg.interfaces.MaximumFlowAlgorithm;
 import org.jgrapht.alg.interfaces.VertexColoringAlgorithm;
 import org.jgrapht.alg.partition.BipartitePartitioning;
 import org.jgrapht.alg.planar.BoyerMyrvoldPlanarityInspector;
@@ -21,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.io.DataOutput;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
@@ -43,15 +46,9 @@ public class GraphResearchService {
             planarityInfoFuture = executor.submit(planarityResearch(graph, graphModel.getMetadata()));
             chordalityInfoFuture = executor.submit(chordalityResearch(graph));
             bipartitePartitioningInfoFuture = executor.submit(bipartitePartitioningResearch(graph));
-        } else {
-
-            // flowResearch
         }
-            //cycleResearch
 
         spanningResearch(info, graph);
-
-            //VertexCover
 
         try {
             info.connectivityInfo = connectivityInfoFuture.get();
@@ -68,6 +65,33 @@ public class GraphResearchService {
             log.error("research error");
         }
         return info;
+    }
+
+    public FlowResearchInfo flowResearch(GraphModel graphModel, int source, int sink) {
+        FlowResearchInfo flowResearchInfo = new FlowResearchInfo();
+
+        Vertex sourceVertex = null;
+        Vertex sinkVertex = null;
+        for (Vertex v: graphModel.getVertices()) {
+            if (v.getIndex() == source) {
+                sourceVertex = v;
+            } else if (v.getIndex() == sink) {
+                sinkVertex = v;
+            }
+        }
+        Graph<Vertex, WeightedEdge> graph = Converter.graphModelToGraph(graphModel);
+
+        DinicMFImpl<Vertex, WeightedEdge> dinicMF = new DinicMFImpl<>(graph);
+        MaximumFlowAlgorithm.MaximumFlow<WeightedEdge> maximumFlow = dinicMF.getMaximumFlow(sourceVertex, sinkVertex);
+        flowResearchInfo.maxFlow = maximumFlow.getValue();
+        Map<Edge, Double> flow = new HashMap<>();
+        for (Edge e: graphModel.getEdges()) {
+            WeightedEdge weightedEdge = graph.getEdge(e.source, e.target);
+            double f = maximumFlow.getFlow(weightedEdge);
+            flow.put(e, f);
+        }
+        flowResearchInfo.flow = flow;
+        return flowResearchInfo;
     }
 
     private Callable<ConnectivityInfo> connectivityResearch(Graph<Vertex, WeightedEdge> graph) {

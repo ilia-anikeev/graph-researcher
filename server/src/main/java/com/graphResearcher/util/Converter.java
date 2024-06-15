@@ -95,13 +95,11 @@ public class Converter {
         );
     }
 
-    public static ArrayNode GraphModelListToJsonArray(List<GraphModel> list) {
-        return list.stream().map(GraphModel::toJson).collect(
-                mapper::createArrayNode,
-                ArrayNode::add,
-                ArrayNode::addAll
-        );
+    public static ArrayNode integerListToJsonArray(List<Integer> list) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        return objectMapper.valueToTree(list);
     }
+
 
     public static JsonNode mapOfVertexAndListEdgesToJsonArray(Map<Vertex, List<Edge>> map) {
         ObjectMapper objectMapper = new ObjectMapper();
@@ -110,6 +108,23 @@ public class Converter {
             json.set(entry.getKey().getIndex() + "", Converter.edgesListToJsonArray(entry.getValue()));
         }
         return json;
+    }
+
+    public static JsonNode mapOfEdgesAndDoublesToJsonArray(Map<Edge, Double> map) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        List<ObjectNode> innerJsonList = new ArrayList<>();
+        for (Map.Entry<Edge, Double> entry: map.entrySet()) {
+            ObjectNode innerJson = objectMapper.createObjectNode();
+            innerJson.set("edge", entry.getKey().toJson());
+            innerJson.put("flow", entry.getValue());
+
+            innerJsonList.add(innerJson);
+        }
+        return innerJsonList.stream().collect(
+                mapper::createArrayNode,
+                ArrayNode::add,
+                ArrayNode::addAll
+        );
     }
 
     public static GraphModel graphToGraphModel(Graph<Vertex, WeightedEdge> graph, GraphMetadata metadata) {
@@ -144,18 +159,6 @@ public class Converter {
             info.bipartitePartitioningInfo.isBipartite = null;
         }
         return info;
-    }
-
-    public static GraphModel listVertexToSubgraph(List<Vertex> vertices, GraphModel graph) {
-        Set<Vertex> vertexSet = new HashSet<>(vertices);
-
-        List<Edge> edges = new ArrayList<>();
-        for (Edge e : graph.getEdges()) {
-            if (vertexSet.contains(e.source) && vertexSet.contains(e.target)) {
-                edges.add(e);
-            }
-        }
-        return new GraphModel(vertices, edges, graph.getMetadata());
     }
 
     public static String getFields(GraphResearchInfo info, int graphID) {

@@ -1,16 +1,11 @@
 package com.graphResearcher.resources;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.graphResearcher.model.Edge;
-import com.graphResearcher.model.GraphMetadata;
 import com.graphResearcher.model.GraphModel;
-import com.graphResearcher.model.Vertex;
 import com.graphResearcher.model.graphInfo.GraphResearchInfo;
 
-import java.util.ArrayList;
 
 public class TestGraphs {
     public static final GraphModel simpleGraph = buildSimpleGraph();

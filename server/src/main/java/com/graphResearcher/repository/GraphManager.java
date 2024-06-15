@@ -203,7 +203,7 @@ public class GraphManager {
 
     void deleteKuratowskiSubgraph(int graphID, Connection conn) {
         String sql = "DELETE FROM kuratowski_subgraph WHERE graph_id = ?";
-        try (PreparedStatement preparedStatement = conn.prepareStatement(sql)){
+        try (PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
             preparedStatement.setInt(1, graphID);
             preparedStatement.execute();
         } catch (SQLException e) {
@@ -211,6 +211,7 @@ public class GraphManager {
             throw new RuntimeException(e);
         }
     }
+
     void deleteEmbedding(int graphID, Connection conn) {
         String sql = "DELETE FROM embedding WHERE graph_id = ?";
         try (PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
@@ -221,6 +222,19 @@ public class GraphManager {
             throw new RuntimeException(e);
         }
     }
+
+    void deleteFlowValue(int graphID, Connection conn) {
+        String sql = "DELETE FROM flow_value WHERE graph_id = ?";
+        try (PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
+            preparedStatement.setInt(1, graphID);
+            preparedStatement.execute();
+        } catch (SQLException e) {
+            log.error("ID {}: flow value hasn't been deleted", graphID, e);
+            throw new RuntimeException(e);
+        }
+    }
+
+
 
     List<List<Vertex>> getComponents(int graphID, String tableName, Connection conn) {
         Map<Integer, List<Vertex>> componentsMap = new HashMap<>();
@@ -272,7 +286,7 @@ public class GraphManager {
 
         String sql = "SELECT index, sequence_number, source, target, weight, data FROM embedding WHERE graph_id = ? AND index = ?";
         try (PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
-            for (Vertex v: vertices) {
+            for (Vertex v : vertices) {
                 preparedStatement.setInt(1, graphID);
                 preparedStatement.setInt(2, v.getIndex());
                 ResultSet rs = preparedStatement.executeQuery();
@@ -287,7 +301,7 @@ public class GraphManager {
                 for (int i = 0; i < sequence_edges.size(); ++i) {
                     listEdges.add(null);
                 }
-                for (Map.Entry<Integer, Edge> entry: sequence_edges.entrySet()) {
+                for (Map.Entry<Integer, Edge> entry : sequence_edges.entrySet()) {
                     listEdges.set(entry.getKey(), entry.getValue());
                 }
                 embedding.put(v, listEdges);
@@ -308,6 +322,19 @@ public class GraphManager {
             return getGraph(rs.getInt("subgraph_id"));
         } catch (SQLException e) {
             log.error("ID {}: subgraph haven't been received", graphID, e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    double getFlowValue(int graphID, Connection conn) {
+        String sql = "SELECT value FROM flow_value WHERE graph_id = ?";
+        try (PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
+            preparedStatement.setInt(1, graphID);
+            ResultSet rs = preparedStatement.executeQuery();
+            rs.next();
+            return rs.getDouble("value");
+        } catch (SQLException e) {
+            log.error("ID {}: flow value haven't been received", graphID, e);
             throw new RuntimeException(e);
         }
     }
@@ -334,7 +361,7 @@ public class GraphManager {
     void saveEmbedding(int graphID, Map<Vertex, List<Edge>> embedding, Connection conn) {
         String sql = "INSERT INTO embedding(graph_id, index, sequence_number, source, target, weight, data) VALUES(?, ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
-            for (var entry: embedding.entrySet()) {
+            for (var entry : embedding.entrySet()) {
                 for (int i = 0; i < entry.getValue().size(); ++i) {
                     Edge e = entry.getValue().get(i);
                     preparedStatement.setInt(1, graphID);
@@ -377,6 +404,18 @@ public class GraphManager {
                 preparedStatement.setString(4, perfectEliminationOrder.get(i).getData());
                 preparedStatement.executeUpdate();
             }
+        } catch (SQLException e) {
+            log.error("ID {}: vertices haven't been saved", graphID, e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    void saveFlowValue(int graphID, double value, Connection conn) {
+        String sql = "INSERT INTO flow_value(graph_id, value) VALUES(?, ?)";
+        try (PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
+            preparedStatement.setInt(1, graphID);
+            preparedStatement.setDouble(2, value);
+            preparedStatement.executeUpdate();
         } catch (SQLException e) {
             log.error("ID {}: vertices haven't been saved", graphID, e);
             throw new RuntimeException(e);

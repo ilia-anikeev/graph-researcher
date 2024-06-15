@@ -45,6 +45,8 @@ public class DatabaseInitializer {
 
             initMinSpanningTreeTable(conn);
 
+            initFlowValueTable(conn);
+
             log.info("Database initialization was successful");
         } catch (SQLException e) {
             log.error("Database haven't been initialized", e);
@@ -222,6 +224,16 @@ public class DatabaseInitializer {
             preparedStatement.execute();
         } catch (SQLException e) {
             log.error("Init spanning_tree table error", e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void initFlowValueTable(Connection conn) {
+        String sql = "CREATE TABLE flow_value(id SERIAL PRIMARY KEY, graph_id INT, value DOUBLE PRECISION)";
+        try (PreparedStatement preparedStatement = conn.prepareStatement(sql);){
+            preparedStatement.execute();
+        } catch (SQLException e) {
+            log.error("Init flow value table error", e);
             throw new RuntimeException(e);
         }
     }
