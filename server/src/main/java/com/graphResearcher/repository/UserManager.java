@@ -1,6 +1,5 @@
 package com.graphResearcher.repository;
 
-import com.graphResearcher.model.GraphModel;
 import com.graphResearcher.util.PropertiesUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,23 +31,22 @@ public class UserManager {
         dataSource = new DriverManagerDataSource(url, name, password);
     }
 
-    public List<GraphModel> getAllUserGraphs(int userID) {
-        List<GraphModel> graphModelList = new ArrayList<>();
+    public List<Integer> getAllUserGraphIDs(int userID) {
+        List<Integer> graphIDs = new ArrayList<>();
         String sql = "SELECT graph_id FROM graph_metadata WHERE user_id = ?";
         try (Connection conn = dataSource.getConnection();
              PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
             preparedStatement.setInt(1, userID);
             ResultSet rs = preparedStatement.executeQuery();
             while (rs.next()) {
-                int graphID = rs.getInt("graph_id");
-                GraphModel g = graphManager.getGraph(graphID, conn);
-                graphModelList.add(g);
+                int id = rs.getInt("graph_id");
+                graphIDs.add(id);
             }
         } catch (SQLException e) {
             log.error("userID {}: all user graphs haven't been received", userID);
             throw new RuntimeException(e);
         }
-        return graphModelList;
+        return graphIDs;
     }
 
     void deleteAllUserGraphs(int userID, Connection conn) {
@@ -81,7 +79,6 @@ public class UserManager {
 
 
     public void createUser(int userID) {
-        //TODO
     }
 
     public void deleteUser(int userID) {

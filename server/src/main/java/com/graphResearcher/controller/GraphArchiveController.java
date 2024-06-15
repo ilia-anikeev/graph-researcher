@@ -1,11 +1,13 @@
 package com.graphResearcher.controller;
 
 
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.graphResearcher.model.graphInfo.FlowResearchInfo;
+import com.graphResearcher.model.graphInfo.GraphResearchInfo;
 import com.graphResearcher.service.GraphArchiveService;
 import com.graphResearcher.util.Converter;
 import com.graphResearcher.util.GraphArchive;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -19,27 +21,34 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 @RestController
 public class GraphArchiveController {
     private final GraphArchiveService graphArchiveService;
     private static final Logger log = LoggerFactory.getLogger(GraphResearchController.class);
-
     @PostMapping("/save")
-    public ResponseEntity<String> saveGraph(String jsonString) {
-        ObjectMapper mapper = new ObjectMapper();
+    public ResponseEntity<String> save(@RequestParam int user_id, HttpServletRequest request) {
         try {
+            String jsonString = request.getReader().lines().collect(Collectors.joining());
+            ObjectMapper mapper = new ObjectMapper();
             JsonNode json = mapper.readTree(jsonString);
 
-            int userID = json.get("userID").asInt();
-
             GraphModel graph = new GraphModel(json.get("graph"));
+            int graphID = graphArchiveService.saveGraph(user_id, graph);
 
-            int graphID = graphArchiveService.saveGraph(userID, graph);
+            if (json.has("info")) {
+                GraphResearchInfo info = new GraphResearchInfo(json.get("info"), graph);
+                graphArchiveService.saveResearchResult(user_id, graphID, info);
+            }
+            if (json.has("flowInfo")) {
+                FlowResearchInfo flowResearchInfo = new FlowResearchInfo(json.get("flowInfo"));
+                graphArchiveService.saveFlowResult(graphID, flowResearchInfo);
+            }
 
             log.info("Graph has been saved");
-            return ResponseEntity.ok("Graph has been saved with ID" + graphID);
+            return ResponseEntity.ok(Integer.toString(graphID));
         } catch (JsonProcessingException e) {
             log.error("Json parsing error", e);
             return ResponseEntity.badRequest().body("Wrong json format");
@@ -50,17 +59,16 @@ public class GraphArchiveController {
     }
 
     @GetMapping("/get_all_graphs")
-    public ResponseEntity<String> getAllUserGraphs(@RequestParam int user_id) {
+    public ResponseEntity<String> getAllUserGraphIDs(@RequestParam int user_id) {
         ObjectMapper mapper = new ObjectMapper();
         try {
-            List<GraphModel> graphModelList = graphArchiveService.getAllUserGraphs(user_id);
-            ArrayNode arr = Converter.GraphModelListToJsonArray(graphModelList);
+            List<Integer> graphIDs = graphArchiveService.getAllUserGraphIDs(user_id);
+            ObjectNode json = mapper.createObjectNode();
 
-            ObjectNode jsonResponse = mapper.createObjectNode();
-            jsonResponse.set("graphs", arr);
+            json.set("ids", Converter.integerListToJsonArray(graphIDs));
 
-            log.info("Graphs was received");
-            return ResponseEntity.ok(jsonResponse.toString());
+            log.info("GraphIDs were sent");
+            return ResponseEntity.ok(json.toString());
         } catch (Throwable e) {
             log.error("Server error", e);
             return ResponseEntity.internalServerError().body(e.getMessage());
@@ -83,12 +91,42 @@ public class GraphArchiveController {
         }
     }
 
+    @GetMapping("/get_graph_info")
+    public ResponseEntity<String> getGraphInfo(@RequestParam int graph_id) {
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            GraphResearchInfo info = graphArchiveService.getGraphInfo(graph_id);
+
+            ObjectNode jsonResponse = mapper.createObjectNode();
+            jsonResponse.set("info", info.toJson());
+
+            log.info("Graph was received");
+            return ResponseEntity.ok(jsonResponse.toString());
+        } catch (Throwable e) {
+            return ResponseEntity.badRequest().body("graph doesn't exist");
+        }
+    }
+
     @PostMapping("/delete_graph")
     public ResponseEntity<String> deleteGraph(@RequestParam int graph_id) {
         try {
             graphArchiveService.deleteGraph(graph_id);
             log.info("Graph was removed");
-            return ResponseEntity.ok("Graph " + graph_id + " was removed");
+            return ResponseEntity.ok("");
+        } catch (Throwable e) {
+            return ResponseEntity.badRequest().body("graph doesn't exist");
+        }
+    }
+
+    @PostMapping("/delete_all_user_graphs")
+    public ResponseEntity<String> deleteAllUserGraphs(@RequestParam int user_id) {
+        try {
+            List<Integer> graphIDs = graphArchiveService.getAllUserGraphIDs(user_id);
+            for (int id: graphIDs) {
+                graphArchiveService.deleteGraph(id);
+            }
+            log.info("All user graphs were removed");
+            return ResponseEntity.ok("");
         } catch (Throwable e) {
             return ResponseEntity.badRequest().body("graph doesn't exist");
         }

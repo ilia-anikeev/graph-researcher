@@ -109,6 +109,16 @@ public class InfoManager {
         }
     }
 
+    public void saveFlowResearch(int graphID, FlowResearchInfo flowResearchInfo) {
+        try (Connection conn = dataSource.getConnection()) {
+            graphManager.saveFlowValue(graphID, flowResearchInfo.maxFlow, conn);
+
+        } catch (SQLException e) {
+            log.error("ID {}: flow research info haven't been saved", graphID, e);
+            throw new RuntimeException(e);
+        }
+    }
+
     public ConnectivityInfo getConnectivityInfo(int graphID, ConnectivityInfo connectivityInfo, Connection conn) {
         connectivityInfo.articulationPoints = graphManager.getVertices(graphID, "articulation_points", conn);
         connectivityInfo.bridges = graphManager.getEdges(graphID, "bridges", conn);
@@ -195,6 +205,8 @@ public class InfoManager {
             graphManager.deleteVertices(graphID, "minimal_vertex_separator", conn);
             graphManager.deleteVertices(graphID, "partitions", conn);
             graphManager.deletePerfectEliminationOrder(graphID, conn);
+
+            graphManager.deleteFlowValue(graphID, conn);
 
             log.info("ID {}: graph info have been deleted", graphID);
         } catch (SQLException e) {
