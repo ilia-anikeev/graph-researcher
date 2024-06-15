@@ -3,9 +3,12 @@ package com.graphResearcher.controller;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.graphResearcher.model.graphInfo.GraphResearchInfo;
 import com.graphResearcher.service.GraphArchiveService;
+import com.graphResearcher.service.GraphResearchService;
 import com.graphResearcher.util.Converter;
 import com.graphResearcher.util.GraphArchive;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -19,24 +22,27 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 @RestController
 public class GraphArchiveController {
     private final GraphArchiveService graphArchiveService;
     private static final Logger log = LoggerFactory.getLogger(GraphResearchController.class);
-
     @PostMapping("/save")
-    public ResponseEntity<String> saveGraph(String jsonString) {
-        ObjectMapper mapper = new ObjectMapper();
+    public ResponseEntity<String> saveGraph(@RequestParam int user_id, HttpServletRequest request) {
         try {
+            String jsonString = request.getReader().lines().collect(Collectors.joining());
+            ObjectMapper mapper = new ObjectMapper();
             JsonNode json = mapper.readTree(jsonString);
 
-            int userID = json.get("userID").asInt();
-
             GraphModel graph = new GraphModel(json.get("graph"));
+            int graphID = graphArchiveService.saveGraph(user_id, graph);
 
-            int graphID = graphArchiveService.saveGraph(userID, graph);
+            if (json.has("info")) {
+                GraphResearchInfo info = new GraphResearchInfo(json.get("info"), graph);
+                graphArchiveService.saveResearchResult(user_id, graphID, info);
+            }
 
             log.info("Graph has been saved");
             return ResponseEntity.ok("Graph has been saved with ID" + graphID);

@@ -20,7 +20,6 @@ import java.util.stream.Collectors;
 public class GraphResearchController {
     private static final Logger log = LoggerFactory.getLogger(GraphResearchController.class);
     private final GraphResearchService researchService;
-    private final GraphArchiveService graphArchiveService;
 
     @PostMapping("/research")
     public ResponseEntity<String> research(HttpServletRequest request) {
@@ -31,15 +30,10 @@ public class GraphResearchController {
 
             GraphModel graphModel = new GraphModel(json.get("graph"));
 
-            int userID = json.get("userID").asInt();
-            int graphID = graphArchiveService.saveGraph(userID, graphModel);
-
-            GraphResearchInfo researchResult = researchService.research(graphModel);
-
-            graphArchiveService.saveResearchResult(userID, graphID, researchResult);
+            GraphResearchInfo result = researchService.research(graphModel);
 
             log.info("Research was successfully completed");
-            return ResponseEntity.ok(researchResult.toJson().toString());
+            return ResponseEntity.ok(result.toJson().toString());
         } catch (JsonProcessingException e) {
             log.error("Json parsing error", e);
             return ResponseEntity.badRequest().body("Wrong json format");
@@ -52,8 +46,8 @@ public class GraphResearchController {
         }
     }
 
-//    @PostMapping("/flow_research")
-//    public ResponseEntity<String> flowResearch(HttpServletRequest request) {
+//    @PostMapping("/research")
+//    public ResponseEntity<String> research(HttpServletRequest request) {
 //        try {
 //            String jsonString = request.getReader().lines().collect(Collectors.joining());
 //            ObjectMapper mapper = new ObjectMapper();
@@ -64,16 +58,12 @@ public class GraphResearchController {
 //            int userID = json.get("userID").asInt();
 //            int graphID = graphArchiveService.saveGraph(userID, graphModel);
 //
-//            int source = json.get("source").asInt();
-//            int sink = json.get("sink").asInt();
+//            GraphResearchInfo researchResult = researchService.research(graphModel);
 //
-//            GraphResearchFlowInfo flowInfo = researchService.flowResearch(researchResult);
-//
-//            graphArchiveService.saveFlowResearch(userID, graphID, flowInfo);
-//
+//            graphArchiveService.saveResearchResult(userID, graphID, researchResult);
 //
 //            log.info("Research was successfully completed");
-//            return ResponseEntity.ok(flowInfo.toJson().toString());
+//            return ResponseEntity.ok(researchResult.toJson().toString());
 //        } catch (JsonProcessingException e) {
 //            log.error("Json parsing error", e);
 //            return ResponseEntity.badRequest().body("Wrong json format");
@@ -86,8 +76,7 @@ public class GraphResearchController {
 //        }
 //    }
 
-    GraphResearchController(GraphResearchService researchService, GraphArchiveService saveService) {
+    GraphResearchController(GraphResearchService researchService) {
         this.researchService = researchService;
-        this.graphArchiveService = saveService;
     }
 }
