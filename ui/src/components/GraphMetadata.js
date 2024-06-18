@@ -50,12 +50,11 @@ function GraphMetadata(props){
                         hasSelfLoops: hasSelfLoops,
                         hasMultipleEdges: hasMultipleEdges
                     }
-
                 }
             }),
         })
         .then(response => response.json())
-        .then(metaData => {setGraphMetaData(metaData)})
+        .then(metaData => {setGraphMetaData(metaData); console.log(metaData)})
         .catch(error => {
             setErrorMessage('Something went wrong, try again'); 
             setGraphMetaData(null);
@@ -111,7 +110,7 @@ function GraphMetadata(props){
                 return 'Planar';
             case 'embedding':
                 return 'Embedding';
-            case 'kuratowskiSubgraph':
+            case 'kuratovskySubgraph':
                 return 'Kuratowski Subgraph';
             case 'isChordal':
                 return 'Chordal';
@@ -140,7 +139,7 @@ function GraphMetadata(props){
 
     const saveGraph = () => {
         const {hasMultipleEdges, hasSelfLoops, edges} = getCorrectData();
-        fetch('http://localhost:8080/save', {                              //TODO
+        fetch('http://localhost:8080/save?user_id=' + userID, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -158,8 +157,8 @@ function GraphMetadata(props){
                         hasSelfLoops: hasSelfLoops,
                         hasMultipleEdges: hasMultipleEdges
                     },
-                    researchInfo: graphMetaData
-                }
+                },
+                info: graphMetaData
             }),
         })
         .catch(error => console.log(error));

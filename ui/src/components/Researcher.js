@@ -61,7 +61,7 @@ function Researcher(props) {
         }
     });
 
-    fetch('http://localhost:8080/save', {
+    fetch('http://localhost:8080/save?user_id=' + userID, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -82,6 +82,7 @@ function Researcher(props) {
               }
         }),
     })
+    .then(response => console.log(response))
     .catch(error => console.log(error));
   }
 

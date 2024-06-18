@@ -10,7 +10,7 @@ function UserGraphs(props) {
     const { userID } = useContext(UserContext);
     const [userGraphs, setUserGraphs] = useState(null);
 
-    
+
     const getAllUserGraphs = () => {
       setIsOpen(true); 
       props.setIsUserGraphMode(true);
@@ -27,13 +27,6 @@ function UserGraphs(props) {
     }
 
 
-    useEffect (() => {
-        if (!isOpen){
-            props.setIsUserGraphMode(false);
-        }
-    })
-
-
     const getGraphById = (graphId) => {
         fetch('http://localhost:8080/get_graph?graph_id=' + graphId, {
             method: 'GET',
@@ -45,6 +38,20 @@ function UserGraphs(props) {
           .then(response => response.json())
           .then(graph => {displayGraph(graph['graph']); console.log(graph)})
           .catch(error => console.log(error));
+    }
+
+    
+    const deleteGraphById = (graphId) => {
+        fetch('http://localhost:8080/delete_graph?graph_id=' + graphId, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Connection': 'keep-alive'
+            },
+            body: {}
+          })
+          .catch(error => console.log(error));
+          delete userGraphs[graphId];
     }
 
 
@@ -82,13 +89,22 @@ function UserGraphs(props) {
         
         clear();
         setIsOpen(false);
-    }    
+    }
+
+
+    useEffect (() => {
+        if (!isOpen){
+            props.setIsUserGraphMode(false);
+        }
+    })
+
 
     const clear = () => {
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext("2d");
         ctx.clearRect(0, 0, canvas.width, canvas.height);
     }
+
 
     return (
       <div>
@@ -100,6 +116,7 @@ function UserGraphs(props) {
                               {userGraphs ? Object.entries(userGraphs).map(([id, value]) => (
                                   <div>
                                       <button onClick={() => getGraphById(id)}>{value}</button>
+                                      <button onClick={() => deleteGraphById(id)}> Delete </button>
                                   </div>
                               )) : null}
                           </div>
