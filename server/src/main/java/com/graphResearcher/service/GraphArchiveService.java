@@ -10,6 +10,7 @@ import com.graphResearcher.repository.InfoManager;
 import com.graphResearcher.model.GraphModel;
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class GraphArchiveService {
@@ -30,7 +31,7 @@ public class GraphArchiveService {
         infoManager.saveFlowResearch(graphID, flowResearchInfo);
     }
 
-    public List<Integer> getAllUserGraphIDs(int userID) {
+    public Map<Integer, String> getAllUserGraphIDs(int userID) {
         return userManager.getAllUserGraphIDs(userID);
     }
 
