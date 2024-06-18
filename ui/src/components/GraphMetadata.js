@@ -7,8 +7,10 @@ import '../index.css';
 function GraphMetadata(props){
     const [isOpen, setState] = useState(false);
     const [graphMetaData, setGraphMetaData] = useState(null);
+    const [flowResearch, setFlowResearch] = useState(null);
     const [errorMessage, setErrorMessage] = useState('');
     const [isGraphSaveMode, setIsGraphSaveMode] = useState(false);
+
     const { userID } = useContext(UserContext);
 
     const getCorrectData = () => {
@@ -54,12 +56,48 @@ function GraphMetadata(props){
             }),
         })
         .then(response => response.json())
-        .then(metaData => {setGraphMetaData(metaData); console.log(metaData)})
+        .then(metaData => setGraphMetaData(metaData))
         .catch(error => {
             setErrorMessage('Something went wrong, try again'); 
             setGraphMetaData(null);
         });
+
+        if (props.source === '' || props.sink === '') {
+            setFlowResearch(null);
+            return;
+        }
+
+        fetch('http://localhost:8080/flow_research?source=' + props.source + '&sink=' + props.sink, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Connection': 'keep-alive'
+            },
+            body: JSON.stringify({
+                userID: userID,
+                graph: {
+                    vertices: props.vertices,
+                    edges: edges,
+                    info: {
+                        graphName: 'graphName',
+                        isDirected: props.isDirected,
+                        isWeighted: props.isWeighted,
+                        hasSelfLoops: hasSelfLoops,
+                        hasMultipleEdges: hasMultipleEdges
+                    }
+                }
+            }),
+        })
+        .then(response => response.json())
+        .then(flowResearch => setFlowResearch(flowResearch))
+        .catch(error => {
+            setErrorMessage('Something went wrong, try again'); 
+            setGraphMetaData(null);
+        });
+        props.setSource('');
+        props.setSink('');
     }
+
 
     const getString = (data) => {
         var stringData = '';
@@ -105,7 +143,7 @@ function GraphMetadata(props){
             case 'connectedComponents':
                 return 'Connected Components';
             case 'blocks':
-                return 'Blocks';        
+                return 'Blocks';
             case 'isPlanar':
                 return 'Planar';
             case 'embedding':
@@ -185,6 +223,21 @@ function GraphMetadata(props){
                             {errorMessage}
                         </p>
                     }
+                    {
+                        flowResearch ? <p> Max Flow : {flowResearch ? flowResearch['maxFlow'] : ''} </p>
+                        : null
+                    }
+                    {
+                        flowResearch ? 
+                            flowResearch['flow'].map(key => {
+                                return(
+                                    <div>
+                                        <p> {'{' + key['edge']['source']['data'] + '-' + key['edge']['target']['data'] + '} :' + key['flow']}</p>
+                                    </div>
+                                )
+                            })
+                        : null
+                    }
                     <div>
                         {
                          userID !== -1 && <button style={{alignSelf: 'left'}} 
@@ -216,7 +269,11 @@ GraphMetadata.propTypes = {
     hasSelfLoops: PropTypes.number,
     hasMultipleEdges: PropTypes.number,
     graphName: PropTypes.string,
-    setGraphName: PropTypes.func
+    setGraphName: PropTypes.func,
+    source: PropTypes.string,
+    sink: PropTypes.string,
+    setSource: PropTypes.func,
+    setSink: PropTypes.func
 }
 
 export default GraphMetadata;

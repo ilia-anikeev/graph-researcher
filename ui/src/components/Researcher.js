@@ -11,6 +11,8 @@ import { UserContext } from './UserContex';
 function Researcher(props) {
   const {userID} = useContext(UserContext);
   const [graphName, setGraphName] = useState('');
+  const [source, setSource] = useState('');
+  const [sink, setSink] = useState('');
   const [isGraphSaveMode, setIsGraphSaveMode] = useState(false);
   
   const navigate = useNavigate();
@@ -87,6 +89,18 @@ function Researcher(props) {
   }
 
 
+    const setFlowResearch = (vertex, isSource) => {
+      if (props.vertices !== null) {
+        const v = props.vertices.find(v => v.data === vertex);
+        if (isSource) {
+          setSource(v.index.toString());
+        } else {
+          setSink(v.index.toString());
+        }
+      }
+    }
+
+
   return (
     <div >
       <div>
@@ -105,7 +119,7 @@ function Researcher(props) {
                                                   sethasMultipleEdges={props.sethasMultipleEdges}
                                                   setIsUserGraphMode={props.setIsUserGraphMode}
                                                   setGraphName={setGraphName}/>
-                                <div style={{paddingTop: '2.5rem'}}>
+                                <div style={{paddingTop: '1.5rem'}}>
                                   <button className='button' onClick={handleCreateVertexButton}> Create vertex</button>
                                 </div>
                               </div>
@@ -114,16 +128,16 @@ function Researcher(props) {
                               </div>
             }
         </div>
-        <div style={{paddingTop: '2.5rem'}}>
+        <div style={{paddingTop: '1.5rem'}}>
           <button className='button' onClick={handleCreateEdgeButton}> Create edge</button>
         </div>
-        <div style={{paddingTop: '2.5rem'}}>
+        <div style={{paddingTop: '1.5rem'}}>
           <button className='button' onClick={handleRemoveVertexButton}> Remove vertex</button>
         </div>
-        <div style={{paddingTop: '2.5rem'}}>
+        <div style={{paddingTop: '1.5rem'}}>
         <button className='button' onClick={handleRemoveEdgeButton}> Remove edge</button>
         </div>
-        <div style={{paddingTop: '2.5rem'}}>
+        <div style={{paddingTop: '1.5rem'}}>
             <GraphMetadata vertices={props.vertices}
                            edges={props.edges}
                            isWeighted={props.isWeighted}
@@ -131,16 +145,31 @@ function Researcher(props) {
                            hasMultipleEdges={props.hasMultipleEdges}
                            hasSelfLoops={props.hasSelfLoops}
                            graphName={graphName}
-                           setGraphName={setGraphName}/>  
-        </div>  
-        <div style={{paddingTop: '2.5rem'}}>
+                           setGraphName={setGraphName}
+                           source={source}
+                           sink={sink}
+                           setSource={setSource}
+                           setSink={setSink}/>  
+        </div>
+        {
+          props.isDirected && props.isWeighted &&
+          <div>
+            <div style={{paddingTop: '1.5rem'}}>
+              <input type='text' value={source} onChange={e => setFlowResearch(e.target.value, true)} style={{width: '94px'}} placeholder='source'/>
+            </div>
+            <div style={{paddingTop: '1.5rem'}}>
+              <input type='text' value={sink} onChange={e => setFlowResearch(e.target.value, false)} style={{width: '94px'}} placeholder='target'/>
+            </div>
+          </div>
+        }  
+        <div style={{paddingTop: '1.5rem'}}>
           <div>
             <label> <input type='checkbox' onChange={handleIsDirectedCheckbox}/>  
                 Directed
             </label>
           </div>
         </div>
-        <div style={{paddingTop: '2.5rem'}}>
+        <div style={{paddingTop: '1.5rem'}}>
           <div>
             <label> <input type='checkbox' onChange={handleIsWeightedCheckbox}/>  
                 Weighted
@@ -148,11 +177,11 @@ function Researcher(props) {
           </div>
         </div>
           {
-            userID === -1 &&  <div style={{paddingTop: '2.5rem'}}>
+            userID === -1 &&  <div style={{paddingTop: '1.5rem'}}>
                                 <button className='button' onClick={goToSignInPage}> Sign In</button>
                               </div>
           }
-        <div style={{paddingTop: '2.5rem'}}>
+        <div style={{paddingTop: '1.5rem'}}>
             <GraphArchive addVertex={props.addVertex}
                           addEdge={props.addEdge}
                           updateVertexCount={props.updateVertexCount}
@@ -166,7 +195,7 @@ function Researcher(props) {
         </div> 
         {
           userID !== -1 && <div style={{paddingTop: '1.5rem'}}>
-                            <button onClick={() => {isGraphSaveMode ? setIsGraphSaveMode(false) 
+                            <button className='button' onClick={() => {isGraphSaveMode ? setIsGraphSaveMode(false) 
                                                    : setIsGraphSaveMode(true)}}> Save Graph</button>
                            </div>
         }

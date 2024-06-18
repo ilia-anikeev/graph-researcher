@@ -22,7 +22,7 @@ function UserGraphs(props) {
           }
         })
         .then(response => response.json())
-        .then(graphs => {setUserGraphs(graphs); console.log(graphs, userID)})
+        .then(graphs => setUserGraphs(graphs))
         .catch(error => console.log(error));
     }
 
@@ -36,11 +36,11 @@ function UserGraphs(props) {
             }
           })
           .then(response => response.json())
-          .then(graph => {displayGraph(graph['graph']); console.log(graph)})
+          .then(graph => displayGraph(graph['graph']))
           .catch(error => console.log(error));
     }
 
-    
+
     const deleteGraphById = (graphId) => {
         fetch('http://localhost:8080/delete_graph?graph_id=' + graphId, {
             method: 'POST',
@@ -113,12 +113,13 @@ function UserGraphs(props) {
           isOpen &&   <div className='UserGraphs'>
                           <div className='UserGraphs-body'>
                               <button onClick={() => setIsOpen(false)}>close</button>
-                              {userGraphs ? Object.entries(userGraphs).map(([id, value]) => (
-                                  <div>
+                              {userGraphs ? Object.entries(userGraphs).map(([id, value]) => {
+                                return( id !== 'ids' ?
+                                    <div>
                                       <button onClick={() => getGraphById(id)}>{value}</button>
                                       <button onClick={() => deleteGraphById(id)}> Delete </button>
-                                  </div>
-                              )) : null}
+                                  </div> : <div></div>)
+                                }) : null}
                           </div>
                       </div>
           }
