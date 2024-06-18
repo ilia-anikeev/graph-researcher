@@ -20,7 +20,9 @@ import org.slf4j.Logger;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 
@@ -62,10 +64,14 @@ public class GraphArchiveController {
     public ResponseEntity<String> getAllUserGraphIDs(@RequestParam int user_id) {
         ObjectMapper mapper = new ObjectMapper();
         try {
-            List<Integer> graphIDs = graphArchiveService.getAllUserGraphIDs(user_id);
+            Map<Integer, String> graphIDs = graphArchiveService.getAllUserGraphIDs(user_id);
             ObjectNode json = mapper.createObjectNode();
 
-            json.set("ids", Converter.integerListToJsonArray(graphIDs));
+            json.set("ids", Converter.integerListToJsonArray(graphIDs.keySet().stream().toList()));
+
+            for (Map.Entry<Integer, String> entry: graphIDs.entrySet()) {
+                json.put(String.valueOf(entry.getKey()), entry.getValue());
+            }
 
             log.info("GraphIDs were sent");
             return ResponseEntity.ok(json.toString());
@@ -121,7 +127,7 @@ public class GraphArchiveController {
     @PostMapping("/delete_all_user_graphs")
     public ResponseEntity<String> deleteAllUserGraphs(@RequestParam int user_id) {
         try {
-            List<Integer> graphIDs = graphArchiveService.getAllUserGraphIDs(user_id);
+            List<Integer> graphIDs = graphArchiveService.getAllUserGraphIDs(user_id).keySet().stream().toList();
             for (int id: graphIDs) {
                 graphArchiveService.deleteGraph(id);
             }

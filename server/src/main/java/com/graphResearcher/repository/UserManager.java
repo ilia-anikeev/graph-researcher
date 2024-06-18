@@ -12,7 +12,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Repository
 public class UserManager {
@@ -31,16 +33,17 @@ public class UserManager {
         dataSource = new DriverManagerDataSource(url, name, password);
     }
 
-    public List<Integer> getAllUserGraphIDs(int userID) {
-        List<Integer> graphIDs = new ArrayList<>();
-        String sql = "SELECT graph_id FROM graph_metadata WHERE user_id = ?";
+    public Map<Integer, String> getAllUserGraphIDs(int userID) {
+        Map<Integer, String> graphIDs = new HashMap<>();
+        String sql = "SELECT graph_id, graph_name FROM graph_metadata WHERE user_id = ?";
         try (Connection conn = dataSource.getConnection();
              PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
             preparedStatement.setInt(1, userID);
             ResultSet rs = preparedStatement.executeQuery();
             while (rs.next()) {
                 int id = rs.getInt("graph_id");
-                graphIDs.add(id);
+                String graphName = rs.getString("graph_name");
+                graphIDs.put(id, graphName);
             }
         } catch (SQLException e) {
             log.error("userID {}: all user graphs haven't been received", userID);
