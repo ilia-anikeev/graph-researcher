@@ -10,8 +10,7 @@ function UserGraphs(props) {
     const { userID } = useContext(UserContext);
     const [userGraphs, setUserGraphs] = useState(null);
 
-      
-
+    
     const getAllUserGraphs = () => {
       setIsOpen(true); 
       props.setIsUserGraphMode(true);
@@ -23,15 +22,30 @@ function UserGraphs(props) {
           }
         })
         .then(response => response.json())
-        .then(graphs => setUserGraphs(graphs))
+        .then(graphs => {setUserGraphs(graphs); console.log(graphs, userID)})
         .catch(error => console.log(error));
     }
+
 
     useEffect (() => {
         if (!isOpen){
             props.setIsUserGraphMode(false);
         }
     })
+
+
+    const getGraphById = (graphId) => {
+        fetch('http://localhost:8080/get_graph?graph_id=' + graphId, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Connection': 'keep-alive'
+            }
+          })
+          .then(response => response.json())
+          .then(graph => {displayGraph(graph['graph']); console.log(graph)})
+          .catch(error => console.log(error));
+    }
 
 
     const displayGraph = (graph) => {
@@ -83,9 +97,9 @@ function UserGraphs(props) {
           isOpen &&   <div className='UserGraphs'>
                           <div className='UserGraphs-body'>
                               <button onClick={() => setIsOpen(false)}>close</button>
-                              {userGraphs ? userGraphs['graphs'].map(graph => (
+                              {userGraphs ? Object.entries(userGraphs).map(([id, value]) => (
                                   <div>
-                                      <button onClick={() => displayGraph(graph)}>{graph['info']['graphName']}</button>
+                                      <button onClick={() => getGraphById(id)}>{value}</button>
                                   </div>
                               )) : null}
                           </div>
