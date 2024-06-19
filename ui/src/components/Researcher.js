@@ -2,10 +2,12 @@ import './Researcher.css'
 import PropTypes from 'prop-types';
 import React, { useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import GraphMetadata from './GraphMetadata';
-import GraphArchive from './GraphArchive';
-import UserGraphs from './UserGraphs';
+import { Button, Checkbox, Input } from 'antd'
 import { UserContext } from './UserContex';
+import ResearchInfo from './ResearchInfo';
+import GraphArchive from './GraphArchive';
+import UserGraphs from './UserGraphs'
+
 
 
 function Researcher(props) {
@@ -16,6 +18,7 @@ function Researcher(props) {
   const [isGraphSaveMode, setIsGraphSaveMode] = useState(false);
   
   const navigate = useNavigate();
+
 
   const goToSignInPage = () => {
     navigate('/signIn');
@@ -44,6 +47,7 @@ function Researcher(props) {
   const handleIsWeightedCheckbox = () => {
     props.setIsWeighted(!props.isWeighted);
   }
+
 
   const saveGraph = () => {
     setIsGraphSaveMode(false);
@@ -120,25 +124,25 @@ function Researcher(props) {
                                                   setIsUserGraphMode={props.setIsUserGraphMode}
                                                   setGraphName={setGraphName}/>
                                 <div style={{paddingTop: '1.5rem'}}>
-                                  <button className='button' onClick={handleCreateVertexButton}> Create vertex</button>
+                                  <Button className='button' onClick={handleCreateVertexButton} type='text' block> Create vertex</Button>
                                 </div>
                               </div>
                             : <div>
-                                <button className='button' onClick={handleCreateVertexButton}> Create vertex</button>
+                                <Button className='button' onClick={handleCreateVertexButton} type='text' block> Create vertex</Button>
                               </div>
             }
         </div>
         <div style={{paddingTop: '1.5rem'}}>
-          <button className='button' onClick={handleCreateEdgeButton}> Create edge</button>
+          <Button className='button' onClick={handleCreateEdgeButton} type='text' block> Create edge</Button>
         </div>
         <div style={{paddingTop: '1.5rem'}}>
-          <button className='button' onClick={handleRemoveVertexButton}> Remove vertex</button>
+          <Button className='button' onClick={handleRemoveVertexButton} type='text' block> Remove vertex</Button>
         </div>
         <div style={{paddingTop: '1.5rem'}}>
-        <button className='button' onClick={handleRemoveEdgeButton}> Remove edge</button>
+        <Button className='button' onClick={handleRemoveEdgeButton} type='text' block> Remove edge</Button>
         </div>
         <div style={{paddingTop: '1.5rem'}}>
-            <GraphMetadata vertices={props.vertices}
+            <ResearchInfo vertices={props.vertices}
                            edges={props.edges}
                            isWeighted={props.isWeighted}
                            isDirected={props.isDirected}
@@ -149,38 +153,35 @@ function Researcher(props) {
                            source={source}
                            sink={sink}
                            setSource={setSource}
-                           setSink={setSink}/>  
+                           setSink={setSink}/>
         </div>
         {
           props.isDirected && props.isWeighted &&
           <div>
-            <div style={{paddingTop: '1.5rem'}}>
-              <input type='text' value={source} onChange={e => setFlowResearch(e.target.value, true)} style={{width: '94px'}} placeholder='source'/>
+            <div style={{paddingTop: '1.5rem', paddingLeft: '1.7rem'}}>
+              <Input type='text' value={source} onChange={e => setFlowResearch(e.target.value, true)} style={{width: '94px'}} placeholder='source'/>
             </div>
-            <div style={{paddingTop: '1.5rem'}}>
-              <input type='text' value={sink} onChange={e => setFlowResearch(e.target.value, false)} style={{width: '94px'}} placeholder='target'/>
+            <div style={{paddingTop: '1.5rem', paddingLeft: '1.7rem'}}>
+              <Input type='text' value={sink} onChange={e => setFlowResearch(e.target.value, false)} style={{width: '94px'}} placeholder='target'/>
             </div>
           </div>
-        }  
-        <div style={{paddingTop: '1.5rem'}}>
+        }
+        <div style={{paddingTop: '1.5rem', paddingLeft: '1.7rem'}}>
           <div>
-            <label> <input type='checkbox' onChange={handleIsDirectedCheckbox}/>  
-                Directed
+            <label> 
+              <Checkbox onChange={handleIsDirectedCheckbox}> Directed </Checkbox>
             </label>
           </div>
         </div>
-        <div style={{paddingTop: '1.5rem'}}>
+        <div style={{paddingTop: '1.5rem', paddingLeft: '1.7rem'}}>
           <div>
-            <label> <input type='checkbox' onChange={handleIsWeightedCheckbox}/>  
+            <label>
+              <Checkbox onChange={handleIsWeightedCheckbox}>
                 Weighted
+              </Checkbox>
             </label>
           </div>
         </div>
-          {
-            userID === -1 &&  <div style={{paddingTop: '1.5rem'}}>
-                                <button className='button' onClick={goToSignInPage}> Sign In</button>
-                              </div>
-          }
         <div style={{paddingTop: '1.5rem'}}>
             <GraphArchive addVertex={props.addVertex}
                           addEdge={props.addEdge}
@@ -192,24 +193,29 @@ function Researcher(props) {
                           sethasMultipleEdges={props.sethasMultipleEdges}
                           setIsGraphArchiveMode={props.setIsGraphArchiveMode}
                           setGraphName={setGraphName}/>
-        </div> 
+        </div>
+        {
+            userID === -1 &&  <div style={{paddingTop: '1.5rem'}}>
+                                <Button className='button' onClick={goToSignInPage} type='text' block> Sign In</Button>
+                              </div>
+        }
         {
           userID !== -1 && <div style={{paddingTop: '1.5rem'}}>
-                            <button className='button' onClick={() => {isGraphSaveMode ? setIsGraphSaveMode(false) 
-                                                   : setIsGraphSaveMode(true)}}> Save Graph</button>
+                            <Button className='button' onClick={() => {isGraphSaveMode ? setIsGraphSaveMode(false)
+                                                   : setIsGraphSaveMode(true)}} type='text' block> Save Graph</Button>
                            </div>
         }
-      </div>   
+      </div>
       {
-        isGraphSaveMode && <div className='background'> 
-        <div className='body'>
-          <input type='text' onChange={e => {setGraphName(e.target.value)}} placeholder='enter graph name'/>  
-          <button onClick={saveGraph}>Submit</button>
+        isGraphSaveMode && <div className='background'>
+        <div className='nameBody'>
+          <Input style={{width: '200px'}} onChange={e => {setGraphName(e.target.value)}} placeholder='enter graph name'/>
+          <Button onClick={saveGraph}>Submit</Button>
         </div>
         </div>
       }
       <div className='canvas'>
-        <canvas 
+        <canvas
                 id='canvas'
                 width={window.innerWidth-10}
                 height={window.innerHeight-114}>

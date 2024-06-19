@@ -1,10 +1,12 @@
 import React, { useState, useContext } from 'react';
-import PropTypes from 'prop-types';
-import './GraphMetadata.css';
+import { Button, Input } from 'antd';
+import { CloseOutlined } from '@ant-design/icons';
 import { UserContext } from './UserContex';
+import PropTypes from 'prop-types';
+import './ResearchInfo.css';
 import '../index.css';
 
-function GraphMetadata(props){
+function ResearchInfo(props){
     const [isOpen, setState] = useState(false);
     const [graphMetaData, setGraphMetaData] = useState(null);
     const [flowResearch, setFlowResearch] = useState(null);
@@ -12,6 +14,7 @@ function GraphMetadata(props){
     const [isGraphSaveMode, setIsGraphSaveMode] = useState(false);
 
     const { userID } = useContext(UserContext);
+
 
     const getCorrectData = () => {
         const hasMultipleEdges = props.hasMultipleEdges > 0 ? true : false;
@@ -28,6 +31,7 @@ function GraphMetadata(props){
         })
         return {hasMultipleEdges, hasSelfLoops, edges}
     }
+
 
     const getGraphMetadata = () => {
         setState(true);
@@ -58,7 +62,7 @@ function GraphMetadata(props){
         .then(response => response.json())
         .then(metaData => setGraphMetaData(metaData))
         .catch(error => {
-            setErrorMessage('Something went wrong, try again'); 
+            setErrorMessage('Something went wrong, try again');
             setGraphMetaData(null);
         });
 
@@ -91,7 +95,7 @@ function GraphMetadata(props){
         .then(response => response.json())
         .then(flowResearch => setFlowResearch(flowResearch))
         .catch(error => {
-            setErrorMessage('Something went wrong, try again'); 
+            setErrorMessage('Something went wrong, try again');
             setGraphMetaData(null);
         });
         props.setSource('');
@@ -106,7 +110,7 @@ function GraphMetadata(props){
                 if (getString(data[i]) === '') {
                     continue;
                 }
-                stringData += stringData === '' ? getString(data[i]) : ', ' + getString(data[i]); 
+                stringData += stringData === '' ? getString(data[i]) : ', ' + getString(data[i]);
             }
         }
         if (data != null && 'source' in data && 'target' in data) {
@@ -120,6 +124,7 @@ function GraphMetadata(props){
         return Array.isArray(data) && stringData !== '' && stringData[0] !== '[' ? '[' + stringData + ']' : stringData;
     }
 
+
     const getStringData = (data) => {
         if (Array.isArray(data)) {
             return getString(data) === '' ? 'no' : getString(data);
@@ -130,7 +135,8 @@ function GraphMetadata(props){
         return data ? 'yes' : 'no';
     }
 
-   const getStringKey = (key) => {
+
+    const getStringKey = (key) => {
         switch (key){
             case 'isConnected':
                 return 'Connected';
@@ -165,15 +171,16 @@ function GraphMetadata(props){
             case 'minimal_vertex_separator':
                 return 'Minimal Vertex Separator';
             case 'isBipartite':
-                return 'Bipartite';    
+                return 'Bipartite';
             case 'partitions':
                 return 'Partitions';
             case 'min_spanning_tree':
                 return 'Min Spanning Tree';
             default :
-                return '';    
+                return '';
         }
-    }    
+    }
+
 
     const saveGraph = () => {
         const {hasMultipleEdges, hasSelfLoops, edges} = getCorrectData();
@@ -206,11 +213,14 @@ function GraphMetadata(props){
 
     return (
         <div>
-            <button className='button' onClick={getGraphMetadata}>      
-                    Research      
-            </button>
-            {isOpen && <div className='GraphMetadata'>
-                <div className='GraphMetadata-body'>
+            <Button className='button' onClick={getGraphMetadata} type='text' block>
+                    Research
+            </Button>
+            {isOpen && <div className='graphMetadata'>
+                <div className='graphMetadataBody'>
+                    <div style={{float: 'right'}}>
+                        <Button onClick={() => setState(false)} icon={<CloseOutlined />}/>
+                    </div>
                     <h1 style={{textAlign: 'center'}}>Info</h1>
                     {graphMetaData ? Object.keys(graphMetaData).map(key => {
                         return (
@@ -218,7 +228,7 @@ function GraphMetadata(props){
                                 <p> {getStringKey(key.toString())} : {getStringData(graphMetaData[key])} </p>
                             </div>
                         )
-                    }) : 
+                    }) :
                         <p>
                             {errorMessage}
                         </p>
@@ -240,20 +250,17 @@ function GraphMetadata(props){
                     }
                     <div>
                         {
-                         userID !== -1 && <button style={{alignSelf: 'left'}} 
-                                onClick={() => setIsGraphSaveMode(true)}> Save </button>
-                        }
-                        {
-                            isGraphSaveMode && 
-                            <input type='text'placeholder='enter graph name' onChange={(e) => props.setGraphName(e.target.value)}/>
-                        }
-                        {
-                            isGraphSaveMode && <button onClick={saveGraph}>Submit</button>
+                         userID !== -1 && <Button style={{alignSelf: 'left', marginBottom: '7px'}}
+                                onClick={() => setIsGraphSaveMode(true)}> Save </Button>
                         }
                     </div>
-                    <div style={{paddingTop: '1rem'}}>
-                        <button onClick={() => setState(false)}>Close</button>
-                    </div>
+                    {
+                        isGraphSaveMode && 
+                        <Input style={{width: '140px'}} placeholder='enter graph name' onChange={(e) => props.setGraphName(e.target.value)}/>
+                    }
+                    {
+                        isGraphSaveMode && <Button style={{marginLeft: '4px'}} onClick={saveGraph}>Submit</Button>
+                    }
                 </div>
             </div>
             }
@@ -261,7 +268,7 @@ function GraphMetadata(props){
     )
 }
 
-GraphMetadata.propTypes = {
+ResearchInfo.propTypes = {
     vertices: PropTypes.array,
     edges: PropTypes.array,
     isWeighted: PropTypes.bool,
@@ -276,4 +283,4 @@ GraphMetadata.propTypes = {
     setSink: PropTypes.func
 }
 
-export default GraphMetadata;
+export default ResearchInfo;

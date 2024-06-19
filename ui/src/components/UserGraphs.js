@@ -1,7 +1,10 @@
+import React, { useState, useContext, useEffect } from 'react';
+import { Button } from 'antd';
+import { CloseOutlined } from '@ant-design/icons';
+import { DeleteOutlined } from '@ant-design/icons';
+import { UserContext } from './UserContex';
 import './UserGraphs.css'
 import PropTypes from 'prop-types';
-import React, { useState, useContext, useEffect } from 'react';
-import { UserContext } from './UserContex';
 
 
 
@@ -74,7 +77,7 @@ function UserGraphs(props) {
                         id: j + 1,
                         weight: edges[j].weight,
                         data: edges[j].data
-                        } 
+                        }
         }
 
         props.addVertex(vertices);
@@ -84,9 +87,9 @@ function UserGraphs(props) {
         props.setIsDirected(graph['info']['isDirected']);
         props.setIsWeighted(graph['info']['isWeighted']);
         props.setHasSelfLoops(graph['info']['hasSelfLoops'] | 0);
-        props.sethasMultipleEdges(graph['info']['hasMultipleEdges'] | 0); 
+        props.sethasMultipleEdges(graph['info']['hasMultipleEdges'] | 0);
         props.setGraphName(graph['info']['graphName']);
-        
+
         clear();
         setIsOpen(false);
     }
@@ -108,18 +111,22 @@ function UserGraphs(props) {
 
     return (
       <div>
-         <button className='button' onClick={getAllUserGraphs}> Graphs </button>
+         <Button className='button' onClick={getAllUserGraphs} type='text' block> Graphs </Button>
          {
           isOpen &&   <div className='UserGraphs'>
                           <div className='UserGraphs-body'>
-                              <button onClick={() => setIsOpen(false)}>close</button>
-                              {userGraphs ? Object.entries(userGraphs).map(([id, value]) => {
-                                return( id !== 'ids' ?
-                                    <div>
-                                      <button onClick={() => getGraphById(id)}>{value}</button>
-                                      <button onClick={() => deleteGraphById(id)}> Delete </button>
-                                  </div> : <div></div>)
+                            <div style={{float: 'right'}}>
+                            <Button onClick={() => setIsOpen(false)} icon={<CloseOutlined/>}></Button>
+                            </div>
+                            <div style={{marginTop: '40px'}}>
+                                {userGraphs ? Object.entries(userGraphs).map(([id, value]) => {
+                                    return( id !== 'ids' ?
+                                        <div style={{paddingTop: '1rem'}}>
+                                            <Button style={{paddingLeft: '130px', paddingRight: '130px'}} onClick={() => getGraphById(id)}>{value}</Button>
+                                            <Button style={{float: 'right'}} onClick={() => deleteGraphById(id)} icon={<DeleteOutlined/>}></Button>
+                                        </div> : null)
                                 }) : null}
+                            </div>
                           </div>
                       </div>
           }
@@ -135,7 +142,7 @@ UserGraphs.propTypes = {
     updateVertexCount: PropTypes.func,
     setEdgeCounter: PropTypes.func,
     setIsDirected: PropTypes.func,
-    setIsWeighted: PropTypes.func, 
+    setIsWeighted: PropTypes.func,
     setHasSelfLoops: PropTypes.func,
     sethasMultipleEdges: PropTypes.func,
     setIsUserGraphMode: PropTypes.func,

@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react';
+import { Button } from 'antd';
+import { CloseOutlined } from '@ant-design/icons';
 import PropTypes from 'prop-types';
 import '../index.css';
 import './GraphArchive.css';
@@ -12,11 +14,13 @@ function GraphArchive(props) {
         props.setIsGraphArchiveMode(true);
     }
 
+
     useEffect (() => {
         if (!isOpen){
             props.setIsGraphArchiveMode(false);
         }
     })
+
 
     const displayGraph = (graph) => {
         var vertices = graph['graph']['vertices'];
@@ -38,7 +42,7 @@ function GraphArchive(props) {
                         id: j + 1,
                         weight: edges[j].weight,
                         data: edges[j].data
-                        } 
+                        }
         }
 
         props.addVertex(vertices);
@@ -48,11 +52,12 @@ function GraphArchive(props) {
         props.setIsDirected(graph['graph']['info']['isDirected']);
         props.setIsWeighted(graph['graph']['info']['isWeighted']);
         props.setHasSelfLoops(graph['graph']['info']['hasSelfLoops'] | 0);
-        props.sethasMultipleEdges(graph['graph']['info']['hasMultipleEdges'] | 0); 
+        props.sethasMultipleEdges(graph['graph']['info']['hasMultipleEdges'] | 0);
         props.setGraphName(graph['graph']['info']['graphName']);
 
         setIsOpen(false);
     }
+
 
     const getGraph = (name) => {
         fetch('http://localhost:8080/get_famous_graph?graph_name=' + name, {
@@ -66,6 +71,7 @@ function GraphArchive(props) {
         .then(graph => displayGraph(graph))
         .catch(error => console.log(error));
     }
+
 
     const getPetersenGraph = () => {
         getGraph('Petersen');
@@ -90,36 +96,36 @@ function GraphArchive(props) {
 
     return (
         <div>
-            <button className='button' onClick={openGraphArchive}> Graph Archive</button>
+            <Button className='button' onClick={openGraphArchive} type='text' block> Graph Archive</Button>
             {isOpen && <div className='GraphArchive'>
                             <div className='GraphArchive-body'>
+                                <Button style={{marginBottom: '1.5rem', float: 'right'}} onClick={() => setIsOpen(false)} icon={<CloseOutlined/>}></Button>
                                 <div style={{paddingTop: '2.7rem'}}>
-                                    <button className='GraphButton' onClick={getPetersenGraph}> 
-                                        Petersen graph
-                                    </button>
+                                    <Button className='GraphButton' onClick={getPetersenGraph}>
+                                        Petersen Graph
+                                    </Button>
                                 </div>
                                 <div style={{paddingTop: '2.7rem'}}>
-                                    <button className='GraphButton' onClick={getHerschelGraph}>  
-                                        Herschel graph
-                                    </button>
+                                    <Button className='GraphButton' onClick={getHerschelGraph}>
+                                        Herschel Graph
+                                    </Button>
                                 </div>
                                 <div style={{paddingTop: '2.7rem'}}>
-                                    <button className='GraphButton' onClick={getApollonianNetwork}> 
-                                        Apollonian network
-                                    </button>
+                                    <Button className='GraphButton' onClick={getApollonianNetwork}>
+                                        Apollonian Network
+                                    </Button>
                                 </div>
                                 <div style={{paddingTop: '2.7rem'}}>
-                                    <button className='GraphButton' onClick={getChvatalGraph}> 
-                                        Chvátal graph
-                                    </button>
+                                    <Button className='GraphButton' onClick={getChvatalGraph}>
+                                        Chvátal Graph
+                                    </Button>
                                 </div>
                                 <div style={{paddingTop: '2.7rem'}}>
-                                    <button className='GraphButton' onClick={getGrotzschGraph}> 
+                                    <Button className='GraphButton' onClick={getGrotzschGraph}>
                                         Grötzsch Graph
-                                    </button>
+                                    </Button>
                                 </div>
-                                <button style={{alignSelf: 'right', marginTop: '2.7rem'}} onClick={() => setIsOpen(false)}>Close</button>
-                            </div> 
+                            </div>
                         </div>}
         </div>
     )
@@ -133,7 +139,7 @@ GraphArchive.propTypes = {
     updateVertexCount: PropTypes.func,
     setEdgeCounter: PropTypes.func,
     setIsDirected: PropTypes.func,
-    setIsWeighted: PropTypes.func, 
+    setIsWeighted: PropTypes.func,
     setHasSelfLoops: PropTypes.func,
     sethasMultipleEdges: PropTypes.func,
     setIsGraphArchiveMode: PropTypes.func,

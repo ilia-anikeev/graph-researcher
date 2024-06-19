@@ -6,15 +6,16 @@
     text-align: center;
     font-size: 40px;
     background: rgba(0, 0, 0, 0.2);
+    user-select: none;
 }
-  
+
 .canvas{
     background: white;
     position: static
 }
+
 .edges{
   position: absolute;
-  
 }
 
 .button{
@@ -27,11 +28,11 @@
 .menu{
   padding-top: 3rem;
   position: absolute;
-  padding-left: 2rem;
   background: rgba(0, 0, 0, 0.2);
-  width: 140px;
+  width: 150px;
   height: 770px;
 }
+
 .in{
   position: relative;
   background: none;
@@ -44,15 +45,15 @@
   top: 0;
   right: 0;
   bottom: 0;
-  left: 175px;
+  left: 165px;
   background: none;
   display: flex;
   justify-content: left;
-  padding-top: 55.6rem;
+  padding-top: 48.6rem;
 }
 
-.body{
-  background: none; 
+.nameBody{
+  background: none;
   left: 200px;
   width: 420px;
   height: 200px;
