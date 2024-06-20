@@ -6,7 +6,9 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.graphResearcher.model.*;
 import com.graphResearcher.util.Converter;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class GraphResearchInfo {
     public ConnectivityInfo connectivityInfo = new ConnectivityInfo();
@@ -76,7 +78,8 @@ public class GraphResearchInfo {
             equals &= chordalityInfo.equals(other.chordalityInfo);
         }
         equals &= bipartitePartitioningInfo.equals(other.bipartitePartitioningInfo);
-        equals &= minSpanningTree.equals(other.minSpanningTree);
+        Set<Edge> st = new HashSet<>(minSpanningTree);
+        equals &= st.equals(new HashSet<>(other.minSpanningTree));
         return equals;
     }
 
