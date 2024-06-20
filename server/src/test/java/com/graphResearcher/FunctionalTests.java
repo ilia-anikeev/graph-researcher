@@ -46,7 +46,6 @@ public class FunctionalTests {
         testResearch(TestGraphs.directedWeighedGraph, TestGraphs.directedWeighedGraphInfo);
     }
 
-
     @Test
     public void testSaveSimpleGraph() {
         testSave(TestGraphs.simpleGraph, TestGraphs.simpleGraphInfo);
@@ -92,12 +91,12 @@ public class FunctionalTests {
                 }).blockLast();
         assert graphIDs != null;
         for (int id: graphIDs) {
-            testGetGraph(id);
-            testDeleteGraph(id);
+            getGraph(id);
+            deleteGraph(id);
         }
     }
 
-    public void testDeleteGraph(int id) {
+    public void deleteGraph(int id) {
         webTestClient.post()
                 .uri(uriBuilder -> uriBuilder.path("/delete_graph")
                         .queryParam("graph_id", id)
@@ -146,7 +145,7 @@ public class FunctionalTests {
 
 
 
-    public void testGetGraph(int id) {
+    public void getGraph(int id) {
         webTestClient.get()
                 .uri(uriBuilder -> uriBuilder.path("/get_graph")
                         .queryParam("graph_id", id)
