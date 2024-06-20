@@ -107,14 +107,20 @@ public class GraphResearchService {
 
         connectivityInfo.articulationPoints = new ArrayList<>(biconnectivityInspector.getCutpoints());
 
-        connectivityInfo.bridges = biconnectivityInspector.getBridges().stream()
+        Set<WeightedEdge> bridges = biconnectivityInspector.getBridges();
+        connectivityInfo.bridges = bridges.stream()
                 .map(WeightedEdge::toEdge)
                 .collect(Collectors.toList());
 
-        connectivityInfo.connectedComponents = connectivityInspector.connectedSets().stream().map(v -> (List<Vertex>) new ArrayList<>(v)).toList();
+        List<Set<Vertex>> components = connectivityInspector.connectedSets();
+        connectivityInfo.connectedComponents = components.stream()
+                .map(v -> (List<Vertex>) new ArrayList<>(v))
+                .toList();
 
-        connectivityInfo.blocks = biconnectivityInspector.getBlocks().stream()
-                .map(block -> (List<Vertex>) new ArrayList<>(block.vertexSet())).toList();
+        Set<Graph<Vertex, WeightedEdge>> blocks = biconnectivityInspector.getBlocks();
+        connectivityInfo.blocks = blocks.stream()
+                .map(block -> (List<Vertex>) new ArrayList<>(block.vertexSet()))
+                .toList();
         return CompletableFuture.completedFuture(connectivityInfo);
     }
 
@@ -127,11 +133,13 @@ public class GraphResearchService {
         if (planarityInfo.isPlanar) {
             Map<Vertex, List<Edge>> embedding = new HashMap<>();
             for (Vertex v : graph.vertexSet()) {
-                embedding.put(v, planarityInspector.getEmbedding().getEdgesAround(v).stream().map(WeightedEdge::toEdge).toList());
+                List<WeightedEdge> edges = planarityInspector.getEmbedding().getEdgesAround(v);
+                embedding.put(v, edges.stream().map(WeightedEdge::toEdge).toList());
             }
             planarityInfo.embedding = embedding;
         } else {
-            planarityInfo.kuratowskiSubgraph = Converter.graphToGraphModel(planarityInspector.getKuratowskiSubdivision(), metadata);
+            Graph<Vertex, WeightedEdge> kuratowskiSubdivision = planarityInspector.getKuratowskiSubdivision();
+            planarityInfo.kuratowskiSubgraph = Converter.graphToGraphModel(kuratowskiSubdivision, metadata);
         }
 
         return CompletableFuture.completedFuture(planarityInfo);
@@ -153,10 +161,16 @@ public class GraphResearchService {
             ChordalGraphColoring<Vertex, WeightedEdge> coloringResearcher = new ChordalGraphColoring<>(graph);
             VertexColoringAlgorithm.Coloring<Vertex> coloring = coloringResearcher.getColoring();
             chordalityInfo.chromaticNumber = coloring.getNumberColors();
-            chordalityInfo.coloring = coloring.getColorClasses().stream().map(st -> (List<Vertex>) new ArrayList<>(st)).toList();
+
+            List<Set<Vertex>> colors = coloring.getColorClasses();
+            chordalityInfo.coloring = colors.stream().map(st -> (List<Vertex>) new ArrayList<>(st)).toList();
 
             ChordalGraphMinimalVertexSeparatorFinder<Vertex, WeightedEdge> minimalVertexSeparatorFinder = new ChordalGraphMinimalVertexSeparatorFinder<>(graph);
-            chordalityInfo.minimalVertexSeparator = minimalVertexSeparatorFinder.getMinimalSeparators().stream().map(Set::stream).map(Stream::toList).toList();
+            Set<Set<Vertex>> minimalVertexSeparators = minimalVertexSeparatorFinder.getMinimalSeparators();
+            chordalityInfo.minimalVertexSeparator = minimalVertexSeparators.stream()
+                    .map(Set::stream)
+                    .map(Stream::toList)
+                    .toList();
         }
         return CompletableFuture.completedFuture(chordalityInfo);
     }

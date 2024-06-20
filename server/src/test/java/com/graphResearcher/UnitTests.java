@@ -33,26 +33,27 @@ class UnitTests {
     }
 
     private void testResearch(GraphModel graph) {
+        int userID = 1;
+        GraphResearchService service = new GraphResearchService();
+        userManager.createUser(userID);
+
+        int graphID = graphManager.saveGraph(userID, graph);
+        GraphResearchInfo info;
         try {
-            int userID = 1;
-            GraphResearchService service = new GraphResearchService();
-            userManager.createUser(userID);
-
-            int graphID = graphManager.saveGraph(userID, graph);
-            GraphResearchInfo info = service.research(graph).get();
-
-            infoManager.saveResearchInfo(userID, graphID, info);
-
-            GraphResearchInfo receivedInfo = infoManager.getResearchInfo(graphID);
-
-            assertEquals(info, receivedInfo);
-
-            assertEquals(new GraphResearchInfo(receivedInfo.toJson(), graph), info);
-
-            userManager.deleteUser(userID);
-        } catch (Throwable e) {
+            info = service.research(graph).get();
+        } catch (ExecutionException | InterruptedException e) {
             throw new RuntimeException(e);
         }
+
+        infoManager.saveResearchInfo(userID, graphID, info);
+
+        GraphResearchInfo receivedInfo = infoManager.getResearchInfo(graphID);
+
+        assertEquals(info, receivedInfo);
+
+        assertEquals(new GraphResearchInfo(receivedInfo.toJson(), graph), info);
+
+        userManager.deleteUser(userID);
     }
 
     @Test
@@ -64,6 +65,7 @@ class UnitTests {
     void saveGraphTest2() {
         saveTest(TestGraphs.directedGraph);
     }
+
     @Test
     void saveGraphTest3() {
         saveTest(TestGraphs.directedWeighedGraph);
