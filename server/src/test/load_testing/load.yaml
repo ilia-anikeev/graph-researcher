@@ -1,0 +1,11 @@
+phantom:
+  address: localhost:8080 # [Target's address]:[target's port]
+  uris:
+    - /get_all_graphs?user_id=1
+  load_profile:
+    load_type: rps
+    schedule: line(300, 1000, 1m)
+console:
+  enabled: true
+telegraf:
+  enabled: false

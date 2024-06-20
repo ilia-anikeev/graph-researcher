@@ -81,7 +81,6 @@ public class InfoManager {
         }
     }
 
-
     public void saveResearchInfo(int userID, int graphID, GraphResearchInfo info) {
         try (Connection conn = dataSource.getConnection()) {
             saveConnectivityInfo(graphID, info.connectivityInfo, conn);

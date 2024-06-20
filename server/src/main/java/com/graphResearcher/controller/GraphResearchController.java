@@ -4,8 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.graphResearcher.model.*;
-import com.graphResearcher.model.graphInfo.FlowResearchInfo;
-import com.graphResearcher.model.graphInfo.GraphResearchInfo;
+import com.graphResearcher.model.graphInfo.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -31,7 +30,7 @@ public class GraphResearchController {
 
             GraphModel graphModel = new GraphModel(json.get("graph"));
 
-            GraphResearchInfo result = researchService.research(graphModel);
+            GraphResearchInfo result = researchService.research(graphModel).get();
 
             log.info("Research was successfully completed");
             return ResponseEntity.ok(result.toJson().toString());
@@ -56,7 +55,7 @@ public class GraphResearchController {
 
             GraphModel graphModel = new GraphModel(json.get("graph"));
 
-            FlowResearchInfo result = researchService.flowResearch(graphModel, source, sink);
+            FlowResearchInfo result = researchService.flowResearch(graphModel, source, sink).get();
 
             log.info("Research was successfully completed");
             return ResponseEntity.ok(result.toJson().toString());

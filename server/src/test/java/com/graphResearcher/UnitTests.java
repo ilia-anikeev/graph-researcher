@@ -6,7 +6,10 @@ import com.graphResearcher.repository.*;
 import com.graphResearcher.resources.TestGraphs;
 import com.graphResearcher.service.GraphResearchService;
 import com.graphResearcher.util.GraphArchive;
+import net.bytebuddy.implementation.bytecode.Throw;
 import org.junit.jupiter.api.Test;
+
+import java.util.concurrent.ExecutionException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -19,8 +22,11 @@ class UnitTests {
         int userID = 1;
         userManager.createUser(userID);
 
+        GraphModel receivedGraph;
+
         int graphID = graphManager.saveGraph(userID, graph);
-        GraphModel receivedGraph = graphManager.getGraph(graphID);
+        receivedGraph = graphManager.getGraph(graphID);
+
         assertEquals(graph, receivedGraph);
 
         userManager.deleteUser(userID);
@@ -32,7 +38,12 @@ class UnitTests {
         userManager.createUser(userID);
 
         int graphID = graphManager.saveGraph(userID, graph);
-        GraphResearchInfo info = service.research(graph);
+        GraphResearchInfo info;
+        try {
+            info = service.research(graph).get();
+        } catch (ExecutionException | InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         infoManager.saveResearchInfo(userID, graphID, info);
 
@@ -54,6 +65,7 @@ class UnitTests {
     void saveGraphTest2() {
         saveTest(TestGraphs.directedGraph);
     }
+
     @Test
     void saveGraphTest3() {
         saveTest(TestGraphs.directedWeighedGraph);

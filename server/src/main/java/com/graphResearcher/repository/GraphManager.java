@@ -32,7 +32,7 @@ public class GraphManager {
         dataSource = new DriverManagerDataSource(url, name, password);
     }
 
-    public int saveGraph(int userID, GraphModel graph) {
+    public Integer saveGraph(int userID, GraphModel graph) {
         String sql = "INSERT INTO graph_metadata(user_id, graph_name, is_directed, is_weighted, has_self_loops, has_multiple_edges) " +
                 "VALUES(?, ?, ?, ?, ?, ?)" +
                 "RETURNING graph_id";
@@ -61,7 +61,8 @@ public class GraphManager {
 
     public GraphModel getGraph(int graphID) {
         try (Connection conn = dataSource.getConnection()) {
-            return new GraphModel(getVertices(graphID, "vertices", conn), getEdges(graphID, "edges", conn), getGraphMetadata(graphID, conn));
+            GraphModel g = new GraphModel(getVertices(graphID, "vertices", conn), getEdges(graphID, "edges", conn), getGraphMetadata(graphID, conn));
+            return g;
         } catch (SQLException e) {
             log.error("ID {}: graph haven't been received", graphID);
             throw new RuntimeException(e);
@@ -320,7 +321,7 @@ public class GraphManager {
             ResultSet rs = preparedStatement.executeQuery();
             rs.next();
             return getGraph(rs.getInt("subgraph_id"));
-        } catch (SQLException e) {
+        } catch (Throwable e) {
             log.error("ID {}: subgraph haven't been received", graphID, e);
             throw new RuntimeException(e);
         }
@@ -382,13 +383,13 @@ public class GraphManager {
 
 
     void saveKuratowskiSubgraph(int userID, int graphID, GraphModel graphModel, Connection conn) {
-        int subgraph_id = saveGraph(userID, graphModel);
         String sql = "INSERT INTO kuratowski_subgraph(graph_id, subgraph_id) VALUES(?, ?)";
         try (PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
+            int subgraph_id = saveGraph(userID, graphModel);
             preparedStatement.setInt(1, graphID);
             preparedStatement.setInt(2, subgraph_id);
             preparedStatement.executeUpdate();
-        } catch (SQLException e) {
+        } catch (Throwable e) {
             log.error("ID {}: subgraph haven't been saved", graphID, e);
             throw new RuntimeException(e);
         }
