@@ -4,6 +4,7 @@ package com.graphResearcher.controller;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.graphResearcher.model.graphInfo.FlowResearchInfo;
 import com.graphResearcher.model.graphInfo.GraphResearchInfo;
+import com.graphResearcher.repository.InfoManager;
 import com.graphResearcher.service.GraphArchiveService;
 import com.graphResearcher.util.Converter;
 import com.graphResearcher.util.GraphArchive;
@@ -47,7 +48,10 @@ public class GraphArchiveController {
                 FlowResearchInfo flowResearchInfo = new FlowResearchInfo(json.get("flowInfo"));
                 graphArchiveService.saveFlowResult(graphID, flowResearchInfo);
             }
-
+            if (json.has("comment")) {
+                String comment = json.get("comment").asText();
+                graphArchiveService.saveComment(graphID, comment);
+            }
             log.info("Graph has been saved");
             return ResponseEntity.ok(Integer.toString(graphID));
         } catch (JsonProcessingException e) {
@@ -104,6 +108,7 @@ public class GraphArchiveController {
 
             ObjectNode jsonResponse = mapper.createObjectNode();
             jsonResponse.set("info", info.toJson());
+            jsonResponse.put("comment", graphArchiveService.getComment(graph_id).get());
 
             log.info("Graph was received");
             return ResponseEntity.ok(jsonResponse.toString());

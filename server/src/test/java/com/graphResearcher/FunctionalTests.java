@@ -143,8 +143,6 @@ public class FunctionalTests {
                 .expectStatus().isOk();
     }
 
-
-
     public void getGraph(int id) {
         webTestClient.get()
                 .uri(uriBuilder -> uriBuilder.path("/get_graph")
@@ -171,10 +169,10 @@ public class FunctionalTests {
                     JsonNode json;
                     try {
                         json = objectMapper.readTree(result);
+                        assertEquals(5.0, json.get("maxFlow").asDouble());
                     } catch (JsonProcessingException e) {
                         throw new RuntimeException(e);
                     }
-                    System.err.println(result);
                 });
     }
 

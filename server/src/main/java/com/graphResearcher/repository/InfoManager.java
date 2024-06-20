@@ -118,6 +118,22 @@ public class InfoManager {
         }
     }
 
+    public void saveComment(int graphID, String comment) {
+        String sql = "INSERT INTO comment(graph_id, comment) VALUES(?, ?)";
+        try (Connection conn = dataSource.getConnection();
+            PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
+            preparedStatement.setInt(1, graphID);
+            preparedStatement.setString(2, comment);
+            preparedStatement.execute();
+
+        } catch (SQLException e) {
+            log.error("ID {}: comment haven't been saved", graphID, e);
+            throw new RuntimeException(e);
+        }
+    }
+
+
+
     public ConnectivityInfo getConnectivityInfo(int graphID, ConnectivityInfo connectivityInfo, Connection conn) {
         connectivityInfo.articulationPoints = graphManager.getVertices(graphID, "articulation_points", conn);
         connectivityInfo.bridges = graphManager.getEdges(graphID, "bridges", conn);
@@ -184,6 +200,20 @@ public class InfoManager {
         }
     }
 
+    public String getComment(int graphID) {
+        String sql = "SELECT comment FROM comment WHERE graph_id = ?";
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
+            preparedStatement.setInt(1, graphID);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            resultSet.next();
+            return resultSet.getString("comment");
+        } catch (SQLException e) {
+            log.error("ID {}: comment hasn't been received", graphID);
+            throw new RuntimeException(e);
+        }
+    }
+
     public void deleteResearchInfo(int graphID) {
         String sql = "DELETE FROM graph_research_info WHERE graph_id = ?";
         try (Connection conn = dataSource.getConnection();
@@ -207,9 +237,23 @@ public class InfoManager {
 
             graphManager.deleteFlowValue(graphID, conn);
 
-            log.info("ID {}: graph info have been deleted", graphID);
+            deleteComment(graphID, conn);
+
+            log.info("ID {}: graph info has been deleted", graphID);
         } catch (SQLException e) {
-            log.error("ID {}: graph info haven't been deleted", graphID, e);
+            log.error("ID {}: graph info hasn't been deleted", graphID, e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void deleteComment(int graphID, Connection conn) {
+        String sql = "DELETE FROM comment WHERE graph_id = ?";
+        try (PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
+            preparedStatement.setInt(1, graphID);
+            preparedStatement.execute();
+
+        } catch (SQLException e) {
+            log.error("ID {}: comment hasn't been deleted", graphID);
             throw new RuntimeException(e);
         }
     }

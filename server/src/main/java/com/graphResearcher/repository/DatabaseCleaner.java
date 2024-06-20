@@ -28,7 +28,7 @@ public class DatabaseCleaner {
                     "connected_components", "edges", "graph_metadata", "graph_research_info",
                     "perfect_elimination_order", "vertices", "embedding", "kuratowski_subgraph",
                     "coloring", "max_clique", "independent_set", "minimal_vertex_separator",
-                    "partitions", "min_spanning_tree", "flow_value");
+                    "partitions", "min_spanning_tree", "flow_value", "comment");
             for (String tableName: tables) {
                 String sql = "DROP TABLE " + tableName;
                 PreparedStatement preparedStatement = conn.prepareStatement(sql);

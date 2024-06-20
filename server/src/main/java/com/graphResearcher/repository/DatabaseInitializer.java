@@ -46,6 +46,7 @@ public class DatabaseInitializer {
             initMinSpanningTreeTable(conn);
 
             initFlowValueTable(conn);
+            initCommentTable(conn);
 
             log.info("Database initialization was successful");
         } catch (SQLException e) {
@@ -234,6 +235,16 @@ public class DatabaseInitializer {
             preparedStatement.execute();
         } catch (SQLException e) {
             log.error("Init flow value table error", e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void initCommentTable(Connection conn) {
+        String sql = "CREATE TABLE comment(id SERIAL PRIMARY KEY, graph_id INT, comment TEXT)";
+        try (PreparedStatement preparedStatement = conn.prepareStatement(sql);){
+            preparedStatement.execute();
+        } catch (SQLException e) {
+            log.error("Init comment table error", e);
             throw new RuntimeException(e);
         }
     }

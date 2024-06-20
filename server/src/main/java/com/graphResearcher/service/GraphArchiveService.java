@@ -51,9 +51,19 @@ public class GraphArchiveService {
 
     }
     @Async
+    public Future<String> getComment(int graphID) {
+        return CompletableFuture.completedFuture(infoManager.getComment(graphID));
+    }
+
+    @Async
     public void deleteGraph(int graphID) {
         graphManager.deleteGraph(graphID);
         infoManager.deleteResearchInfo(graphID);
+    }
+
+    @Async
+    public void saveComment(int graphID, String comment) {
+        infoManager.saveComment(graphID, comment);
     }
 
     public GraphArchiveService(InfoManager infoManager, GraphManager graphManager, UserManager userManager) {
