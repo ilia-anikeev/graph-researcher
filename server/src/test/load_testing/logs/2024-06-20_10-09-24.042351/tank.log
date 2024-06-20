@@ -1,0 +1,67 @@
+2024-06-20 10:09:24,087 [INFO] root tankworker.py:153	Log file created
+2024-06-20 10:09:24,087 [INFO] root tankworker.py:157	Logging handler <FileHandler /var/loadtest/tank_errors.log (WARNING)> added
+2024-06-20 10:09:24,088 [INFO] root tankworker.py:157	Logging handler <StreamHandler <stdout> (INFO)> added
+2024-06-20 10:09:24,088 [INFO] root tankworker.py:157	Logging handler <StreamHandler <stderr> (NOTSET)> added
+2024-06-20 10:09:24,102 [INFO] root tankworker.py:69	Created a folder for the test. /var/loadtest/logs/2024-06-20_10-09-24.042351
+2024-06-20 10:09:24,105 [INFO] yandextank.core.tankcore tankcore.py:254	Configuring plugins...
+2024-06-20 10:09:24,105 [INFO] yandextank.core.tankcore tankcore.py:205	Loading plugins...
+2024-06-20 10:09:24,106 [INFO] yandextank.core.tankcore tankcore.py:215	Trying to import module: autostop
+2024-06-20 10:09:24,106 [INFO] yandextank.core.tankcore tankcore.py:216	Path: yandextank.plugins.Autostop
+2024-06-20 10:09:24,107 [INFO] yandextank.core.tankcore tankcore.py:215	Trying to import module: console
+2024-06-20 10:09:24,107 [INFO] yandextank.core.tankcore tankcore.py:216	Path: yandextank.plugins.Console
+2024-06-20 10:09:24,108 [INFO] yandextank.core.tankcore tankcore.py:215	Trying to import module: json_report
+2024-06-20 10:09:24,108 [INFO] yandextank.core.tankcore tankcore.py:216	Path: yandextank.plugins.JsonReport
+2024-06-20 10:09:24,111 [INFO] yandextank.core.tankcore tankcore.py:215	Trying to import module: phantom
+2024-06-20 10:09:24,112 [INFO] yandextank.core.tankcore tankcore.py:216	Path: yandextank.plugins.Phantom
+2024-06-20 10:09:24,113 [INFO] yandextank.core.tankcore tankcore.py:215	Trying to import module: rcheck
+2024-06-20 10:09:24,113 [INFO] yandextank.core.tankcore tankcore.py:216	Path: yandextank.plugins.ResourceCheck
+2024-06-20 10:09:24,113 [INFO] yandextank.core.tankcore tankcore.py:215	Trying to import module: shellexec
+2024-06-20 10:09:24,114 [INFO] yandextank.core.tankcore tankcore.py:216	Path: yandextank.plugins.ShellExec
+2024-06-20 10:09:24,114 [INFO] yandextank.core.tankcore tankcore.py:215	Trying to import module: rcassert
+2024-06-20 10:09:24,114 [INFO] yandextank.core.tankcore tankcore.py:216	Path: yandextank.plugins.RCAssert
+2024-06-20 10:09:24,126 [INFO] yandextank.common.util util.py:578	Testing connection to resolved address 127.0.0.1 and port 8080
+2024-06-20 10:09:24,126 [INFO] yandextank.plugins.Phantom.utils utils.py:277	Resolved localhost into 127.0.0.1:8080
+2024-06-20 10:09:24,127 [INFO] yandextank.stepper.main main.py:197	Configuring StepperWrapper...
+2024-06-20 10:09:24,128 [INFO] yandextank.stepper.main main.py:336	Making stpd-file: /var/loadtest/logs/_f060477ba4b18035b90a14bfbddd7515.stpd
+2024-06-20 10:09:24,129 [INFO] yandextank.stepper.config config.py:126	Using UriStyleGenerator ammo reader
+2024-06-20 10:09:24,492 [INFO] yandextank.core.tankcore tankcore.py:268	Preparing test...
+2024-06-20 10:09:24,504 [INFO] yandextank.common.interfaces plugin.py:38	Checking tank resources...
+2024-06-20 10:09:24,514 [INFO] yandextank.core.tankcore tankcore.py:278	Starting test...
+2024-06-20 10:09:24,517 [INFO] yandextank.aggregator.tank_aggregator tank_aggregator.py:65	using verbose histogram
+2024-06-20 10:09:24,521 [INFO] yandextank.core.tankcore tankcore.py:285	Plugin plugin_autostop required 0.000007 seconds to start
+2024-06-20 10:09:24,521 [INFO] yandextank.core.tankcore tankcore.py:285	Plugin plugin_console required 0.000019 seconds to start
+2024-06-20 10:09:24,521 [INFO] yandextank.core.tankcore tankcore.py:285	Plugin plugin_json_report required 0.000009 seconds to start
+2024-06-20 10:09:24,531 [INFO] yandextank.core.tankcore tankcore.py:285	Plugin plugin_phantom required 0.009292 seconds to start
+2024-06-20 10:09:24,532 [INFO] yandextank.core.tankcore tankcore.py:285	Plugin plugin_rcheck required 0.000009 seconds to start
+2024-06-20 10:09:24,533 [INFO] yandextank.core.tankcore tankcore.py:285	Plugin plugin_shellexec required 0.000010 seconds to start
+2024-06-20 10:09:24,534 [INFO] yandextank.core.tankcore tankcore.py:285	Plugin plugin_rcassert required 0.000015 seconds to start
+2024-06-20 10:09:24,536 [INFO] yandextank.core.tankcore tankcore.py:294	Waiting for test to finish...
+2024-06-20 10:09:24,536 [INFO] yandextank.core.tankcore tankcore.py:295	Artifacts dir: /var/loadtest/logs/2024-06-20_10-09-24.042351
+2024-06-20 10:11:53,875 [INFO] yandextank.plugins.Phantom.plugin plugin.py:155	Phantom done its work with exit code: 0
+2024-06-20 10:11:53,876 [INFO] yandextank.core.tankcore tankcore.py:331	Finishing test...
+2024-06-20 10:11:53,878 [INFO] yandextank.core.tankcore tankcore.py:334	Stopping load generator and aggregator
+2024-06-20 10:11:53,879 [INFO] yandextank.aggregator.tank_aggregator tank_aggregator.py:126	Closing stats reader
+2024-06-20 10:11:53,879 [INFO] yandextank.aggregator.tank_aggregator tank_aggregator.py:129	Waiting for gun drain to finish
+2024-06-20 10:11:54,734 [INFO] yandextank.aggregator.tank_aggregator tank_aggregator.py:131	Waiting for stats drain to finish
+2024-06-20 10:11:54,735 [INFO] yandextank.aggregator.tank_aggregator tank_aggregator.py:133	Collecting remaining data
+2024-06-20 10:11:54,737 [INFO] yandextank.aggregator.tank_aggregator tank_aggregator.py:111	Timestamps without stats:
+2024-06-20 10:11:54,737 [INFO] yandextank.aggregator.tank_aggregator tank_aggregator.py:113	1718878313
+2024-06-20 10:11:54,740 [INFO] yandextank.core.tankcore tankcore.py:338	Stopping monitoring
+2024-06-20 10:11:54,740 [INFO] yandextank.core.tankcore tankcore.py:361	Post-processing test...
+2024-06-20 10:11:54,743 [INFO] yandextank.common.util util.py:816	Trying to clean up
+2024-06-20 10:11:54,743 [INFO] yandextank.core.tankcore tankcore.py:562	Cleaning up plugin plugin_autostop
+2024-06-20 10:11:54,744 [INFO] yandextank.core.tankcore tankcore.py:562	Cleaning up plugin plugin_console
+2024-06-20 10:11:54,744 [INFO] yandextank.core.tankcore tankcore.py:562	Cleaning up plugin plugin_json_report
+2024-06-20 10:11:54,744 [INFO] yandextank.core.tankcore tankcore.py:562	Cleaning up plugin plugin_phantom
+2024-06-20 10:11:54,745 [INFO] yandextank.core.tankcore tankcore.py:562	Cleaning up plugin plugin_rcheck
+2024-06-20 10:11:54,745 [INFO] yandextank.core.tankcore tankcore.py:562	Cleaning up plugin plugin_shellexec
+2024-06-20 10:11:54,745 [INFO] yandextank.core.tankcore tankcore.py:562	Cleaning up plugin plugin_rcassert
+2024-06-20 10:11:54,746 [INFO] yandextank.core.tankcore tankcore.py:630	Releasing lock: /var/lock/lunapark_1ikd7ey8.lock
+2024-06-20 10:11:54,751 [INFO] yandextank.core.tankcore tankcore.py:405	Artifacts dir: /var/loadtest/logs/2024-06-20_10-09-24.042351
+2024-06-20 10:11:54,752 [INFO] yandextank.core.tankcore tankcore.py:461	File not found to collect: validation_error.yaml
+2024-06-20 10:11:54,753 [INFO] yandextank.core.tankcore tankcore.py:466	File already exists: /var/loadtest/logs/2024-06-20_10-09-24.042351/answ_lq54f324.log
+2024-06-20 10:11:54,754 [INFO] yandextank.core.tankcore tankcore.py:466	File already exists: /var/loadtest/logs/2024-06-20_10-09-24.042351/phout_1dwmsl4s.log
+2024-06-20 10:11:54,755 [INFO] yandextank.core.tankcore tankcore.py:466	File already exists: /var/loadtest/logs/2024-06-20_10-09-24.042351/phantom_stat_8jd0eh3t.log
+2024-06-20 10:11:54,757 [INFO] yandextank.core.tankcore tankcore.py:466	File already exists: /var/loadtest/logs/2024-06-20_10-09-24.042351/phantom_0mvuz0t4.log
+2024-06-20 10:11:54,759 [INFO] yandextank.core.tankcore tankcore.py:466	File already exists: /var/loadtest/logs/2024-06-20_10-09-24.042351/phantom_t0ih_9dw.conf
+2024-06-20 10:11:54,760 [INFO] yandextank.core.tankcore tankcore.py:466	File already exists: /var/loadtest/logs/2024-06-20_10-09-24.042351/phantom_stdout_stderr_ab55mgrd.log

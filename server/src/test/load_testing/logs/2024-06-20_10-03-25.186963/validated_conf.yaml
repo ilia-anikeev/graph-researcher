@@ -1,0 +1,130 @@
+autostop:
+  autostop: []
+  enabled: true
+  package: yandextank.plugins.Autostop
+  report_file: autostop_report.txt
+bfg:
+  enabled: false
+  package: yandextank.plugins.Bfg
+console:
+  cases_max_spark: 120
+  cases_sort_by: count
+  disable_all_colors: false
+  disable_colors: ''
+  enabled: true
+  info_panel_width: 33
+  max_case_len: 32
+  package: yandextank.plugins.Console
+  short_only: false
+  sizes_max_spark: 120
+  times_max_spark: 120
+core:
+  affinity: ''
+  aggregator_max_wait: 31
+  api_jobno: 2024-06-20_10-03-25.186963
+  artifacts_base_dir: ./logs
+  cmdline: /usr/local/bin/yandex-tank
+  debug: false
+  ignore_lock: false
+  lock_dir: /var/lock/
+  pid: 1
+  taskset_path: taskset
+  uuid: 26336eaf-714e-4339-a71a-ccf1732bfdd2
+influx:
+  enabled: false
+  package: yandextank.plugins.InfluxUploader
+jmeter:
+  enabled: false
+  package: yandextank.plugins.JMeter
+json_report:
+  enabled: true
+  monitoring_log: monitoring.log
+  package: yandextank.plugins.JsonReport
+  test_data_log: test_data.log
+metaconf:
+  enabled: false
+  package: yandextank.plugins.MetaConf
+offline_report:
+  enabled: false
+  package: yandextank.plugins.OfflineReport
+opentsdb:
+  enabled: false
+  package: yandextank.plugins.OpenTSDBUploader
+overload:
+  enabled: false
+  package: yandextank.plugins.DataUploader
+pandora:
+  enabled: false
+  package: yandextank.plugins.Pandora
+phantom:
+  additional_libs: []
+  address: localhost:8080
+  affinity: ''
+  ammo_limit: -1
+  ammo_type: phantom
+  ammofile: ''
+  autocases: 0
+  buffered_seconds: 2
+  cache_dir: null
+  chosen_cases: ''
+  client_certificate: ''
+  client_cipher_suites: ''
+  client_key: ''
+  config: ''
+  connection_test: true
+  enabled: true
+  enum_ammo: false
+  file_cache: 8192
+  force_stepping: 0
+  gatling_ip: ''
+  header_http: '1.0'
+  headers: []
+  instances: 1000
+  load_profile:
+    load_type: rps
+    schedule: line(1, 10, 10s)
+  loop: -1
+  method_options: ''
+  method_prefix: method_stream
+  multi: []
+  package: yandextank.plugins.Phantom
+  phantom_http_entity: 8M
+  phantom_http_field: 8K
+  phantom_http_field_num: 128
+  phantom_http_line: 1K
+  phantom_modules_path: /usr/lib/phantom
+  phantom_path: phantom
+  phout_file: ''
+  port: ''
+  source_log_prefix: ''
+  ssl: false
+  tank_type: http
+  threads: null
+  timeout: 11s
+  uris:
+  - /get_graph?graph_id=97
+  use_caching: true
+  writelog: '0'
+rcassert:
+  enabled: true
+  fail_code: 10
+  package: yandextank.plugins.RCAssert
+  pass: ''
+rcheck:
+  disk_limit: 2048
+  enabled: true
+  interval: 10s
+  mem_limit: 512
+  package: yandextank.plugins.ResourceCheck
+shellexec:
+  catch_out: false
+  enabled: true
+  end: ''
+  package: yandextank.plugins.ShellExec
+  poll: ''
+  post_process: ''
+  prepare: ''
+  start: ''
+telegraf:
+  enabled: false
+  package: yandextank.plugins.Telegraf

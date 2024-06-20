@@ -1,0 +1,59 @@
+2024-06-20 09:47:41,262	Interrupting
+2024-06-20 09:47:41,263	Test interrupted:
+<class 'KeyboardInterrupt'>: 
+  File "/usr/local/lib/python3.8/dist-packages/yandextank/core/tankworker.py", line 79, in run
+    self.retcode = self.core.wait_for_finish()
+
+  File "/usr/local/lib/python3.8/dist-packages/yandextank/core/tankcore.py", line 326, in wait_for_finish
+    time.sleep(0.5 - diff)
+
+2024-06-20 09:49:06,322	Interrupting
+2024-06-20 09:49:06,322	Test interrupted:
+<class 'KeyboardInterrupt'>: 
+  File "/usr/local/lib/python3.8/dist-packages/yandextank/core/tankworker.py", line 79, in run
+    self.retcode = self.core.wait_for_finish()
+
+  File "/usr/local/lib/python3.8/dist-packages/yandextank/core/tankcore.py", line 326, in wait_for_finish
+    time.sleep(0.5 - diff)
+
+2024-06-20 09:50:07,521	Interrupting
+2024-06-20 09:50:07,522	Test interrupted:
+<class 'KeyboardInterrupt'>: 
+  File "/usr/local/lib/python3.8/dist-packages/yandextank/core/tankworker.py", line 79, in run
+    self.retcode = self.core.wait_for_finish()
+
+  File "/usr/local/lib/python3.8/dist-packages/yandextank/core/tankcore.py", line 326, in wait_for_finish
+    time.sleep(0.5 - diff)
+
+2024-06-20 09:50:41,242	Interrupting
+2024-06-20 09:50:41,243	Test interrupted:
+<class 'KeyboardInterrupt'>: 
+  File "/usr/local/lib/python3.8/dist-packages/yandextank/core/tankworker.py", line 79, in run
+    self.retcode = self.core.wait_for_finish()
+
+  File "/usr/local/lib/python3.8/dist-packages/yandextank/core/tankcore.py", line 326, in wait_for_finish
+    time.sleep(0.5 - diff)
+
+2024-06-20 10:03:25,270	Exception occurred:
+<class 'RuntimeError'>: All connection attempts failed for localhost, use {phantom.connection_test: false} to disable it
+  File "/usr/local/lib/python3.8/dist-packages/yandextank/core/tankworker.py", line 70, in run
+    self.core.plugins_configure()
+
+  File "/usr/local/lib/python3.8/dist-packages/yandextank/core/tankcore.py", line 262, in plugins_configure
+    plugin.configure()
+
+  File "/usr/local/lib/python3.8/dist-packages/yandextank/plugins/Phantom/plugin.py", line 67, in configure
+    self.phantom_config = self.phantom.config_file
+
+  File "/usr/local/lib/python3.8/dist-packages/yandextank/plugins/Phantom/plugin.py", line 76, in phantom
+    self._phantom.read_config()
+
+  File "/usr/local/lib/python3.8/dist-packages/yandextank/plugins/Phantom/utils.py", line 95, in read_config
+    stream.read_config()
+
+  File "/usr/local/lib/python3.8/dist-packages/yandextank/plugins/Phantom/utils.py", line 274, in read_config
+    self.ipv6, self.resolved_ip, self.port, self.address = self.address_wizard.resolve(
+
+  File "/usr/local/lib/python3.8/dist-packages/yandextank/common/util.py", line 587, in resolve
+    raise RuntimeError(msg % address_str)
+
