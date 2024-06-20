@@ -3,9 +3,9 @@ phantom:
   uris:
     - /get_all_graphs?user_id=1
   load_profile:
-    load_type: rps # schedule load by defining requests per second
-    schedule: line(300, 1000, 1m) # starting from 1rps growing linearly to 10rps during 10 minutes
+    load_type: rps
+    schedule: line(300, 1000, 1m)
 console:
-  enabled: true # enable console output
+  enabled: true
 telegraf:
-  enabled: false # let's disable telegraf monitoring for the first time
+  enabled: false

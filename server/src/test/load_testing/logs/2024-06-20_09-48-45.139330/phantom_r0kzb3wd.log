@@ -1,7 +1,0 @@
-2024-06-20 09:48:45.406 +0000 [info] [] Start
-2024-06-20 09:49:06.322 +0000 [error] [phantom_logger] bq_sleep: Operation canceled
-2024-06-20 09:49:06.322 +0000 [error] [monitor_io] bq_sleep: Operation canceled
-2024-06-20 09:49:06.322 +0000 [error] [monitor_io] bq_sleep: Operation canceled
-2024-06-20 09:49:06.323 +0000 [error] [benchmark_io stream_method brief_logger] bq_sleep: Operation canceled
-2024-06-20 09:49:06.338 +0000 [error] [benchmark_io] cond-wait: Operation canceled
-2024-06-20 09:49:06.341 +0000 [info] [] Exit

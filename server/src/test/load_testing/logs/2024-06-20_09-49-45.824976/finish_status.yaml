@@ -1,9 +1,0 @@
-exit_code: 1
-left_time: null
-lunapark_id: null
-lunapark_url: null
-status_code: FINISHED
-tank_msg: "Test interrupted:\n<class 'KeyboardInterrupt'>: \n  File \"/usr/local/lib/python3.8/dist-packages/yandextank/core/tankworker.py\"\
-  , line 79, in run\n    self.retcode = self.core.wait_for_finish()\n\n  File \"/usr/local/lib/python3.8/dist-packages/yandextank/core/tankcore.py\"\
-  , line 326, in wait_for_finish\n    time.sleep(0.5 - diff)\n"
-test_id: 2024-06-20_09-49-45.824976
