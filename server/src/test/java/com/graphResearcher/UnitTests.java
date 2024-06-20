@@ -6,7 +6,10 @@ import com.graphResearcher.repository.*;
 import com.graphResearcher.resources.TestGraphs;
 import com.graphResearcher.service.GraphResearchService;
 import com.graphResearcher.util.GraphArchive;
+import net.bytebuddy.implementation.bytecode.Throw;
 import org.junit.jupiter.api.Test;
+
+import java.util.concurrent.ExecutionException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -19,30 +22,37 @@ class UnitTests {
         int userID = 1;
         userManager.createUser(userID);
 
+        GraphModel receivedGraph;
+
         int graphID = graphManager.saveGraph(userID, graph);
-        GraphModel receivedGraph = graphManager.getGraph(graphID);
+        receivedGraph = graphManager.getGraph(graphID);
+
         assertEquals(graph, receivedGraph);
 
         userManager.deleteUser(userID);
     }
 
     private void testResearch(GraphModel graph) {
-        int userID = 1;
-        GraphResearchService service = new GraphResearchService();
-        userManager.createUser(userID);
+        try {
+            int userID = 1;
+            GraphResearchService service = new GraphResearchService();
+            userManager.createUser(userID);
 
-        int graphID = graphManager.saveGraph(userID, graph);
-        GraphResearchInfo info = service.research(graph);
+            int graphID = graphManager.saveGraph(userID, graph);
+            GraphResearchInfo info = service.research(graph).get();
 
-        infoManager.saveResearchInfo(userID, graphID, info);
+            infoManager.saveResearchInfo(userID, graphID, info);
 
-        GraphResearchInfo receivedInfo = infoManager.getResearchInfo(graphID);
+            GraphResearchInfo receivedInfo = infoManager.getResearchInfo(graphID);
 
-        assertEquals(info, receivedInfo);
+            assertEquals(info, receivedInfo);
 
-        assertEquals(new GraphResearchInfo(receivedInfo.toJson(), graph), info);
+            assertEquals(new GraphResearchInfo(receivedInfo.toJson(), graph), info);
 
-        userManager.deleteUser(userID);
+            userManager.deleteUser(userID);
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Test

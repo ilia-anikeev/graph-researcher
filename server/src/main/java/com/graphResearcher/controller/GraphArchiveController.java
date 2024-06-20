@@ -20,7 +20,6 @@ import org.slf4j.Logger;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -38,7 +37,7 @@ public class GraphArchiveController {
             JsonNode json = mapper.readTree(jsonString);
 
             GraphModel graph = new GraphModel(json.get("graph"));
-            int graphID = graphArchiveService.saveGraph(user_id, graph);
+            int graphID = graphArchiveService.saveGraph(user_id, graph).get();
 
             if (json.has("info")) {
                 GraphResearchInfo info = new GraphResearchInfo(json.get("info"), graph);
@@ -64,7 +63,7 @@ public class GraphArchiveController {
     public ResponseEntity<String> getAllUserGraphIDs(@RequestParam int user_id) {
         ObjectMapper mapper = new ObjectMapper();
         try {
-            Map<Integer, String> graphIDs = graphArchiveService.getAllUserGraphIDs(user_id);
+            Map<Integer, String> graphIDs = graphArchiveService.getAllUserGraphIDs(user_id).get();
             ObjectNode json = mapper.createObjectNode();
 
             json.set("ids", Converter.integerListToJsonArray(graphIDs.keySet().stream().toList()));
@@ -85,7 +84,7 @@ public class GraphArchiveController {
     public ResponseEntity<String> getGraph(@RequestParam int graph_id) {
         ObjectMapper mapper = new ObjectMapper();
         try {
-            GraphModel graphModel = graphArchiveService.getGraph(graph_id);
+            GraphModel graphModel = graphArchiveService.getGraph(graph_id).get();
 
             ObjectNode jsonResponse = mapper.createObjectNode();
             jsonResponse.set("graph", graphModel.toJson());
@@ -101,7 +100,7 @@ public class GraphArchiveController {
     public ResponseEntity<String> getGraphInfo(@RequestParam int graph_id) {
         ObjectMapper mapper = new ObjectMapper();
         try {
-            GraphResearchInfo info = graphArchiveService.getGraphInfo(graph_id);
+            GraphResearchInfo info = graphArchiveService.getGraphInfo(graph_id).get();
 
             ObjectNode jsonResponse = mapper.createObjectNode();
             jsonResponse.set("info", info.toJson());
@@ -127,7 +126,7 @@ public class GraphArchiveController {
     @PostMapping("/delete_all_user_graphs")
     public ResponseEntity<String> deleteAllUserGraphs(@RequestParam int user_id) {
         try {
-            List<Integer> graphIDs = graphArchiveService.getAllUserGraphIDs(user_id).keySet().stream().toList();
+            List<Integer> graphIDs = graphArchiveService.getAllUserGraphIDs(user_id).get().keySet().stream().toList();
             for (int id: graphIDs) {
                 graphArchiveService.deleteGraph(id);
             }

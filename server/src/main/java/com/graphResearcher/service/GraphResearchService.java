@@ -18,12 +18,11 @@ import org.jgrapht.alg.interfaces.VertexColoringAlgorithm;
 import org.jgrapht.alg.partition.BipartitePartitioning;
 import org.jgrapht.alg.planar.BoyerMyrvoldPlanarityInspector;
 import org.jgrapht.alg.spanning.KruskalMinimumSpanningTree;
-import org.jgrapht.graph.AsUndirectedGraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
-import java.io.DataOutput;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
@@ -34,7 +33,8 @@ public class GraphResearchService {
     private static final Logger log = LoggerFactory.getLogger(GraphResearchController.class);
     ExecutorService executor = Executors.newCachedThreadPool();
 
-    public GraphResearchInfo research(GraphModel graphModel) {
+    @Async
+    public Future<GraphResearchInfo> research(GraphModel graphModel) {
             Graph<Vertex, WeightedEdge> graph = Converter.graphModelToGraph(graphModel);
             GraphResearchInfo info = new GraphResearchInfo();
 
@@ -64,10 +64,11 @@ public class GraphResearchService {
         } catch (ExecutionException | InterruptedException e) {
             log.error("research error");
         }
-        return info;
+        return CompletableFuture.completedFuture(info);
     }
 
-    public FlowResearchInfo flowResearch(GraphModel graphModel, int source, int sink) {
+    @Async
+    public Future<FlowResearchInfo> flowResearch(GraphModel graphModel, int source, int sink) {
         FlowResearchInfo flowResearchInfo = new FlowResearchInfo();
 
         Vertex sourceVertex = null;
@@ -91,7 +92,7 @@ public class GraphResearchService {
             flow.put(e, f);
         }
         flowResearchInfo.flow = flow;
-        return flowResearchInfo;
+        return CompletableFuture.completedFuture(flowResearchInfo);
     }
 
     private Callable<ConnectivityInfo> connectivityResearch(Graph<Vertex, WeightedEdge> graph) {
