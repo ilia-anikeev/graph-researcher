@@ -20,7 +20,7 @@ class UnitTests {
 
     private void saveTest(GraphModel graph) {
         int userID = 1;
-        userManager.createUser(userID);
+//        userManager.createUser(userID);
 
         GraphModel receivedGraph;
 
@@ -109,5 +109,16 @@ class UnitTests {
     @Test
     void research8() {
         testResearch(GraphArchive.getGrotzschGraph());
+    }
+
+    @Test
+    void createUserTest(){
+        User user= new User();
+        user.setUserId(1);
+        user.setEmail("bebra@example.com");
+        user.setUsername("bebrinskiy");
+        user.setPassword("password");
+        userManager.createUser(user);
+
     }
 }
