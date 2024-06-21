@@ -1,15 +1,19 @@
 import React, { useState, useContext } from 'react';
-import PropTypes from 'prop-types';
-import './GraphMetadata.css';
+import { Button, Input } from 'antd';
+import { CloseOutlined } from '@ant-design/icons';
 import { UserContext } from './UserContex';
+import PropTypes from 'prop-types';
+import './ResearchInfo.css';
 import '../index.css';
 
-function GraphMetadata(props){
+function ResearchInfo(props){
     const [isOpen, setState] = useState(false);
-    const [graphMetaData, setGraphMetaData] = useState(null);
+    const [flowResearch, setFlowResearch] = useState(null);
     const [errorMessage, setErrorMessage] = useState('');
     const [isGraphSaveMode, setIsGraphSaveMode] = useState(false);
+
     const { userID } = useContext(UserContext);
+
 
     const getCorrectData = () => {
         const hasMultipleEdges = props.hasMultipleEdges > 0 ? true : false;
@@ -27,9 +31,13 @@ function GraphMetadata(props){
         return {hasMultipleEdges, hasSelfLoops, edges}
     }
 
+
     const getGraphMetadata = () => {
         setState(true);
-        
+        if (props.graphResearchInfo != null) {
+            console.log(props.graphResearchInfo)
+            return;
+        }
         const {hasMultipleEdges, hasSelfLoops, edges} = getCorrectData();
 
         fetch('http://localhost:8080/research', {
@@ -50,17 +58,52 @@ function GraphMetadata(props){
                         hasSelfLoops: hasSelfLoops,
                         hasMultipleEdges: hasMultipleEdges
                     }
-
                 }
             }),
         })
         .then(response => response.json())
-        .then(metaData => {setGraphMetaData(metaData)})
+        .then(metaData => props.setGraphResearchInfo(metaData))
         .catch(error => {
-            setErrorMessage('Something went wrong, try again'); 
-            setGraphMetaData(null);
+            setErrorMessage('Something went wrong, try again');
+            props.setGraphResearchInfo(null);
         });
+
+        if (props.source === '' || props.sink === '') {
+            setFlowResearch(null);
+            return;
+        }
+
+        fetch('http://localhost:8080/flow_research?source=' + props.source + '&sink=' + props.sink, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Connection': 'keep-alive'
+            },
+            body: JSON.stringify({
+                userID: userID,
+                graph: {
+                    vertices: props.vertices,
+                    edges: edges,
+                    info: {
+                        graphName: 'graphName',
+                        isDirected: props.isDirected,
+                        isWeighted: props.isWeighted,
+                        hasSelfLoops: hasSelfLoops,
+                        hasMultipleEdges: hasMultipleEdges
+                    }
+                }
+            }),
+        })
+        .then(response => response.json())
+        .then(flowResearch => setFlowResearch(flowResearch))
+        .catch(error => {
+            setErrorMessage('Something went wrong, try again');
+            props.setGraphResearchInfo(null);
+        });
+        props.setSource('');
+        props.setSink('');
     }
+
 
     const getString = (data) => {
         var stringData = '';
@@ -69,7 +112,7 @@ function GraphMetadata(props){
                 if (getString(data[i]) === '') {
                     continue;
                 }
-                stringData += stringData === '' ? getString(data[i]) : ', ' + getString(data[i]); 
+                stringData += stringData === '' ? getString(data[i]) : ', ' + getString(data[i]);
             }
         }
         if (data != null && 'source' in data && 'target' in data) {
@@ -83,6 +126,7 @@ function GraphMetadata(props){
         return Array.isArray(data) && stringData !== '' && stringData[0] !== '[' ? '[' + stringData + ']' : stringData;
     }
 
+
     const getStringData = (data) => {
         if (Array.isArray(data)) {
             return getString(data) === '' ? 'no' : getString(data);
@@ -93,7 +137,8 @@ function GraphMetadata(props){
         return data ? 'yes' : 'no';
     }
 
-   const getStringKey = (key) => {
+
+    const getStringKey = (key) => {
         switch (key){
             case 'isConnected':
                 return 'Connected';
@@ -106,12 +151,12 @@ function GraphMetadata(props){
             case 'connectedComponents':
                 return 'Connected Components';
             case 'blocks':
-                return 'Blocks';        
+                return 'Blocks';
             case 'isPlanar':
                 return 'Planar';
             case 'embedding':
                 return 'Embedding';
-            case 'kuratowskiSubgraph':
+            case 'kuratovskySubgraph':
                 return 'Kuratowski Subgraph';
             case 'isChordal':
                 return 'Chordal';
@@ -128,19 +173,20 @@ function GraphMetadata(props){
             case 'minimal_vertex_separator':
                 return 'Minimal Vertex Separator';
             case 'isBipartite':
-                return 'Bipartite';    
+                return 'Bipartite';
             case 'partitions':
                 return 'Partitions';
             case 'min_spanning_tree':
                 return 'Min Spanning Tree';
             default :
-                return '';    
+                return '';
         }
-    }    
+    }
+
 
     const saveGraph = () => {
         const {hasMultipleEdges, hasSelfLoops, edges} = getCorrectData();
-        fetch('http://localhost:8080/save', {                              //TODO
+        fetch('http://localhost:8080/save?user_id=' + userID, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -158,8 +204,9 @@ function GraphMetadata(props){
                         hasSelfLoops: hasSelfLoops,
                         hasMultipleEdges: hasMultipleEdges
                     },
-                    researchInfo: graphMetaData
-                }
+                },
+                info: props.graphResearchInfo,
+                comment: props.comment
             }),
         })
         .catch(error => console.log(error));
@@ -169,39 +216,54 @@ function GraphMetadata(props){
 
     return (
         <div>
-            <button className='button' onClick={getGraphMetadata}>      
-                    Research      
-            </button>
-            {isOpen && <div className='GraphMetadata'>
-                <div className='GraphMetadata-body'>
+            <Button className='button' onClick={getGraphMetadata} type='text' block>
+                    Research
+            </Button>
+            {isOpen && <div className='graphMetadata'>
+                <div className='graphMetadataBody'>
+                    <div style={{float: 'right'}}>
+                        <Button onClick={() => setState(false)} icon={<CloseOutlined />}/>
+                    </div>
                     <h1 style={{textAlign: 'center'}}>Info</h1>
-                    {graphMetaData ? Object.keys(graphMetaData).map(key => {
+                    {props.graphResearchInfo ? Object.keys(props.graphResearchInfo).map(key => {
                         return (
                             <div>
-                                <p> {getStringKey(key.toString())} : {getStringData(graphMetaData[key])} </p>
+                                <p> {getStringKey(key.toString())} : {getStringData(props.graphResearchInfo[key])} </p>
                             </div>
                         )
-                    }) : 
+                    }) :
                         <p>
                             {errorMessage}
                         </p>
                     }
+                    {
+                        flowResearch ? <p> Max Flow : {flowResearch ? flowResearch['maxFlow'] : ''} </p>
+                        : null
+                    }
+                    {
+                        flowResearch ? 
+                            flowResearch['flow'].map(key => {
+                                return(
+                                    <div>
+                                        <p> {'{' + key['edge']['source']['data'] + '-' + key['edge']['target']['data'] + '} :' + key['flow']}</p>
+                                    </div>
+                                )
+                            })
+                        : null
+                    }
                     <div>
                         {
-                         userID !== -1 && <button style={{alignSelf: 'left'}} 
-                                onClick={() => setIsGraphSaveMode(true)}> Save </button>
-                        }
-                        {
-                            isGraphSaveMode && 
-                            <input type='text'placeholder='enter graph name' onChange={(e) => props.setGraphName(e.target.value)}/>
-                        }
-                        {
-                            isGraphSaveMode && <button onClick={saveGraph}>Submit</button>
+                         userID !== -1 && props.graphResearchInfo && <Button style={{alignSelf: 'left', marginBottom: '7px'}}
+                                onClick={() => setIsGraphSaveMode(true)}> Save with info </Button>
                         }
                     </div>
-                    <div style={{paddingTop: '1rem'}}>
-                        <button onClick={() => setState(false)}>Close</button>
-                    </div>
+                    {
+                        isGraphSaveMode && 
+                        <Input style={{width: '140px'}} placeholder='enter graph name' onChange={(e) => props.setGraphName(e.target.value)}/>
+                    }
+                    {
+                        isGraphSaveMode && <Button style={{marginLeft: '4px'}} onClick={saveGraph}>Submit</Button>
+                    }
                 </div>
             </div>
             }
@@ -209,7 +271,7 @@ function GraphMetadata(props){
     )
 }
 
-GraphMetadata.propTypes = {
+ResearchInfo.propTypes = {
     vertices: PropTypes.array,
     edges: PropTypes.array,
     isWeighted: PropTypes.bool,
@@ -217,7 +279,14 @@ GraphMetadata.propTypes = {
     hasSelfLoops: PropTypes.number,
     hasMultipleEdges: PropTypes.number,
     graphName: PropTypes.string,
-    setGraphName: PropTypes.func
+    setGraphName: PropTypes.func,
+    source: PropTypes.string,
+    sink: PropTypes.string,
+    setSource: PropTypes.func,
+    setSink: PropTypes.func,
+    comment: PropTypes.string,
+    graphResearchInfo: PropTypes.object,
+    setGraphResearchInfo: PropTypes.func
 }
 
-export default GraphMetadata;
+export default ResearchInfo;

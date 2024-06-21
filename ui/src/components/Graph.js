@@ -1,6 +1,6 @@
 import React, {useRef, useEffect, useState} from 'react';
-import './Researcher.css'
-import Researcher from "./Researcher"
+import './Researcher.css';
+import Researcher from './Researcher';
 import Vertex from "./Vertex";
 import Edge from './Edge';
 
@@ -52,7 +52,7 @@ function Graph() {
                         const newhasSelfLoops = hasSelfLoops + 1;
                         setHasSelfLoops(newhasSelfLoops);
                     }
-                    if (edges.find(edge => (edge.source === source & edge.target === index) 
+                    if (edges.find(edge => (edge.source === source & edge.target === index)
                                         || (edge.source === index & edge.target === source))) {
                         const newHasMultipleEdges = hasMultipleEdges + 1;
                         sethasMultipleEdges(newHasMultipleEdges);
@@ -62,7 +62,7 @@ function Graph() {
                     setEdgeCreateMode(false);
                     const newEdgeCounter = edgeCounter + 1;
                     setEdgeCounter(newEdgeCounter);
-                    addEdge([...edges, 
+                    addEdge([...edges,
                             {source: source,
                             target: index,
                             id: edgeCounter,
@@ -92,7 +92,7 @@ function Graph() {
     const deleteEdge = (index) => {
         if (removeEdgeMode === true){
             if (drawEdgeMode === true) {
-                const edgeToDelete = edges.filter(edge => (edge.source === source & edge.target === index 
+                const edgeToDelete = edges.filter(edge => (edge.source === source & edge.target === index
                                                         || edge.source === index & edge.target === source));
                 const indexToDelete = edges.indexOf(edgeToDelete[0]);
                 if (indexToDelete >= 0) {
@@ -125,7 +125,7 @@ function Graph() {
     };
 
 
-    useEffect(() => {                                       
+    useEffect(() => {
       const setCoordinates = (event) => {
         updateCoordinates([event.clientX - 25, event.clientY - 25]);
       }
@@ -146,9 +146,6 @@ function Graph() {
     });
 
 
-
-
-
     useEffect(() => {                                                          //TODO
         const handleKeyPress = (event) => {
           if (event.key === 'd'){
@@ -165,8 +162,8 @@ function Graph() {
             }
           }
         };
-    
-        function deleteVertexx(id){
+
+        const deleteVertexx = (id) => {
             deleteVertex(id);
         }
 
@@ -177,7 +174,7 @@ function Graph() {
         })
       });
 
-    
+
     useEffect(() => {
         const mouseMove = (event) => {
             if (id !== 0) {
@@ -211,22 +208,23 @@ function Graph() {
         };
     })
 
+
         return (
             <div>
               <div>
                     {vertices ? vertices.map(vertex => {
                         return (
-                            <div 
-                                key={'vertexContainer' + vertex.index.toString()} 
+                            <div
+                                key={'vertexContainer' + vertex.index.toString()}
                                 ref={ref => verticesRef.current[vertex.index] = ref}
                                 onMouseDown={handleMouseMove(vertex.index)}
                             >
-                                <Vertex key={'vertex' + vertex.index.toString()} 
-                                        index={vertex.index} 
-                                        x={vertex.x} 
-                                        y={vertex.y} 
-                                        vertices={vertices} 
-                                        addVertex={addVertex} 
+                                <Vertex key={'vertex' + vertex.index.toString()}
+                                        index={vertex.index}
+                                        x={vertex.x}
+                                        y={vertex.y}
+                                        vertices={vertices}
+                                        addVertex={addVertex}
                                         data={vertex.data}
                                         isGraphArchiveMode={isGraphArchiveMode}
                                         isUserGraphMode={isUserGraphMode}/>
@@ -247,7 +245,7 @@ function Graph() {
                               source={edge.source}
                               target={edge.target}/>
                     </div>
-                )   
+                )
                 }) : null}
                 </div>
                 <div>
@@ -273,7 +271,6 @@ function Graph() {
                                 setIsGraphArchiveMode={setIsGraphArchiveMode}
                                 setIsUserGraphMode={setIsUserGraphMode}/>
                 </div>
-                
             </div>
           );
         }

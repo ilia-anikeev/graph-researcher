@@ -6,7 +6,7 @@ import { UserProvider } from './components/UserContex';
 
 function App() {
   return (
-    <div >
+    <div>
       <UserProvider>
         <Router>
           <Routes>

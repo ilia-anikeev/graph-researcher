@@ -1,7 +1,8 @@
 import React, { useState, useContext } from 'react';
-import './SignIn.css'
+import { Button, Input } from 'antd';
 import { useNavigate } from "react-router-dom";
 import { UserContext } from './UserContex';
+import './SignIn.css'
 
 function SignIn(){
     const [email, setEmail] = useState('');
@@ -12,6 +13,7 @@ function SignIn(){
 
     const { updateUserID} = useContext(UserContext);
     const navigate = useNavigate();
+
 
     const signIn = () => {
         if (isEmpty()) {
@@ -25,6 +27,7 @@ function SignIn(){
         navigate('/');
     }
 
+
     const isEmpty = () => {
         if (email.length === 0) {
             setIsEmailEmpty(true);
@@ -37,34 +40,29 @@ function SignIn(){
         return false;
     }
 
+
     const goToSignUpPage = () => {
-        navigate('/signup');
+        navigate('/signUp');
     }
 
     return(
         <div>
-            <div className='headderSignIn'>
-                <p>Sign in</p> 
-            </div>
-            <div className='dataSignIn'>
-                Email  
-                <div className='emailSignIn'>
-                    <label>
-                        <input value={email} onChange={e => setEmail(e.target.value)}/>
-                    </label>
+            <div className='body'>
+                <div className='signInBody'>
+                    <div className='headderSignIn'> Sign in </div>
+                    <div className='inputs'>
+                        Login
+                        <Input className='inputLogin' value={email} onChange={e => setEmail(e.target.value)}/>
+                        Password
+                        <Input.Password onChange={e => {setPassword(e.target.value); setErrorMessage('')}}/>
+                        <Button className='signInButton' onClick={signIn} type='default'>Sign in</Button> <br/>
+                        <div className='errorTextSignIn'>
+                            {(isEmailEmpty && <text>        Please, enter email</text>) || (isPasswordEmpty && <text>Please, enter password</text>)}
+                            {(errorMessage !== '' && <text> {errorMessage} </text>)}
+                        </div>
+                        <Button className='createAccountButton' onClick={goToSignUpPage} type='link'>Create account</Button>
+                    </div>
                 </div>
-                Password
-                <div className='passwordSignIn'>
-                    <label>
-                        <input  onChange={e => {setPassword(e.target.value); setErrorMessage('')}} type={'password'}/>
-                    </label>
-                </div>
-                <button className='signInButton' onClick={signIn}>Sign in</button> <br/>
-                <div className='errorTextSignIn'>
-                    {(isEmailEmpty && <text>        Please, enter email</text>) || (isPasswordEmpty && <text>Please, enter password</text>)}
-                    {(errorMessage !== '' && <text> {errorMessage} </text>)}
-                </div>
-                <button className='createAccountButton' onClick={goToSignUpPage}>Create account</button>            
             </div>
         </div>
     );

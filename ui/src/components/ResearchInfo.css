@@ -1,4 +1,4 @@
-.GraphMetadata {
+.graphMetadata {
     position: fixed;
     top: 0;
     right: 0;
@@ -10,7 +10,7 @@
     background: none;
 }
 
-.GraphMetadata-body{
+.graphMetadataBody{
     position: fixed;
     background: none;
     padding: 2rem;
@@ -22,7 +22,3 @@
     border-color: transparent transparent transparent rgba(0, 0, 0, 0.2);
     white-space: pre
 }
-
-.columns-2 {
-    column-count: 2;
-  }

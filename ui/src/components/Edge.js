@@ -1,4 +1,4 @@
-import './Edge.css'
+import './Edge.css';
 import PropTypes from 'prop-types';
 import React, {useEffect, useState} from 'react';
 
@@ -8,17 +8,17 @@ function Edge(props) {
     const drawDirectedEdge = (source, target, newX, newY, headlen, ctx) => {
         var angle = Math.atan2(target.y - source.y, target.x - source.x);
         if (target.x > source.x && target.y > source.y){
-            newX = target.x - Math.sin(Math.PI / 2 - angle) * 25;  
-            newY = target.y - Math.cos(Math.PI / 2 - angle) * 25;  
+            newX = target.x - Math.sin(Math.PI / 2 - angle) * 25;
+            newY = target.y - Math.cos(Math.PI / 2 - angle) * 25;
         } else if (target.x > source.x && target.y < source.y){
             newX = target.x - Math.sin(Math.PI / 2 - angle) * 25;
-            newY = target.y + Math.cos(Math.PI / 2 + angle) * 25;  
+            newY = target.y + Math.cos(Math.PI / 2 + angle) * 25;
         } else if (target.x < source.x && target.y < source.y) {
-            newX = target.x - Math.sin(Math.PI / 2 + angle) * 25;  
-            newY = target.y + Math.cos(Math.PI / 2 + angle) * 25;  
+            newX = target.x - Math.sin(Math.PI / 2 + angle) * 25;
+            newY = target.y + Math.cos(Math.PI / 2 + angle) * 25;
         } else if (target.x < source.x && target.y > source.y){
             newX = target.x - Math.sin(Math.PI / 2 - angle) * 25;
-            newY = target.y + Math.cos(Math.PI / 2 + angle) * 25;  
+            newY = target.y + Math.cos(Math.PI / 2 + angle) * 25;
         }
         ctx.moveTo(newX, newY);
         ctx.lineTo(newX - headlen * Math.cos(angle - Math.PI / 6), newY - headlen * Math.sin(angle - Math.PI / 6));
@@ -34,10 +34,10 @@ function Edge(props) {
         if (props.isDirected){
             const angle = Math.atan2(target.y - 25 - target.y + 50, target.x - source.x -15);
             newX = target.x;
-            newY = target.y - 25;  
+            newY = target.y - 25;
             ctx.lineTo(newX - headlen * Math.cos(angle - Math.PI / 6), newY - headlen * Math.sin(angle - Math.PI / 6));
             ctx.moveTo(newX, newY);
-            ctx.lineTo(newX - headlen * Math.cos(angle + Math.PI / 6), newY - headlen * Math.sin(angle + Math.PI / 6));  
+            ctx.lineTo(newX - headlen * Math.cos(angle + Math.PI / 6), newY - headlen * Math.sin(angle + Math.PI / 6));
         }
     }
 
@@ -97,8 +97,8 @@ function Edge(props) {
                       const angle = Math.atan2(source.y - target.y, source.x - target.x) * 180 / Math.PI;
                       return (
                         <div >
-                          <input type='text' value={weight} style={{position:"absolute", left:`${midX}px`, top: `${midY + 95}px`, 
-                                 transform:`translate(-50%, -50%) rotate(${angle}deg)`, textAlign: "center", transformOrigin:'center', 
+                          <input type='text' value={weight} style={{position:"absolute", left:`${midX}px`, top: `${midY + 95}px`,
+                                 transform:`translate(-50%, -50%) rotate(${angle}deg)`, textAlign: "center", transformOrigin:'center',
                                  background: 'none', border: 'none', outline: 'none'}}
                                  onChange={setActualWeight}
                                  onBlur={handleWeightChange} />
@@ -108,8 +108,8 @@ function Edge(props) {
                       const angle = Math.atan2(target.y - source.y, target.x - source.x) * 180 / Math.PI;
                       return (
                         <div >
-                          <input type='text' value={weight} style={{position:"absolute", left:`${midX}px`, top: `${midY + 95}px`, 
-                                 transform:`translate(-50%, -50%) rotate(${angle}deg)`, textAlign: "center", transformOrigin:'center', 
+                          <input type='text' value={weight} style={{position:"absolute", left:`${midX}px`, top: `${midY + 95}px`,
+                                 transform:`translate(-50%, -50%) rotate(${angle}deg)`, textAlign: "center", transformOrigin:'center',
                                  background: 'none', border: 'none', outline: 'none'}}
                                  onChange={setActualWeight}
                                  onBlur={handleWeightChange}/>

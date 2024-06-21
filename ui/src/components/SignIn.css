@@ -1,38 +1,53 @@
 .headderSignIn{
-    font-size: 18pt;
-    margin-top: 150px;
-    margin-left: 900px;
-}
-
-.dataSignIn{
-    margin-top: 50px;
-    margin-left: 850px;
-}
-
-.emailSignIn{
-    padding-bottom: 5px
-}
-
-.passwordSignIn{
-    padding-bottom: 5px
+  margin-left: 50px;
+  font-size: 24px;
+  font-weight: bold;
 }
 
 .signInButton{
-    margin-top: 30px;
-    margin-left: 60px;
+  margin-top: 40px;
 }
 
 .createAccountButton{
-    margin-top: 10px;
-    margin-left: 40px;
-    background: none;
-    border: none;
-    color: #069;
-    text-decoration: underline;
-    cursor: pointer;
+  text-decoration: underline;
+}
+
+.inputLogin{
+  margin-bottom: 7px;
+}
+
+.inputPassword{
+  margin-bottom: 7px;
 }
 
 .errorTextSignIn{
-    color: red;
-    margin-top: 10px;   
+  color: red;
+  margin-top: 10px;
+}
+
+.body {
+  margin-top: 270px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.signInBody {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 500px;
+  height: 300px;
+  background-color: #fff;
+  border: 2px solid #ccc;
+  border-radius: 5%;
+  padding: 20px;
+}
+
+.inputs {
+  display: flex;
+  flex-direction: column;
+  margin-top: 10px;
+  margin-right: 20px;
 }

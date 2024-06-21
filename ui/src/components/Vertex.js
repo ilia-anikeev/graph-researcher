@@ -6,8 +6,9 @@ import './Vertex.css';
 function Vertex(props) {
     const noderef = useRef();
     const inputRef = useRef(null);
-    const [data, setData] = useState(props.index.toString()); 
+    const [data, setData] = useState(props.index.toString());
     const [oldData, setOldData] = useState(props.index.toString());
+
 
     const handleDataChange = (e) => {
         const newData = e.target.value;
@@ -40,7 +41,7 @@ function Vertex(props) {
             nodeRef={noderef}
             axis="both"
             defaultPosition={{ x: props.x - 25, y: props.y + 80}}
-            position={props.isGraphArchiveMode || props.isUserGraphMode ? {x: props.x - 25, y:props.y + 80}  : null}
+            position={props.isGraphArchiveMode || props.isUserGraphMode ? {x: props.x - 25, y:props.y + 80} : null}
             grid={[1, 1]}
             scale={1}>
             <div className='vertex' ref={noderef}>
@@ -50,7 +51,7 @@ function Vertex(props) {
                     value={data} 
                     ref={inputRef}
                     onChange={setActualData}
-                    onBlur={handleDataChange} 
+                    onBlur={handleDataChange}
                 />
             </div>
         </Draggable>

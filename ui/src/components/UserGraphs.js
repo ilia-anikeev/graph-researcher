@@ -1,7 +1,9 @@
+import React, { useState, useContext, useEffect } from 'react';
+import { Button } from 'antd';
+import { CloseOutlined, DeleteOutlined } from '@ant-design/icons';
+import { UserContext } from './UserContex';
 import './UserGraphs.css'
 import PropTypes from 'prop-types';
-import React, { useState, useContext, useEffect } from 'react';
-import { UserContext } from './UserContex';
 
 
 
@@ -10,7 +12,6 @@ function UserGraphs(props) {
     const { userID } = useContext(UserContext);
     const [userGraphs, setUserGraphs] = useState(null);
 
-      
 
     const getAllUserGraphs = () => {
       setIsOpen(true); 
@@ -27,11 +28,47 @@ function UserGraphs(props) {
         .catch(error => console.log(error));
     }
 
-    useEffect (() => {
-        if (!isOpen){
-            props.setIsUserGraphMode(false);
-        }
-    })
+
+    const getGraphById = (graphId) => {
+        fetch('http://localhost:8080/get_graph?graph_id=' + graphId, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Connection': 'keep-alive'
+            }
+          })
+          .then(response => response.json())
+          .then(graph => {displayGraph(graph['graph']);})
+        .catch(error => console.log(error));
+        
+        fetch('http://localhost:8080/get_graph_info?graph_id=' + graphId, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Connection': 'keep-alive'
+            }
+          })
+          .then(response => response.json())
+          .then(info => {props.setGraphResearchInfo(info['info']); props.setComment(info['comment']); console.log(info)})
+        .catch(error => {console.log(error);
+                        props.setGraphResearchInfo(null);
+                        props.setComment('');
+        });
+    }
+
+
+    const deleteGraphById = (graphId) => {
+        fetch('http://localhost:8080/delete_graph?graph_id=' + graphId, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Connection': 'keep-alive'
+            },
+            body: {}
+          })
+          .catch(error => console.log(error));
+          delete userGraphs[graphId];
+    }
 
 
     const displayGraph = (graph) => {
@@ -53,7 +90,7 @@ function UserGraphs(props) {
                         id: j + 1,
                         weight: edges[j].weight,
                         data: edges[j].data
-                        } 
+                        }
         }
 
         props.addVertex(vertices);
@@ -63,12 +100,20 @@ function UserGraphs(props) {
         props.setIsDirected(graph['info']['isDirected']);
         props.setIsWeighted(graph['info']['isWeighted']);
         props.setHasSelfLoops(graph['info']['hasSelfLoops'] | 0);
-        props.sethasMultipleEdges(graph['info']['hasMultipleEdges'] | 0); 
+        props.sethasMultipleEdges(graph['info']['hasMultipleEdges'] | 0);
         props.setGraphName(graph['info']['graphName']);
-        
+
         clear();
         setIsOpen(false);
-    }    
+    }
+
+
+    useEffect (() => {
+        if (!isOpen){
+            props.setIsUserGraphMode(false);
+        }
+    })
+
 
     const clear = () => {
         const canvas = document.getElementById('canvas');
@@ -76,18 +121,25 @@ function UserGraphs(props) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
     }
 
+
     return (
       <div>
-         <button className='button' onClick={getAllUserGraphs}> Graphs </button>
+         <Button className='button' onClick={getAllUserGraphs} type='text' block> Graphs </Button>
          {
           isOpen &&   <div className='UserGraphs'>
                           <div className='UserGraphs-body'>
-                              <button onClick={() => setIsOpen(false)}>close</button>
-                              {userGraphs ? userGraphs['graphs'].map(graph => (
-                                  <div>
-                                      <button onClick={() => displayGraph(graph)}>{graph['info']['graphName']}</button>
-                                  </div>
-                              )) : null}
+                            <div style={{float: 'right'}}>
+                            <Button onClick={() => setIsOpen(false)} icon={<CloseOutlined/>}></Button>
+                            </div>
+                            <div style={{marginTop: '40px'}}>
+                                {userGraphs ? Object.entries(userGraphs).map(([id, value]) => {
+                                    return( id !== 'ids' ?
+                                        <div style={{paddingTop: '1rem'}}>
+                                            <Button style={{paddingLeft: '130px', paddingRight: '130px'}} onClick={() => getGraphById(id)}>{value}</Button>
+                                            <Button style={{float: 'right'}} onClick={() => deleteGraphById(id)} icon={<DeleteOutlined/>}></Button>
+                                        </div> : null)
+                                }) : null}
+                            </div>
                           </div>
                       </div>
           }
@@ -103,9 +155,11 @@ UserGraphs.propTypes = {
     updateVertexCount: PropTypes.func,
     setEdgeCounter: PropTypes.func,
     setIsDirected: PropTypes.func,
-    setIsWeighted: PropTypes.func, 
+    setIsWeighted: PropTypes.func,
     setHasSelfLoops: PropTypes.func,
     sethasMultipleEdges: PropTypes.func,
     setIsUserGraphMode: PropTypes.func,
-    setGraphName: PropTypes.func
+    setGraphName: PropTypes.func,
+    setGraphResearchInfo: PropTypes.func,
+    setComment: PropTypes.string
 }
