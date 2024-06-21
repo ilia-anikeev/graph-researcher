@@ -8,7 +8,6 @@ import '../index.css';
 
 function ResearchInfo(props){
     const [isOpen, setState] = useState(false);
-    const [graphMetaData, setGraphMetaData] = useState(null);
     const [flowResearch, setFlowResearch] = useState(null);
     const [errorMessage, setErrorMessage] = useState('');
     const [isGraphSaveMode, setIsGraphSaveMode] = useState(false);
@@ -35,7 +34,10 @@ function ResearchInfo(props){
 
     const getGraphMetadata = () => {
         setState(true);
-        
+        if (props.graphResearchInfo != null) {
+            console.log(props.graphResearchInfo)
+            return;
+        }
         const {hasMultipleEdges, hasSelfLoops, edges} = getCorrectData();
 
         fetch('http://localhost:8080/research', {
@@ -60,10 +62,10 @@ function ResearchInfo(props){
             }),
         })
         .then(response => response.json())
-        .then(metaData => setGraphMetaData(metaData))
+        .then(metaData => props.setGraphResearchInfo(metaData))
         .catch(error => {
             setErrorMessage('Something went wrong, try again');
-            setGraphMetaData(null);
+            props.setGraphResearchInfo(null);
         });
 
         if (props.source === '' || props.sink === '') {
@@ -96,7 +98,7 @@ function ResearchInfo(props){
         .then(flowResearch => setFlowResearch(flowResearch))
         .catch(error => {
             setErrorMessage('Something went wrong, try again');
-            setGraphMetaData(null);
+            props.setGraphResearchInfo(null);
         });
         props.setSource('');
         props.setSink('');
@@ -203,7 +205,8 @@ function ResearchInfo(props){
                         hasMultipleEdges: hasMultipleEdges
                     },
                 },
-                info: graphMetaData
+                info: props.graphResearchInfo,
+                comment: props.comment
             }),
         })
         .catch(error => console.log(error));
@@ -222,10 +225,10 @@ function ResearchInfo(props){
                         <Button onClick={() => setState(false)} icon={<CloseOutlined />}/>
                     </div>
                     <h1 style={{textAlign: 'center'}}>Info</h1>
-                    {graphMetaData ? Object.keys(graphMetaData).map(key => {
+                    {props.graphResearchInfo ? Object.keys(props.graphResearchInfo).map(key => {
                         return (
                             <div>
-                                <p> {getStringKey(key.toString())} : {getStringData(graphMetaData[key])} </p>
+                                <p> {getStringKey(key.toString())} : {getStringData(props.graphResearchInfo[key])} </p>
                             </div>
                         )
                     }) :
@@ -250,8 +253,8 @@ function ResearchInfo(props){
                     }
                     <div>
                         {
-                         userID !== -1 && <Button style={{alignSelf: 'left', marginBottom: '7px'}}
-                                onClick={() => setIsGraphSaveMode(true)}> Save </Button>
+                         userID !== -1 && props.graphResearchInfo && <Button style={{alignSelf: 'left', marginBottom: '7px'}}
+                                onClick={() => setIsGraphSaveMode(true)}> Save with info </Button>
                         }
                     </div>
                     {
@@ -280,7 +283,10 @@ ResearchInfo.propTypes = {
     source: PropTypes.string,
     sink: PropTypes.string,
     setSource: PropTypes.func,
-    setSink: PropTypes.func
+    setSink: PropTypes.func,
+    comment: PropTypes.string,
+    graphResearchInfo: PropTypes.object,
+    setGraphResearchInfo: PropTypes.func
 }
 
 export default ResearchInfo;

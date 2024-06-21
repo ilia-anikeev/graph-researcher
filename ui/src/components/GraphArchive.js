@@ -97,31 +97,31 @@ function GraphArchive(props) {
     return (
         <div>
             <Button className='button' onClick={openGraphArchive} type='text' block> Graph Archive</Button>
-            {isOpen && <div className='GraphArchive'>
-                            <div className='GraphArchive-body'>
+            {isOpen && <div className='graphArchive'>
+                            <div className='graphArchive-body'>
                                 <Button style={{marginBottom: '1.5rem', float: 'right'}} onClick={() => setIsOpen(false)} icon={<CloseOutlined/>}></Button>
                                 <div style={{paddingTop: '2.7rem'}}>
-                                    <Button className='GraphButton' onClick={getPetersenGraph}>
+                                    <Button className='graphButton' onClick={getPetersenGraph}>
                                         Petersen Graph
                                     </Button>
                                 </div>
                                 <div style={{paddingTop: '2.7rem'}}>
-                                    <Button className='GraphButton' onClick={getHerschelGraph}>
+                                    <Button className='graphButton' onClick={getHerschelGraph}>
                                         Herschel Graph
                                     </Button>
                                 </div>
                                 <div style={{paddingTop: '2.7rem'}}>
-                                    <Button className='GraphButton' onClick={getApollonianNetwork}>
+                                    <Button className='graphButton' onClick={getApollonianNetwork}>
                                         Apollonian Network
                                     </Button>
                                 </div>
                                 <div style={{paddingTop: '2.7rem'}}>
-                                    <Button className='GraphButton' onClick={getChvatalGraph}>
+                                    <Button className='graphButton' onClick={getChvatalGraph}>
                                         Chvátal Graph
                                     </Button>
                                 </div>
                                 <div style={{paddingTop: '2.7rem'}}>
-                                    <Button className='GraphButton' onClick={getGrotzschGraph}>
+                                    <Button className='graphButton' onClick={getGrotzschGraph}>
                                         Grötzsch Graph
                                     </Button>
                                 </div>

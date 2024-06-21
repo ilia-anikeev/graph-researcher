@@ -1,21 +1,22 @@
-import './Researcher.css'
 import PropTypes from 'prop-types';
 import React, { useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Checkbox, Input } from 'antd'
 import { UserContext } from './UserContex';
+import './Researcher.css'
 import ResearchInfo from './ResearchInfo';
 import GraphArchive from './GraphArchive';
 import UserGraphs from './UserGraphs'
 
-
-
 function Researcher(props) {
   const {userID} = useContext(UserContext);
   const [graphName, setGraphName] = useState('');
+  const [graphResearchInfo, setGraphResearchInfo] = useState(null);
+  const [comment, setComment] = useState('');
   const [source, setSource] = useState('');
   const [sink, setSink] = useState('');
   const [isGraphSaveMode, setIsGraphSaveMode] = useState(false);
+  const [isAddCommentMode, setAddCommentMode] = useState(false);
   
   const navigate = useNavigate();
 
@@ -51,6 +52,8 @@ function Researcher(props) {
 
   const saveGraph = () => {
     setIsGraphSaveMode(false);
+    setAddCommentMode(false);
+    console.log(comment);
     if (props.vertices.length === 0) {
       return;
     }
@@ -85,7 +88,8 @@ function Researcher(props) {
                     hasSelfLoops: hasSelfLoops,
                     hasMultipleEdges: hasMultipleEdges
                 }
-              }
+            },
+            comment: comment
         }),
     })
     .then(response => console.log(response))
@@ -122,7 +126,9 @@ function Researcher(props) {
                                                   setHasSelfLoops={props.setHasSelfLoops}
                                                   sethasMultipleEdges={props.sethasMultipleEdges}
                                                   setIsUserGraphMode={props.setIsUserGraphMode}
-                                                  setGraphName={setGraphName}/>
+                                                  setGraphName={setGraphName}
+                                                  setGraphResearchInfo={setGraphResearchInfo}
+                                                  setComment={setComment}/>
                                 <div style={{paddingTop: '1.5rem'}}>
                                   <Button className='button' onClick={handleCreateVertexButton} type='text' block> Create vertex</Button>
                                 </div>
@@ -153,7 +159,10 @@ function Researcher(props) {
                            source={source}
                            sink={sink}
                            setSource={setSource}
-                           setSink={setSink}/>
+                           setSink={setSink}
+                           comment={comment}
+                           graphResearchInfo={graphResearchInfo}
+                           setGraphResearchInfo={setGraphResearchInfo}/>
         </div>
         {
           props.isDirected && props.isWeighted &&
@@ -169,7 +178,7 @@ function Researcher(props) {
         <div style={{paddingTop: '1.5rem', paddingLeft: '1.7rem'}}>
           <div>
             <label> 
-              <Checkbox onChange={handleIsDirectedCheckbox}> Directed </Checkbox>
+              <Checkbox onChange={handleIsDirectedCheckbox} > Directed </Checkbox>
             </label>
           </div>
         </div>
@@ -203,9 +212,20 @@ function Researcher(props) {
           userID !== -1 && <div style={{paddingTop: '1.5rem'}}>
                             <Button className='button' onClick={() => {isGraphSaveMode ? setIsGraphSaveMode(false)
                                                    : setIsGraphSaveMode(true)}} type='text' block> Save Graph</Button>
+                            <div style={{paddingTop: '1.5rem'}}>
+                            <Button className='button' type='text' block onClick={() => {isAddCommentMode ? setAddCommentMode(false)
+                                                   : setAddCommentMode(true)}}> Add comment</Button> 
+                            </div>
                            </div>
         }
       </div>
+      {
+        isAddCommentMode && <div className='background'>
+        <div className='commentBody'>
+          <Input.TextArea value={comment} placeholder='add comment' rows={5} onChange={e =>setComment(e.target.value)}/>
+        </div>
+      </div>
+      }     
       {
         isGraphSaveMode && <div className='background'>
         <div className='nameBody'>
@@ -213,7 +233,7 @@ function Researcher(props) {
           <Button onClick={saveGraph}>Submit</Button>
         </div>
         </div>
-      }
+      } 
       <div className='canvas'>
         <canvas
                 id='canvas'

@@ -26,11 +26,11 @@
 }
 
 .menu{
-  padding-top: 3rem;
+  padding-top: 1rem;
   position: absolute;
   background: rgba(0, 0, 0, 0.2);
   width: 150px;
-  height: 770px;
+  height: 805px;
 }
 
 .in{
@@ -49,10 +49,18 @@
   background: none;
   display: flex;
   justify-content: left;
-  padding-top: 48.6rem;
+  padding-top: 46.6rem;
 }
 
 .nameBody{
+  background: none;
+  left: 200px;
+  width: 420px;
+  height: 200px;
+}
+
+.commentBody{
+  margin-top: 65px;
   background: none;
   left: 200px;
   width: 420px;

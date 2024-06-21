@@ -1,7 +1,6 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { Button } from 'antd';
-import { CloseOutlined } from '@ant-design/icons';
-import { DeleteOutlined } from '@ant-design/icons';
+import { CloseOutlined, DeleteOutlined } from '@ant-design/icons';
 import { UserContext } from './UserContex';
 import './UserGraphs.css'
 import PropTypes from 'prop-types';
@@ -39,8 +38,22 @@ function UserGraphs(props) {
             }
           })
           .then(response => response.json())
-          .then(graph => displayGraph(graph['graph']))
-          .catch(error => console.log(error));
+          .then(graph => {displayGraph(graph['graph']);})
+        .catch(error => console.log(error));
+        
+        fetch('http://localhost:8080/get_graph_info?graph_id=' + graphId, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Connection': 'keep-alive'
+            }
+          })
+          .then(response => response.json())
+          .then(info => {props.setGraphResearchInfo(info['info']); props.setComment(info['comment']); console.log(info)})
+        .catch(error => {console.log(error);
+                        props.setGraphResearchInfo(null);
+                        props.setComment('');
+        });
     }
 
 
@@ -146,5 +159,7 @@ UserGraphs.propTypes = {
     setHasSelfLoops: PropTypes.func,
     sethasMultipleEdges: PropTypes.func,
     setIsUserGraphMode: PropTypes.func,
-    setGraphName: PropTypes.func
+    setGraphName: PropTypes.func,
+    setGraphResearchInfo: PropTypes.func,
+    setComment: PropTypes.string
 }
