@@ -5,6 +5,7 @@ import com.graphResearcher.model.graphInfo.GraphResearchInfo;
 import com.graphResearcher.repository.*;
 import com.graphResearcher.resources.TestGraphs;
 import com.graphResearcher.service.GraphResearchService;
+import com.graphResearcher.service.UserService;
 import com.graphResearcher.util.GraphArchive;
 import net.bytebuddy.implementation.bytecode.Throw;
 import org.junit.jupiter.api.Test;
@@ -17,10 +18,13 @@ class UnitTests {
     private final GraphManager graphManager = new GraphManager();
     private final InfoManager infoManager = new InfoManager(graphManager);
     private final UserManager userManager = new UserManager(graphManager, infoManager);
-
+    private final UserService userService= new UserService(userManager);
     private void saveTest(GraphModel graph) {
-        int userID = 1;
-//        userManager.createUser(userID);
+        User registeredUser = userService.getUser("example");
+        if(registeredUser==null){
+            registeredUser=userManager.findByUsername("example");
+        }
+        int userID=registeredUser.getUserId();
 
         GraphModel receivedGraph;
 
@@ -33,9 +37,12 @@ class UnitTests {
     }
 
     private void testResearch(GraphModel graph) {
-        int userID = 1;
         GraphResearchService service = new GraphResearchService();
-        userManager.createUser(userID);
+        User registeredUser = userService.getUser("example");
+        if(registeredUser==null){
+            registeredUser=userManager.findByUsername("example");
+        }
+        int userID=registeredUser.getUserId();
 
         int graphID = graphManager.saveGraph(userID, graph);
         GraphResearchInfo info;
@@ -114,11 +121,30 @@ class UnitTests {
     @Test
     void createUserTest(){
         User user= new User();
-        user.setUserId(1);
         user.setEmail("bebra@example.com");
         user.setUsername("bebrinskiy");
         user.setPassword("password");
-        userManager.createUser(user);
+        if(userService.getUser(user.getUsername())==null){
 
+        }
+        userManager.registerUser(user);
+    }
+
+    @Test
+    void badEmail(){
+        User user= new User();
+        user.setEmail("bebraexample.com");
+        user.setUsername("bebrinskiy");
+        user.setPassword("password");
+        userManager.registerUser(user);
+    }
+    @Test
+    void createUserTwice(){
+        User user= new User();
+        user.setEmail("usertwice@example.com");
+        user.setUsername("usertwice");
+        user.setPassword("password");
+        userManager.registerUser(user);
+        userManager.registerUser(user);
     }
 }

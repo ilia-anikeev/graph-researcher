@@ -28,9 +28,8 @@ public class UserService {
     }
 
     public User registerUser(UserRegistrationDto registrationDto) {
-        User existingUser = userManager.findByUsername(registrationDto.getUsername());
-        if (existingUser != null) {
-            throw new RuntimeException("Username already in use");
+        if (userManager.findByUsername(registrationDto.getUsername()) != null||userManager.findUserByEmail(registrationDto.getEmail())!=null) {
+            throw new RuntimeException("Username or email already in use");
         }
 
         User user = new User();
@@ -38,7 +37,7 @@ public class UserService {
         user.setEmail(registrationDto.getEmail());
         user.setPassword(hashPassword(registrationDto.getPassword()));
 
-        return userManager.createUser(user);
+        return userManager.registerUser(user);
     }
 
     public User loginUser(UserLoginDto loginDto) {
@@ -64,9 +63,8 @@ public class UserService {
         }
     }
 
-//
-//    public User getUser(String username) {
-//        return userManager.findByUsername(username).orElse(null);
-//    }
+    public User getUser(String username) {
+        return userManager.findByUsername(username);
+    }
 
 }
