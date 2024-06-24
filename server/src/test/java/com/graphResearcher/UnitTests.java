@@ -1,5 +1,6 @@
 package com.graphResearcher;
 
+import com.graphResearcher.dto.UserRegistrationDto;
 import com.graphResearcher.model.*;
 import com.graphResearcher.model.graphInfo.GraphResearchInfo;
 import com.graphResearcher.repository.*;
@@ -13,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import java.util.concurrent.ExecutionException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 class UnitTests {
     private final GraphManager graphManager = new GraphManager();
@@ -120,31 +122,30 @@ class UnitTests {
 
     @Test
     void createUserTest(){
-        User user= new User();
-        user.setEmail("bebra@example.com");
-        user.setUsername("bebrinskiy");
-        user.setPassword("password");
-        if(userService.getUser(user.getUsername())==null){
 
-        }
-        userManager.registerUser(user);
+        UserRegistrationDto userRegistrationDto=new UserRegistrationDto();
+        userRegistrationDto.setUsername("bebrinskiy");
+        userRegistrationDto.setEmail("bebra@example.com");
+        userRegistrationDto.setPassword("password");
+        userService.registerUser(userRegistrationDto);
+
     }
 
     @Test
     void badEmail(){
-        User user= new User();
-        user.setEmail("bebraexample.com");
-        user.setUsername("bebrinskiy");
-        user.setPassword("password");
-        userManager.registerUser(user);
+        UserRegistrationDto userRegistrationDto=new UserRegistrationDto();
+        userRegistrationDto.setUsername("bebrinskiy");
+        userRegistrationDto.setEmail("bebraexample.com");
+        userRegistrationDto.setPassword("password");
+        userService.registerUser(userRegistrationDto);
     }
     @Test
     void createUserTwice(){
-        User user= new User();
-        user.setEmail("usertwice@example.com");
-        user.setUsername("usertwice");
-        user.setPassword("password");
-        userManager.registerUser(user);
-        userManager.registerUser(user);
+        UserRegistrationDto userRegistrationDto=new UserRegistrationDto();
+        userRegistrationDto.setUsername("usertwice");
+        userRegistrationDto.setEmail("usertwice@example.com");
+        userRegistrationDto.setPassword("password");
+        userService.registerUser(userRegistrationDto);
+        assertNull(userService.registerUser(userRegistrationDto));
     }
 }

@@ -123,14 +123,15 @@ public class UserManager {
     }
     public User findByUsername(String username){
         String sql = "SELECT id, username, email, password FROM users WHERE username=?";
-        User user=null;
+        User user=new User();
         try(Connection conn=dataSource.getConnection(); PreparedStatement preparedStatement=conn.prepareStatement(sql)){
             preparedStatement.setString(1,username);
             ResultSet resultSet = preparedStatement.executeQuery();
-            if(resultSet.wasNull()){
-                return user;
-            }
             resultSet.next();
+            user.setUsername(resultSet.getString("username"));
+            if(resultSet.wasNull()){
+                return null;
+            }
             user = new User();
             user.setUsername(resultSet.getString("username"));
             user.setEmail(resultSet.getString("email"));
