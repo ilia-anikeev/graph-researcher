@@ -1,10 +1,12 @@
 package com.graphResearcher;
 
+import com.graphResearcher.dto.UserRegistrationDto;
 import com.graphResearcher.model.*;
 import com.graphResearcher.model.graphInfo.GraphResearchInfo;
 import com.graphResearcher.repository.*;
 import com.graphResearcher.resources.TestGraphs;
 import com.graphResearcher.service.GraphResearchService;
+import com.graphResearcher.service.UserService;
 import com.graphResearcher.util.GraphArchive;
 import net.bytebuddy.implementation.bytecode.Throw;
 import org.junit.jupiter.api.Test;
@@ -12,15 +14,19 @@ import org.junit.jupiter.api.Test;
 import java.util.concurrent.ExecutionException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 class UnitTests {
     private final GraphManager graphManager = new GraphManager();
     private final InfoManager infoManager = new InfoManager(graphManager);
     private final UserManager userManager = new UserManager(graphManager, infoManager);
-
+    private final UserService userService= new UserService(userManager);
     private void saveTest(GraphModel graph) {
-        int userID = 1;
-        userManager.createUser(userID);
+        User registeredUser = userService.getUser("example");
+        if(registeredUser==null){
+            registeredUser=userManager.findByUsername("example");
+        }
+        int userID=registeredUser.getUserId();
 
         GraphModel receivedGraph;
 
@@ -33,9 +39,12 @@ class UnitTests {
     }
 
     private void testResearch(GraphModel graph) {
-        int userID = 1;
         GraphResearchService service = new GraphResearchService();
-        userManager.createUser(userID);
+        User registeredUser = userService.getUser("example");
+        if(registeredUser==null){
+            registeredUser=userManager.findByUsername("example");
+        }
+        int userID=registeredUser.getUserId();
 
         int graphID = graphManager.saveGraph(userID, graph);
         GraphResearchInfo info;
@@ -109,5 +118,34 @@ class UnitTests {
     @Test
     void research8() {
         testResearch(GraphArchive.getGrotzschGraph());
+    }
+
+    @Test
+    void createUserTest(){
+
+        UserRegistrationDto userRegistrationDto=new UserRegistrationDto();
+        userRegistrationDto.setUsername("bebrinskiy");
+        userRegistrationDto.setEmail("bebra@example.com");
+        userRegistrationDto.setPassword("password");
+        userService.registerUser(userRegistrationDto);
+
+    }
+
+    @Test
+    void badEmail(){
+        UserRegistrationDto userRegistrationDto=new UserRegistrationDto();
+        userRegistrationDto.setUsername("bebrinskiy");
+        userRegistrationDto.setEmail("bebraexample.com");
+        userRegistrationDto.setPassword("password");
+        userService.registerUser(userRegistrationDto);
+    }
+    @Test
+    void createUserTwice(){
+        UserRegistrationDto userRegistrationDto=new UserRegistrationDto();
+        userRegistrationDto.setUsername("usertwice");
+        userRegistrationDto.setEmail("usertwice@example.com");
+        userRegistrationDto.setPassword("password");
+        userService.registerUser(userRegistrationDto);
+        assertNull(userService.registerUser(userRegistrationDto));
     }
 }

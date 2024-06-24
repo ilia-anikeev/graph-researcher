@@ -20,7 +20,15 @@ public class DatabaseInitializer {
         String url = PropertiesUtil.get("db.url");
         dataSource = new DriverManagerDataSource(url, name, password);
     }
-
+    public void initUserTable(Connection conn ){
+        String sql = "CREATE TABLE users(id SERIAL PRIMARY KEY, email TEXT, username TEXT, password TEXT)";
+        try (PreparedStatement preparedStatement = conn.prepareStatement(sql)){
+            preparedStatement.execute();
+        } catch (SQLException e) {
+            log.error("Init users table error", e);
+            throw new RuntimeException(e);
+        }
+    }
     public void initDB() {
         try (Connection conn = dataSource.getConnection()) {
             initEdgesTable(conn);
@@ -47,6 +55,8 @@ public class DatabaseInitializer {
 
             initFlowValueTable(conn);
             initCommentTable(conn);
+
+            initUserTable(conn);
 
             log.info("Database initialization was successful");
         } catch (SQLException e) {
