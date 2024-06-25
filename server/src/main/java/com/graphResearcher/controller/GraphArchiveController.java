@@ -22,11 +22,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-@CrossOrigin
 @RestController
 public class GraphArchiveController {
     private final GraphArchiveService graphArchiveService;
     private static final Logger log = LoggerFactory.getLogger(GraphResearchController.class);
+
+    @CrossOrigin
     @PostMapping("/save")
     public ResponseEntity<String> save(@RequestParam int user_id, HttpServletRequest request) {
         try {
@@ -60,6 +61,7 @@ public class GraphArchiveController {
         }
     }
 
+    @CrossOrigin
     @GetMapping("/get_all_graphs")
     public ResponseEntity<String> getAllUserGraphIDs(@RequestParam int user_id) {
         ObjectMapper mapper = new ObjectMapper();
@@ -81,6 +83,7 @@ public class GraphArchiveController {
         }
     }
 
+    @CrossOrigin
     @GetMapping("/get_graph")
     public ResponseEntity<String> getGraph(@RequestParam int graph_id) {
         ObjectMapper mapper = new ObjectMapper();
@@ -97,6 +100,7 @@ public class GraphArchiveController {
         }
     }
 
+    @CrossOrigin
     @GetMapping("/get_graph_info")
     public ResponseEntity<String> getGraphInfo(@RequestParam int graph_id) {
         ObjectMapper mapper = new ObjectMapper();
@@ -114,6 +118,7 @@ public class GraphArchiveController {
         }
     }
 
+    @CrossOrigin
     @PostMapping("/delete_graph")
     public ResponseEntity<String> deleteGraph(@RequestParam int graph_id) {
         try {
@@ -125,6 +130,7 @@ public class GraphArchiveController {
         }
     }
 
+    @CrossOrigin
     @PostMapping("/delete_all_user_graphs")
     public ResponseEntity<String> deleteAllUserGraphs(@RequestParam int user_id) {
         try {
@@ -139,6 +145,7 @@ public class GraphArchiveController {
         }
     }
 
+    @CrossOrigin
     @GetMapping("/get_famous_graph")
     public ResponseEntity<String> getFamousGraph(@RequestParam String graph_name) {
         ObjectMapper mapper = new ObjectMapper();

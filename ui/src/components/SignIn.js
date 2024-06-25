@@ -5,13 +5,13 @@ import { UserContext } from './UserContex';
 import './SignIn.css'
 
 function SignIn(){
-    const [email, setEmail] = useState('');
+    const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
     const [isEmailEmpty, setIsEmailEmpty] = useState(false);
     const [isPasswordEmpty, setIsPasswordEmpty] = useState(false);
 
-    const { updateUserID} = useContext(UserContext);
+    const { updateUserID } = useContext(UserContext);
     const navigate = useNavigate();
 
 
@@ -19,17 +19,39 @@ function SignIn(){
         if (isEmpty()) {
              return;
         }
-        if (email !== '1' || password !== '1'){
-            setErrorMessage('Invalid email or password');
-            return;
-        }
-        updateUserID(0);
-        navigate('/');
+
+        fetch('http://localhost:8080/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Connection': 'keep-alive'
+            },
+            body: JSON.stringify({
+                username: username,
+                password: password
+            })
+        })
+        .then(response => {
+            if (response.ok) {
+                return response.json();
+            } else {
+                setErrorMessage('Try again!');
+            }
+        })
+        .then(id => {
+            updateUserID(id.toString());
+            navigate('/');
+        })
+        .catch(error => {
+
+            console.log(error);
+            setErrorMessage('Try again!');
+        });
     }
 
 
     const isEmpty = () => {
-        if (email.length === 0) {
+        if (username.length === 0) {
             setIsEmailEmpty(true);
             return true;
         } else if (password.length === 0) {
@@ -52,7 +74,7 @@ function SignIn(){
                     <div className='headderSignIn'> Sign in </div>
                     <div className='inputs'>
                         Login
-                        <Input className='inputLogin' value={email} onChange={e => setEmail(e.target.value)}/>
+                        <Input className='inputLogin' value={username} onChange={e => setUsername(e.target.value)}/>
                         Password
                         <Input.Password onChange={e => {setPassword(e.target.value); setErrorMessage('')}}/>
                         <Button className='signInButton' onClick={signIn} type='default'>Sign in</Button> <br/>

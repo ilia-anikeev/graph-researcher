@@ -1,10 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { useNavigate } from "react-router-dom";
 import { Button, Input } from 'antd';
+import { UserContext } from './UserContex';
+
 import './SignUp.css'
 
 function SignUp(){
     const [email, setEmail] = useState('');
+    const [username, setUsername] = useState('');
     const [password1, setPassword1] = useState('');
     const [password2, setPassword2] = useState('');
     const [isEmailEmpty, setIsEmailEmpty] = useState(false);
@@ -13,6 +16,7 @@ function SignUp(){
     const [isPasswordsDiffer, setIsPasswordsDiffer] = useState(false);
     const navigate = useNavigate();
 
+    const { updateUserID } = useContext(UserContext);
 
     const signUp = () => {
         if (isEmpty()) {
@@ -22,7 +26,29 @@ function SignUp(){
             setIsPasswordsDiffer(true);
             return;
         }
-        navigate('/');
+        fetch('http://localhost:8080/register', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Connection': 'keep-alive'
+            },
+            body: JSON.stringify({
+                email: email,
+                username: username,
+                password: password1
+            })
+        })
+        .then(response => {
+            if (response.ok){
+                updateUserID(response.json().toString());
+                navigate('/');
+            } else {
+                return;
+            }
+        })
+        .catch(error => {
+            console.log(error);
+        });
     }
 
 
@@ -52,7 +78,9 @@ function SignUp(){
             <div className='signUpBody'>
                 <div className='headderSignUp'> Sign up </div>
                     <div className='inputs'>
-                        Login
+                        Username
+                        <Input className='inputLogin' value={username} onChange={e => setUsername(e.target.value)}/>  
+                        Email
                         <Input className='inputLogin' value={email} onChange={e => setEmail(e.target.value)}/>
                         Password
                         <Input.Password className='inputPassword' onChange={e => setPassword1(e.target.value)}/>

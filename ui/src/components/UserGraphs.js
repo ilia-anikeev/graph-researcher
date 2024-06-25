@@ -49,7 +49,7 @@ function UserGraphs(props) {
             }
           })
           .then(response => response.json())
-          .then(info => {props.setGraphResearchInfo(info['info']); props.setComment(info['comment']); console.log(info)})
+          .then(info => {props.setGraphResearchInfo(info['info']); props.setComment(info['comment'])})
         .catch(error => {console.log(error);
                         props.setGraphResearchInfo(null);
                         props.setComment('');
@@ -161,5 +161,5 @@ UserGraphs.propTypes = {
     setIsUserGraphMode: PropTypes.func,
     setGraphName: PropTypes.func,
     setGraphResearchInfo: PropTypes.func,
-    setComment: PropTypes.string
+    setComment: PropTypes.func
 }
