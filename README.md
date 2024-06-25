@@ -10,7 +10,9 @@ Graph Researcher – web-приложение, позволяющее строи
 * Архив известных графов
 
 ### Видео
-https://github.com/ilia-anikeev/graph-researcher/assets/112325838/9ee9acc2-9973-4c8c-917b-2585092af709
+https://github.com/ilia-anikeev/graph-researcher/assets/112325838/73aff680-56f9-445a-8521-1627340e9097
+
+
 
 ### Нагрузочное тестирование
 Нагрузоустойчивость приложения была протестирована с помощью Yandex-tank.
