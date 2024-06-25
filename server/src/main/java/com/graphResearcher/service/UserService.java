@@ -2,8 +2,11 @@ package com.graphResearcher.service;
 
 import com.graphResearcher.dto.UserLoginDto;
 import com.graphResearcher.dto.UserRegistrationDto;
-import com.graphResearcher.dto.UserUpdateDto;
 
+import com.graphResearcher.exceptions.InvalidPassword;
+import com.graphResearcher.exceptions.UserAlreadyExist;
+import com.graphResearcher.exceptions.InvalidEmail;
+import com.graphResearcher.exceptions.UserNotFoundException;
 import com.graphResearcher.model.User;
 
 import com.graphResearcher.repository.UserManager;
@@ -14,12 +17,9 @@ import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.List;
-import java.util.Set;
 
 @Service
 public class UserService {
-
     private final UserManager userManager;
 
     @Autowired
@@ -27,25 +27,30 @@ public class UserService {
         this.userManager = userManager;
     }
 
-    public User registerUser(UserRegistrationDto registrationDto) {
-        if (userManager.findByUsername(registrationDto.getUsername()) != null||userManager.findUserByEmail(registrationDto.getEmail())!=null) {
-            throw new RuntimeException("Username or email already in use");
+    public User registerUser(UserRegistrationDto registrationDto) throws UserAlreadyExist, InvalidEmail {
+        if (userManager.findByUsername(registrationDto.getUsername()) != null) {
+            throw new UserAlreadyExist("Username already in use");
+        }
+        if (userManager.findUserByEmail(registrationDto.getEmail()) != null) {
+            throw new UserAlreadyExist("Email already in use");
         }
 
-        User user = new User();
-        user.setUsername(registrationDto.getUsername());
-        user.setEmail(registrationDto.getEmail());
-        user.setPassword(hashPassword(registrationDto.getPassword()));
-
-        return userManager.registerUser(user);
+        User user = new User(registrationDto.getEmail(),
+                registrationDto.getUsername(),
+                hashPassword(registrationDto.getPassword()));
+        userManager.registerUser(user);
+        return user;
     }
 
-    public User loginUser(UserLoginDto loginDto) {
+    public User loginUser(UserLoginDto loginDto) throws UserNotFoundException, InvalidPassword {
         User user = userManager.findByUsername(loginDto.getUsername());
-        if (user != null && user.getPassword().equals(hashPassword(loginDto.getPassword()))) {
-            return user;
+        if (user == null) {
+            throw new UserNotFoundException("User not found");
         }
-        throw new RuntimeException("Invalid username or password");
+        if (!user.getPassword().equals(hashPassword(loginDto.getPassword()))) {
+            throw new InvalidPassword("Invalid password");
+        }
+        return user;
     }
 
     private String hashPassword(String password) {
@@ -66,5 +71,4 @@ public class UserService {
     public User getUser(String username) {
         return userManager.findByUsername(username);
     }
-
 }

@@ -1,6 +1,8 @@
 package com.graphResearcher;
 
 import com.graphResearcher.dto.UserRegistrationDto;
+import com.graphResearcher.exceptions.UserAlreadyExist;
+import com.graphResearcher.exceptions.InvalidEmail;
 import com.graphResearcher.model.*;
 import com.graphResearcher.model.graphInfo.GraphResearchInfo;
 import com.graphResearcher.repository.*;
@@ -8,25 +10,27 @@ import com.graphResearcher.resources.TestGraphs;
 import com.graphResearcher.service.GraphResearchService;
 import com.graphResearcher.service.UserService;
 import com.graphResearcher.util.GraphArchive;
-import net.bytebuddy.implementation.bytecode.Throw;
 import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.ExecutionException;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 class UnitTests {
     private final GraphManager graphManager = new GraphManager();
     private final InfoManager infoManager = new InfoManager(graphManager);
     private final UserManager userManager = new UserManager(graphManager, infoManager);
-    private final UserService userService= new UserService(userManager);
+    private final UserService userService = new UserService(userManager);
+
     private void saveTest(GraphModel graph) {
-        User registeredUser = userService.getUser("example");
-        if(registeredUser==null){
-            registeredUser=userManager.findByUsername("example");
+        User user = new User("example@gmail.com", "exampleName", "examplePassword");
+        try {
+            userManager.registerUser(user);
+        } catch (InvalidEmail e) {
+            throw new RuntimeException(e);
         }
-        int userID=registeredUser.getUserId();
+
+        int userID = user.getUserID();
 
         GraphModel receivedGraph;
 
@@ -40,11 +44,13 @@ class UnitTests {
 
     private void testResearch(GraphModel graph) {
         GraphResearchService service = new GraphResearchService();
-        User registeredUser = userService.getUser("example");
-        if(registeredUser==null){
-            registeredUser=userManager.findByUsername("example");
+        User user = new User("example@gmail.com", "exampleName", "examplePassword");
+        try {
+            userManager.registerUser(user);
+        } catch (InvalidEmail e) {
+            throw new RuntimeException(e);
         }
-        int userID=registeredUser.getUserId();
+        int userID = user.getUserID();
 
         int graphID = graphManager.saveGraph(userID, graph);
         GraphResearchInfo info;
@@ -121,31 +127,39 @@ class UnitTests {
     }
 
     @Test
-    void createUserTest(){
-
-        UserRegistrationDto userRegistrationDto=new UserRegistrationDto();
-        userRegistrationDto.setUsername("bebrinskiy");
-        userRegistrationDto.setEmail("bebra@example.com");
-        userRegistrationDto.setPassword("password");
-        userService.registerUser(userRegistrationDto);
-
+    void createUserTest() {
+        UserRegistrationDto userRegistrationDto =
+                new UserRegistrationDto("bebrinskiy", "bebra@example.com", "password");
+        try {
+            userService.registerUser(userRegistrationDto);
+            User user = userManager.findUserByEmail("bebra@example.com");
+            assertEquals("bebrinskiy", user.getUsername());
+            assertEquals("bebra@example.com", user.getEmail());
+            userManager.deleteUser(
+                    user.getUserID());
+        } catch (UserAlreadyExist | InvalidEmail e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Test
-    void badEmail(){
-        UserRegistrationDto userRegistrationDto=new UserRegistrationDto();
-        userRegistrationDto.setUsername("bebrinskiy");
-        userRegistrationDto.setEmail("bebraexample.com");
-        userRegistrationDto.setPassword("password");
-        userService.registerUser(userRegistrationDto);
+    void badEmail() {
+        UserRegistrationDto userRegistrationDto =
+                new UserRegistrationDto("bebrinskiy", "bebraexample.com", "password");
+        assertThrows(InvalidEmail.class, () -> userService.registerUser(userRegistrationDto));
     }
+
     @Test
-    void createUserTwice(){
-        UserRegistrationDto userRegistrationDto=new UserRegistrationDto();
-        userRegistrationDto.setUsername("usertwice");
-        userRegistrationDto.setEmail("usertwice@example.com");
-        userRegistrationDto.setPassword("password");
-        userService.registerUser(userRegistrationDto);
-        assertNull(userService.registerUser(userRegistrationDto));
+    void createUserTwice() {
+        UserRegistrationDto userRegistrationDto =
+                new UserRegistrationDto("usertwice", "usertwice@example.com", "password");
+        try {
+            User user = userService.registerUser(userRegistrationDto);
+            assertThrows(UserAlreadyExist.class, () -> userService.registerUser(userRegistrationDto));
+            userManager.deleteUser(
+                    user.getUserID());
+        } catch (UserAlreadyExist | InvalidEmail e) {
+            throw new RuntimeException(e);
+        }
     }
 }

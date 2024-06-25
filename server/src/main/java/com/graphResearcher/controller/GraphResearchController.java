@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.graphResearcher.model.*;
 import com.graphResearcher.model.graphInfo.*;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -16,6 +17,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.stream.Collectors;
 
+@CrossOrigin
 @RestController
 public class GraphResearchController {
     private static final Logger log = LoggerFactory.getLogger(GraphResearchController.class);
@@ -42,7 +44,7 @@ public class GraphResearchController {
             return ResponseEntity.badRequest().body("Wrong json format");
         } catch (Throwable e) {
             log.error("Server error", e);
-            return ResponseEntity.internalServerError().body(e.getMessage());
+            return ResponseEntity.internalServerError().build();
         }
     }
 

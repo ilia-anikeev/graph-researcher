@@ -1,5 +1,6 @@
 package com.graphResearcher.repository;
 
+import com.graphResearcher.exceptions.InvalidEmail;
 import com.graphResearcher.util.PropertiesUtil;
 import com.graphResearcher.model.User;
 import org.slf4j.Logger;
@@ -80,110 +81,105 @@ public class UserManager {
 
             preparedStatement3.setInt(1, userID);
             preparedStatement3.execute();
+            log.info("All user{} graphs have been deleted", userID);
         } catch (SQLException e) {
             log.error("All user{} graphs haven't been deleted", userID, e);
             throw new RuntimeException(e);
         }
-
-        log.info("All user{} graphs have been deleted", userID);
     }
 
-
-    public User registerUser(User user) {
+    public void registerUser(User user) throws InvalidEmail {
         if(!validateEmail(user.getEmail())) {
-            return null;
+            throw new InvalidEmail("Invalid email");
         }
         String sqlInsert = "INSERT INTO users(email, username, password) VALUES(?,?,?) RETURNING id";
-        try(Connection conn=dataSource.getConnection(); PreparedStatement preparedStatement=conn.prepareStatement(sqlInsert)){
+        try(Connection conn = dataSource.getConnection();
+            PreparedStatement preparedStatement = conn.prepareStatement(sqlInsert)){
             preparedStatement.setString(1,user.getEmail());
             preparedStatement.setString(2,user.getUsername());
             preparedStatement.setString(3,user.getPassword());
             ResultSet resultSet = preparedStatement.executeQuery();
             resultSet.next();
-            int userId =resultSet.getInt("id");
-            user.setUserId(userId);
-        }catch (SQLException e) {
+            int userId = resultSet.getInt("id");
+            user.setUserID(userId);
+        } catch (SQLException e) {
             log.error("User has not been created", e);
             throw new RuntimeException(e);
         }
-        return user;
     }
 
 
     public void deleteUser(int userID) {
-        String sql = "DELETE FROM users WHERE id=?";
-        try (Connection conn = dataSource.getConnection(); PreparedStatement preparedStatement=conn.prepareStatement(sql)) {
+        String sql = "DELETE FROM users WHERE id = ?";
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement preparedStatement=conn.prepareStatement(sql)) {
             preparedStatement.setInt(1,userID);
             preparedStatement.execute();
             deleteAllUserGraphs(userID, conn);
         } catch (SQLException e) {
-            log.error("User{} have been deleted", userID, e);
+            log.error("User{} hasn't been deleted", userID, e);
             throw new RuntimeException(e);
         }
     }
-    public User findByUsername(String username){
+    public User findByUsername(String username) {
         String sql = "SELECT id, username, email, password FROM users WHERE username=?";
-        User user=new User();
-        try(Connection conn=dataSource.getConnection(); PreparedStatement preparedStatement=conn.prepareStatement(sql)){
-            preparedStatement.setString(1,username);
+        try(Connection conn = dataSource.getConnection();
+            PreparedStatement preparedStatement = conn.prepareStatement(sql)){
+            preparedStatement.setString(1, username);
             ResultSet resultSet = preparedStatement.executeQuery();
-            resultSet.next();
-            user.setUsername(resultSet.getString("username"));
-            if(resultSet.wasNull()){
+            if(!resultSet.next()) {
                 return null;
             }
-            user = new User();
-            user.setUsername(resultSet.getString("username"));
-            user.setEmail(resultSet.getString("email"));
-            user.setPassword(resultSet.getString("password"));
-            user.setUserId(resultSet.getInt("id"));
-        }catch (SQLException e) {
-            log.error("User has not been created", e);
+            return new User(
+                    resultSet.getString("email"),
+                    resultSet.getString("username"),
+                    resultSet.getString("password"),
+                    resultSet.getInt("id")
+            );
+        } catch (SQLException e) {
+            log.error("User has not been found", e);
             throw new RuntimeException(e);
         }
-        return user;
     }
 
-    public User findUserByEmail(String email){
+    public User findUserByEmail(String email) {
         String sql = "SELECT id, username, email, password FROM users WHERE email=?";
-        User user=null;
-        try(Connection conn=dataSource.getConnection(); PreparedStatement preparedStatement=conn.prepareStatement(sql)){
+        try(Connection conn = dataSource.getConnection();
+            PreparedStatement preparedStatement=conn.prepareStatement(sql)){
             preparedStatement.setString(1,email);
             ResultSet resultSet = preparedStatement.executeQuery();
-            if(resultSet.wasNull()){
-                return user;
+            if(!resultSet.next()){
+                return null;
             }
-            resultSet.next();
-            user = new User();
-            user.setUsername(resultSet.getString("username"));
-            user.setEmail(resultSet.getString("email"));
-            user.setPassword(resultSet.getString("password"));
-            user.setUserId(resultSet.getInt("id"));
-        }catch (SQLException e) {
-            log.error("User has not been created", e);
+            return new User(
+                    resultSet.getString("email"),
+                    resultSet.getString("username"),
+                    resultSet.getString("password"),
+                    resultSet.getInt("id")
+            );
+        } catch (SQLException e) {
+            log.error("User has not been found", e);
             throw new RuntimeException(e);
         }
-        return user;
     }
     public User findUserByID(int userID){
-        String sql = "SELECT id, username, email, password FROM users WHERE id=?";
-        User user=null;
-        try(Connection conn=dataSource.getConnection(); PreparedStatement preparedStatement=conn.prepareStatement(sql)){
-            preparedStatement.setInt(1,userID);
+        String sql = "SELECT id, username, email, password FROM users WHERE id = ?";
+        try(Connection conn=dataSource.getConnection();
+            PreparedStatement preparedStatement=conn.prepareStatement(sql)){
+            preparedStatement.setInt(1, userID);
             ResultSet resultSet = preparedStatement.executeQuery();
-            if(resultSet.wasNull()){
-                return user;
+            if(!resultSet.next()){
+                return null;
             }
-            resultSet.next();
-            user = new User();
-            user.setUsername(resultSet.getString("username"));
-            user.setEmail(resultSet.getString("email"));
-            user.setPassword(resultSet.getString("password"));
-            user.setUserId(resultSet.getInt("id"));
-        }catch (SQLException e) {
-            log.error("User has not been created", e);
+            return new User(
+                    resultSet.getString("email"),
+                    resultSet.getString("username"),
+                    resultSet.getString("password"),
+                    resultSet.getInt("id")
+            );
+        } catch (SQLException e) {
+            log.error("User has not been found", e);
             throw new RuntimeException(e);
         }
-        return user;
     }
 }
