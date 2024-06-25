@@ -53,7 +53,6 @@ function Researcher(props) {
   const saveGraph = () => {
     setIsGraphSaveMode(false);
     setAddCommentMode(false);
-    console.log(comment);
     if (props.vertices.length === 0) {
       return;
     }

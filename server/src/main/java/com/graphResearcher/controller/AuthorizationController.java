@@ -22,7 +22,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.stream.Collectors;
 
-@CrossOrigin
 @RestController
 public class AuthorizationController {
     private static final Logger log = LoggerFactory.getLogger(GraphResearchController.class);
@@ -34,6 +33,8 @@ public class AuthorizationController {
         this.userService = userService;
     }
 
+
+    @CrossOrigin
     @PostMapping("/register")
     public ResponseEntity<String> registerUser(HttpServletRequest request) {
         try {
@@ -51,6 +52,7 @@ public class AuthorizationController {
         }
     }
 
+    @CrossOrigin
     @PostMapping("/login")
     public ResponseEntity<String> loginUser(HttpServletRequest request) {
         try {
