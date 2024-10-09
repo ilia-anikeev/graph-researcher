@@ -34,7 +34,7 @@ public class DatabaseInitializer {
             initEdgesTable(conn);
             initVerticesTable(conn);
             initMetadataTable(conn);
-
+            initSearchTable(conn);
             initGraphResearchInfoTable(conn);
             initArticulationPointsTable(conn);
             initBridgesTable(conn);
@@ -75,7 +75,15 @@ public class DatabaseInitializer {
             throw new RuntimeException(e);
         }
     }
-
+    private void initSearchTable(Connection conn){
+        String sql = "CREATE TABLE search (id SERIAL PRIMARY KEY, graph_id INT ,is_connected BOOLEAN, is_biconnected BOOLEAN, is_planar BOOLEAN,is_chordal BOOLEAN,chromatic_number INT,is_bipartite BOOLEAN)";
+        try (PreparedStatement preparedStatement = conn.prepareStatement(sql)){
+            preparedStatement.execute();
+        } catch (SQLException e) {
+            log.error("Init edges table error", e);
+            throw new RuntimeException(e);
+        }
+    }
     private void initEdgesTable(Connection conn) {
         String sql = "CREATE TABLE edges(id SERIAL PRIMARY KEY, graph_id INT, source INT, target INT, weight DOUBLE PRECISION, data TEXT)";
         try (PreparedStatement preparedStatement = conn.prepareStatement(sql)){
