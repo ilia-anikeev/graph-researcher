@@ -17,7 +17,7 @@ function FileUploader() {
     }
   };
 
-  const customRequest = ({ file, onSuccess, onError }) => {
+  const customRequest = ({ file }) => {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('userID', userID);
@@ -28,12 +28,14 @@ function FileUploader() {
     })
     .then(response => {
       if (response.ok) {
-        onSuccess("ok");
+        return;
       } else {
-        onError("error");
+        return;
       }
     })
-    .catch(onError);
+    .catch(error => {
+      console.log(error);
+  });
   };
 
   return (
@@ -51,3 +53,7 @@ function FileUploader() {
 }
 
 export default FileUploader;
+
+
+FileUploader.propTypes = {
+};

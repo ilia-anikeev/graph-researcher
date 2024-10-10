@@ -231,9 +231,10 @@ function Researcher(props) {
             setIsGraphArchiveMode={props.setIsGraphArchiveMode}
             setGraphName={setGraphName}
           />
-        <div style={{ paddingTop: '0.5rem' }}>
+        {userID !== -1 && (<div style={{ paddingTop: '0.5rem' }}>
           <FileUploader />
-        </div>
+        </div>)
+}
         <div style={{ paddingTop: '0.5rem' }}>
           
         <Button className='button' onClick={handleSearchButton} type='text' block>

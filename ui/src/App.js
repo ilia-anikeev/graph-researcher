@@ -16,7 +16,6 @@ function App() {
               <Route path="/" element={<Graph />} />
               <Route path="/signin" element={<SignIn />} />
               <Route path="/signup" element={<SignUp />} />
-              <Route path="/upload" element={<FileUploader />} />
               <Route path="/search" element={<GraphSearch />} />
           </Routes>
         </Router>
