@@ -4,15 +4,16 @@ import { CloseOutlined, DeleteOutlined } from '@ant-design/icons';
 import { UserContext } from './UserContex';
 import './UserGraphs.css'
 import PropTypes from 'prop-types';
-
-
+import {AppContext} from './../AppContext';
 
 function UserGraphs(props) {
     const [isOpen, setIsOpen] = useState(false);
     const { userID } = useContext(UserContext);
     const [userGraphs, setUserGraphs] = useState(null);
-
-
+    const {graphId} = useContext(AppContext);
+    const {isSearched} =useContext(AppContext);
+    const {setGraphId} = useContext(AppContext);
+    const {setIsSearched} =useContext(AppContext);
     const getAllUserGraphs = () => {
       setIsOpen(true); 
       props.setIsUserGraphMode(true);
@@ -111,6 +112,11 @@ function UserGraphs(props) {
     useEffect (() => {
         if (!isOpen){
             props.setIsUserGraphMode(false);
+        }
+        if(isSearched){
+            getGraphById(graphId);
+            setIsSearched(false);
+            setGraphId(null);
         }
     })
 

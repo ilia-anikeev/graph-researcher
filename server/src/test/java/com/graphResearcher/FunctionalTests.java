@@ -4,7 +4,14 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.graphResearcher.controller.GraphSearchController;
 import com.graphResearcher.model.GraphModel;
+import com.graphResearcher.resources.TestUtils;
+import com.graphResearcher.service.GraphSearchService;
+import org.springframework.http.client.MultipartBodyBuilder;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.http.MediaType;
 import com.graphResearcher.model.graphInfo.GraphResearchInfo;
 import com.graphResearcher.resources.TestGraphs;
 import org.junit.jupiter.api.Test;
@@ -13,11 +20,14 @@ import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWeb
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -45,6 +55,102 @@ public class FunctionalTests {
     public void testResearchDirectedWeightedGraph() {
         testResearch(TestGraphs.directedWeighedGraph, TestGraphs.directedWeighedGraphInfo);
     }
+    @Test
+    public void testUploadFileSuccessfully() throws Exception {
+        MockMultipartFile file = new MockMultipartFile(
+                "file", "test-graph.txt", MediaType.TEXT_PLAIN_VALUE, "0 1\n1 0\n".getBytes());
+
+        MultipartBodyBuilder builder = new MultipartBodyBuilder();
+        builder.part("file", file.getBytes())
+                .filename("test-graph.txt")
+                .contentType(MediaType.TEXT_PLAIN);
+        builder.part("userID", "1");
+
+        webTestClient.post()
+                .uri("/upload")
+                .contentType(MediaType.MULTIPART_FORM_DATA)
+                .bodyValue(builder.build())
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.graphID").isNumber();
+    }
+
+
+    @Test
+    public void testUploadFileEmpty() throws Exception {
+
+        MockMultipartFile emptyFile = new MockMultipartFile(
+                "file", "empty-graph.txt", MediaType.TEXT_PLAIN_VALUE, "".getBytes());
+
+        MultipartBodyBuilder builder = new MultipartBodyBuilder();
+        builder.part("file", emptyFile.getBytes())
+                .filename("empty-graph.txt")
+                .contentType(MediaType.TEXT_PLAIN);
+        builder.part("userID", "1");
+
+
+        webTestClient.post()
+                .uri("/upload")
+                .contentType(MediaType.MULTIPART_FORM_DATA)
+                .bodyValue(builder.build())
+                .exchange()
+                .expectStatus().isBadRequest()
+                .expectBody()
+                .jsonPath("$.error").isEqualTo("File is empty");
+    }
+
+
+    @Test
+    public void testSearchGraphs() {
+        Map<String, Object> searchCriteria = Map.of(
+                "is_connected", true,
+                "is_biconnected", false,
+                "is_planar", false,
+                "is_chordal", false,
+                "chromatic_number", "3",
+                "is_bipartite", false
+        );
+
+        List<Integer> graphIDs = webTestClient.post()
+                .uri(uriBuilder -> uriBuilder.path("/search-graphs")
+                        .queryParam("page", 1)
+                        .build())
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(searchCriteria)
+                .exchange()
+                .expectStatus().isOk()
+                .returnResult(String.class)
+                .getResponseBody()
+                .<List<Integer>>handle((result, sink) -> {
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    JsonNode json;
+                    try {
+
+                        json = objectMapper.readTree(result);
+                    } catch (JsonProcessingException e) {
+                        sink.error(new RuntimeException(e));
+                        return;
+                    }
+
+                    JsonNode node = json.get("graphs");
+                    List<Integer> ids = new ArrayList<>();
+                    for (var idJson : node) {
+                        ids.add(idJson.asInt());
+                    }
+                    sink.next(ids);
+                }).blockLast();
+
+        assertNotNull(graphIDs);
+
+
+        for (int id : graphIDs) {
+            getGraph(id);
+            deleteGraph(id);
+        }
+    }
+
+
 
     @Test
     public void testSaveSimpleGraph() {

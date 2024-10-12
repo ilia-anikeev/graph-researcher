@@ -39,3 +39,4 @@ out/
 .ui/node_modules/
 node_modules/
 .ui/
+ui/package-lock.json

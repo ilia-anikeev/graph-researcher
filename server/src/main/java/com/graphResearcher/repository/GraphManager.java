@@ -31,7 +31,20 @@ public class GraphManager {
         String url = PropertiesUtil.get("db.url");
         dataSource = new DriverManagerDataSource(url, name, password);
     }
+    public List<Integer> getGraphs(String sql){
 
+        try(Connection conn = dataSource.getConnection();PreparedStatement preparedStatement = conn.prepareStatement(sql)){
+            ResultSet rs = preparedStatement.executeQuery();
+            List<Integer> graphIDs = new ArrayList<>();
+            while (rs.next()) {
+                graphIDs.add(rs.getInt("graph_id"));
+            }
+            return graphIDs;
+        } catch (SQLException e) {
+            log.error("Search went wrong", e);
+            throw new RuntimeException(e);
+        }
+    }
     public Integer saveGraph(int userID, GraphModel graph) {
         String sql = "INSERT INTO graph_metadata(user_id, graph_name, is_directed, is_weighted, has_self_loops, has_multiple_edges) " +
                 "VALUES(?, ?, ?, ?, ?, ?)" +
@@ -135,7 +148,6 @@ public class GraphManager {
     GraphModel getGraph(int graphID, Connection conn) {
         return new GraphModel(getVertices(graphID, "vertices", conn), getEdges(graphID, "edges", conn), getGraphMetadata(graphID, conn));
     }
-
     List<Vertex> getVertices(int graphID, String tableName, Connection conn) {
         String sql = "SELECT index, data FROM " + tableName + " WHERE graph_id = ?";
         try (PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
@@ -422,4 +434,5 @@ public class GraphManager {
             throw new RuntimeException(e);
         }
     }
+
 }
